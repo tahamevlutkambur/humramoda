@@ -1,0 +1,646 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// -------------------------------------------------------------
+// 1. KULLANICI VE YETKİLENDİRME (AUTH & USERS)
+// -------------------------------------------------------------
+
+enum UserRole {
+  ADMIN
+  STAFF
+  CUSTOMER
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  fullName      String
+  phone         String?
+  role          UserRole  @default(CUSTOMER)
+  isActive      Boolean   @default(true)
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  addresses     Address[]
+  orders        Order[]
+  favorites     Favorite[]
+  cart          Cart?
+
+  @@index([email])
+}
+
+model Address {
+  id           String   @id @default(cuid())
+  userId       String
+  title        String   // Örn: "Ev", "İş"
+  recipient    String   // Teslim alacak kişi
+  phone        String
+  city         String   // İl
+  district     String   // İlçe
+  neighborhood String?  // Mahalle
+  fullAddress  String   // Açık adres
+  postalCode   String?
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders       Order[]
+
+  @@index([userId])
+}
+
+// -------------------------------------------------------------
+// 2. KATALOG VE KATEGORİLER
+// -------------------------------------------------------------
+
+model Category {
+  id             String    @id @default(cuid())
+  name           String
+  slug           String    @unique
+  description    String?
+  imageUrl       String?
+  displayOrder   Int       @default(0)
+  isActive       Boolean   @default(true)
+  parentId       String?
+  seoTitle       String?
+  seoDescription String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  parent         Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children       Category[] @relation("CategoryHierarchy")
+  products       Product[]
+
+  @@index([slug])
+  @@index([displayOrder])
+}
+
+model Collection {
+  id             String    @id @default(cuid())
+  name           String
+  slug           String    @unique
+  description    String?
+  bannerDesktop  String?
+  bannerMobile   String?
+  displayOrder   Int       @default(0)
+  isActive       Boolean   @default(true)
+  seoTitle       String?
+  seoDescription String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  products       ProductCollection[]
+
+  @@index([slug])
+}
+
+// -------------------------------------------------------------
+// 3. ÜRÜN, RENK, BEDEN VE VARYANT MİMARİSİ
+// -------------------------------------------------------------
+
+model Product {
+  id              String    @id @default(cuid())
+  title           String
+  slug            String    @unique
+  description     String    @db.Text
+  fabricDetails   String?   @db.Text
+  modelDimensions String?   @db.Text
+  basePrice       Decimal   @db.Decimal(10, 2)
+  discountPrice   Decimal?  @db.Decimal(10, 2)
+  costPrice       Decimal?  @db.Decimal(10, 2) // Birim maliyet
+  isPreOrder      Boolean   @default(false)
+  preOrderNote    String?
+  badge           String?   // "YENİ ÜRÜN", "ÇOK SATAN"
+  categoryId      String
+  isActive        Boolean   @default(true)
+  isDraft         Boolean   @default(false) // İnceleme bekleyen taslak kayıtlar için
+  displayOrder    Int       @default(0)
+  seoTitle        String?
+  seoDescription  String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  category        Category              @relation(fields: [categoryId], references: [id])
+  collections     ProductCollection[]
+  colors          ProductColor[]
+  sizes           ProductSize[]
+  variants        ProductVariant[]
+  media           ProductMedia[]
+  favorites       Favorite[]
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([isActive])
+}
+
+model ProductCollection {
+  productId    String
+  collectionId String
+
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@id([productId, collectionId])
+}
+
+model ProductColor {
+  id           String   @id @default(cuid())
+  productId    String
+  name         String   // Örn: "Siyah", "Haki"
+  slug         String   // Örn: "siyah" (?renk=siyah için)
+  colorCode    String   // Hex: "#111111"
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  product      Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variants     ProductVariant[]
+  media        ProductMedia[]
+
+  @@unique([productId, slug])
+  @@index([productId])
+}
+
+model ProductSize {
+  id           String   @id @default(cuid())
+  productId    String
+  name         String   // Örn: "1 Beden (36-38)", "S"
+  slug         String   // Örn: "1-beden-36-38"
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  product      Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variants     ProductVariant[]
+
+  @@unique([productId, slug])
+  @@index([productId])
+}
+
+model ProductVariant {
+  id              String   @id @default(cuid())
+  productId       String
+  colorId         String
+  sizeId          String
+  sku             String   @unique // Benzersiz stok kodu: "HM-4510-SYH-B1"
+  barcode         String?  // EAN / Barkod
+  stockQuantity   Int      @default(0)
+  priceAdjustment Decimal? @default(0) @db.Decimal(10, 2)
+  costPrice       Decimal? @db.Decimal(10, 2) // Birim varyant maliyeti
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  product         Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  color           ProductColor @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  size            ProductSize  @relation(fields: [sizeId], references: [id], onDelete: Cascade)
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
+
+  @@unique([productId, colorId, sizeId])
+  @@index([sku])
+  @@index([stockQuantity])
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+model ProductMedia {
+  id           String    @id @default(cuid())
+  productId    String
+  colorId      String?   // Renge özel galeri eşleşmesi
+  type         MediaType @default(IMAGE)
+  url          String    // WebP veya MP4 dosya yolu / CDN linki
+  thumbnailUrl String?
+  posterUrl    String?   // Video için poster görseli
+  altText      String?
+  displayOrder Int       @default(0)
+  isThumbnail  Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  color        ProductColor? @relation(fields: [colorId], references: [id], onDelete: SetNull)
+
+  @@index([productId, colorId])
+  @@index([displayOrder])
+}
+
+// -------------------------------------------------------------
+// 4. SEPET VE FAVORİLER
+// -------------------------------------------------------------
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String?    @unique
+  sessionId String?    @unique // Misafir oturumu için
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  productId String
+  variantId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart      Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, variantId])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+// -------------------------------------------------------------
+// 5. SİPARİŞ VE ÖDEME İŞLEMLERİ
+// -------------------------------------------------------------
+
+enum OrderStatus {
+  CONFIRMED
+  CANCELLED
+  PENDING
+}
+
+enum OrderPaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum ShippingStatus {
+  AWAITING_SHIPMENT
+  SHIPPED
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  SHIPMENT_ISSUE
+  RETURNED
+}
+
+enum ReturnStatus {
+  REQUESTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  AWAITING_PACKAGE
+  PACKAGE_RECEIVED
+  REFUND_PENDING
+  REFUND_COMPLETED
+}
+
+enum ReturnRestockDecision {
+  PENDING
+  RESTOCKED
+  DAMAGED_NOT_RESTOCKED
+  REJECTED
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model Order {
+  id                  String             @id @default(cuid())
+  orderNumber         String             @unique // Müşteri Sipariş No: "HM-20261021-0001"
+  userId              String?
+  customerEmail       String
+  customerFullName    String
+  customerPhone       String
+  status              OrderStatus        @default(PENDING) // Operasyonel Durum
+  paymentStatus       OrderPaymentStatus @default(PENDING) // Finansal Ödeme Durumu
+  paymentProvider     String             @default("PAYTR")
+  subtotal            Decimal            @db.Decimal(10, 2)
+  discountAmount      Decimal            @default(0) @db.Decimal(10, 2)
+  shippingAmount      Decimal            @default(0) @db.Decimal(10, 2)
+  totalAmount         Decimal            @db.Decimal(10, 2)
+  totalKurus          Int                // PayTR ile birebir eşleşen kuruş tutar (örn: 157410)
+  shippingAddress     Json               // Sipariş anındaki adres snapshot'ı
+  trackingCode        String?
+  shippingCompany     String?
+  customerNotes       String?
+  stockDeducted       Boolean            @default(false)
+  confirmedAt         DateTime?
+  cancelledAt         DateTime?
+  paidAt              DateTime?
+  paymentFailedReason String?
+  
+  // Faz 6: Kargo, İade ve Bildirim Durumları
+  shippingStatus      ShippingStatus     @default(AWAITING_SHIPMENT)
+  carrier             String?
+  trackingNumber      String?
+  trackingUrl         String?
+  shippedAt           DateTime?
+  deliveredAt         DateTime?
+  refundedAmount      Decimal            @default(0) @db.Decimal(10, 2)
+
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  user                User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  addressId           String?
+  address             Address?           @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  items               OrderItem[]
+  payments            PaymentTransaction[]
+  shipments           Shipment[]
+  returnRequests      ReturnRequest[]
+  notifications       CustomerNotification[]
+
+  @@index([orderNumber])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([shippingStatus])
+  @@index([customerEmail])
+}
+
+model OrderItem {
+  id                String   @id @default(cuid())
+  orderId           String
+  productId         String
+  variantId         String
+  productName       String
+  colorName         String
+  sizeName          String
+  sku               String
+  price             Decimal  @db.Decimal(10, 2)
+  quantity          Int
+  totalPrice        Decimal  @db.Decimal(10, 2)
+  costPriceSnapshot Decimal? @db.Decimal(10, 2) // Sipariş anındaki birim maliyet snapshot'ı
+
+  order             Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product           Product        @relation(fields: [productId], references: [id])
+  variant           ProductVariant @relation(fields: [variantId], references: [id])
+}
+
+enum PaymentStatus {
+  INITIALIZED
+  PENDING
+  SUCCESS
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+model PaymentTransaction {
+  id              String        @id @default(cuid())
+  orderId         String
+  merchantOid     String        @unique // PayTR sipariş numarası
+  paymentProvider String        @default("PAYTR")
+  status          PaymentStatus @default(INITIALIZED)
+  amountKurus     Int
+  testMode        Boolean       @default(true)
+  clientIp        String?
+  paytrToken      String?
+  paytrHash       String?
+  callbackPayload Json?
+  failedReason    String?
+  paidAt          DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  order           Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([merchantOid])
+  @@index([status])
+}
+
+// -------------------------------------------------------------
+// 6. DİNAMİK VİTRİN VE ANA SAYFA BLOKLARI (CMS)
+// -------------------------------------------------------------
+
+enum BlockLayout {
+  SLIDER
+  VIDEO_HERO
+  GRID2
+  PRODUCT_CAROUSEL
+  PROMO_BANNER
+}
+
+model HomepageBlock {
+  id           String      @id @default(cuid())
+  title        String?
+  layout       BlockLayout
+  displayOrder Int         @default(0)
+  isActive     Boolean     @default(true)
+  mobileStack  Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  items        BlockItem[]
+
+  @@index([displayOrder])
+}
+
+model BlockItem {
+  id               String        @id @default(cuid())
+  blockId          String
+  desktopImage     String?
+  mobileImage      String?
+  desktopVideo     String?
+  mobileVideo      String?
+  videoPoster      String?
+  linkUrl          String?
+  heading          String?
+  subheading       String?
+  buttonText       String?
+  deviceVisibility String        @default("both")
+  displayOrder     Int           @default(0)
+
+  block            HomepageBlock @relation(fields: [blockId], references: [id], onDelete: Cascade)
+
+  @@index([blockId])
+}
+
+// -------------------------------------------------------------
+// 7. MAĞAZA VE KAMPANYA AYARLARI
+// -------------------------------------------------------------
+
+model StoreSetting {
+  key         String   @id
+  value       String   @db.Text
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+
+model DiscountCampaign {
+  id               String    @id @default(cuid())
+  title            String
+  code             String?   @unique
+  percentage       Decimal?  @db.Decimal(5, 2)
+  fixedAmount      Decimal?  @db.Decimal(10, 2)
+  minSpendAmount   Decimal?  @db.Decimal(10, 2)
+  startDate        DateTime
+  endDate          DateTime
+  isActive         Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+// -------------------------------------------------------------
+// 8. FAZ 6: KARGO, İADE VE BİLDİRİM MODELLERİ
+// -------------------------------------------------------------
+
+model Shipment {
+  id                String         @id @default(cuid())
+  orderId           String
+  carrier           String         // "yurtici", "aras", "mng", "ptt", "surat", "hepsijet", "custom"
+  carrierName       String         // "Yurtiçi Kargo"
+  trackingNumber    String
+  trackingUrl       String?
+  labelUrl          String?
+  status            ShippingStatus @default(AWAITING_SHIPMENT)
+  method            String         @default("MANUAL") // "MANUAL" | "API_INTEGRATED"
+  providerReference String?
+  shippedAt         DateTime?
+  deliveredAt       DateTime?
+  notes             String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  order             Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  events            ShippingEvent[]
+
+  @@index([orderId])
+  @@index([trackingNumber])
+  @@index([status])
+}
+
+model ShippingEvent {
+  id               String         @id @default(cuid())
+  shipmentId       String
+  status           ShippingStatus
+  description      String
+  location         String?
+  carrierReference String?
+  eventTime        DateTime       @default(now())
+  createdAt        DateTime       @default(now())
+
+  shipment         Shipment       @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@index([shipmentId])
+}
+
+model ReturnRequest {
+  id                    String                @id @default(cuid())
+  orderId               String
+  orderNumber           String
+  customerEmail         String
+  customerPhone         String
+  status                ReturnStatus          @default(REQUESTED)
+  requestedAmount       Decimal               @db.Decimal(10, 2)
+  refundedAmount        Decimal               @default(0) @db.Decimal(10, 2)
+  reason                String
+  customerNotes         String?
+  adminNotes            String?
+  restockDecision       ReturnRestockDecision @default(PENDING)
+  isRestocked           Boolean               @default(false)
+  actualRefundVerified  Boolean               @default(false)
+  refundTransactionRef  String?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  processedAt           DateTime?
+
+  order                 Order                 @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  items                 ReturnItem[]
+
+  @@index([orderId])
+  @@index([orderNumber])
+  @@index([status])
+}
+
+model ReturnItem {
+  id              String        @id @default(cuid())
+  returnRequestId String
+  orderItemId     String
+  productId       String
+  productName     String
+  variantSku      String
+  colorName       String?
+  sizeName        String?
+  quantity        Int
+  unitPrice       Decimal       @db.Decimal(10, 2)
+  totalPrice      Decimal       @db.Decimal(10, 2)
+  reason          String
+  condition       String?
+
+  returnRequest   ReturnRequest @relation(fields: [returnRequestId], references: [id], onDelete: Cascade)
+
+  @@index([returnRequestId])
+}
+
+model CustomerNotification {
+  id             String              @id @default(cuid())
+  orderId        String
+  orderNumber    String
+  channel        NotificationChannel @default(EMAIL)
+  eventType      String              // ORDER_CREATED, PAYMENT_CONFIRMED, SHIPMENT_CREATED, vb.
+  recipient      String
+  subject        String
+  contentHtml    String              @db.Text
+  contentText    String              @db.Text
+  status         NotificationStatus  @default(PENDING)
+  idempotencyKey String              @unique
+  errorMessage   String?
+  sentAt         DateTime?
+  createdAt      DateTime            @default(now())
+
+  order          Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([orderNumber])
+  @@index([status])
+}
+
+model WebhookEvent {
+  id          String    @id @default(cuid())
+  provider    String    // "YURTICI", "ARAS", "MNG", "PAYTR"
+  eventType   String
+  eventId     String?
+  payload     Json
+  isProcessed Boolean   @default(false)
+  processedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([provider, eventId])
+}
+

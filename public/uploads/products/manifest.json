@@ -1,0 +1,1151 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2026-10-21T11:38:09.976Z",
+  "sourceDirectory": "C:\\Users\\Taha\\Documents\\hümramoda\\humraresimler",
+  "assets": [
+    {
+      "originalFileName": "IMG_2190.HEIC",
+      "baseName": "IMG_2190",
+      "originalSizeBytes": 1239914,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2190-thumb.webp",
+          "url": "/uploads/products/IMG_2190-thumb.webp",
+          "sizeBytes": 7218
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2190-thumb.avif",
+          "url": "/uploads/products/IMG_2190-thumb.avif",
+          "sizeBytes": 8312
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2190-card.webp",
+          "url": "/uploads/products/IMG_2190-card.webp",
+          "sizeBytes": 59406
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2190-card.avif",
+          "url": "/uploads/products/IMG_2190-card.avif",
+          "sizeBytes": 66255
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2190-detail.webp",
+          "url": "/uploads/products/IMG_2190-detail.webp",
+          "sizeBytes": 273828
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2190-detail.avif",
+          "url": "/uploads/products/IMG_2190-detail.avif",
+          "sizeBytes": 300958
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.903Z"
+    },
+    {
+      "originalFileName": "IMG_2192.HEIC",
+      "baseName": "IMG_2192",
+      "originalSizeBytes": 1323667,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2192-thumb.webp",
+          "url": "/uploads/products/IMG_2192-thumb.webp",
+          "sizeBytes": 7860
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2192-thumb.avif",
+          "url": "/uploads/products/IMG_2192-thumb.avif",
+          "sizeBytes": 9255
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2192-card.webp",
+          "url": "/uploads/products/IMG_2192-card.webp",
+          "sizeBytes": 67440
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2192-card.avif",
+          "url": "/uploads/products/IMG_2192-card.avif",
+          "sizeBytes": 74512
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2192-detail.webp",
+          "url": "/uploads/products/IMG_2192-detail.webp",
+          "sizeBytes": 321722
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2192-detail.avif",
+          "url": "/uploads/products/IMG_2192-detail.avif",
+          "sizeBytes": 341515
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.908Z"
+    },
+    {
+      "originalFileName": "IMG_2193.HEIC",
+      "baseName": "IMG_2193",
+      "originalSizeBytes": 1266235,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2193-thumb.webp",
+          "url": "/uploads/products/IMG_2193-thumb.webp",
+          "sizeBytes": 6854
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2193-thumb.avif",
+          "url": "/uploads/products/IMG_2193-thumb.avif",
+          "sizeBytes": 8027
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2193-card.webp",
+          "url": "/uploads/products/IMG_2193-card.webp",
+          "sizeBytes": 59100
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2193-card.avif",
+          "url": "/uploads/products/IMG_2193-card.avif",
+          "sizeBytes": 66284
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2193-detail.webp",
+          "url": "/uploads/products/IMG_2193-detail.webp",
+          "sizeBytes": 281072
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2193-detail.avif",
+          "url": "/uploads/products/IMG_2193-detail.avif",
+          "sizeBytes": 305101
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.911Z"
+    },
+    {
+      "originalFileName": "IMG_2198.HEIC",
+      "baseName": "IMG_2198",
+      "originalSizeBytes": 1366896,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2198-thumb.webp",
+          "url": "/uploads/products/IMG_2198-thumb.webp",
+          "sizeBytes": 6584
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2198-thumb.avif",
+          "url": "/uploads/products/IMG_2198-thumb.avif",
+          "sizeBytes": 7741
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2198-card.webp",
+          "url": "/uploads/products/IMG_2198-card.webp",
+          "sizeBytes": 52966
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2198-card.avif",
+          "url": "/uploads/products/IMG_2198-card.avif",
+          "sizeBytes": 62952
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2198-detail.webp",
+          "url": "/uploads/products/IMG_2198-detail.webp",
+          "sizeBytes": 277978
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2198-detail.avif",
+          "url": "/uploads/products/IMG_2198-detail.avif",
+          "sizeBytes": 315600
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.915Z"
+    },
+    {
+      "originalFileName": "IMG_2199.HEIC",
+      "baseName": "IMG_2199",
+      "originalSizeBytes": 1375312,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2199-thumb.webp",
+          "url": "/uploads/products/IMG_2199-thumb.webp",
+          "sizeBytes": 5828
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2199-thumb.avif",
+          "url": "/uploads/products/IMG_2199-thumb.avif",
+          "sizeBytes": 7589
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2199-card.webp",
+          "url": "/uploads/products/IMG_2199-card.webp",
+          "sizeBytes": 53310
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2199-card.avif",
+          "url": "/uploads/products/IMG_2199-card.avif",
+          "sizeBytes": 63413
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2199-detail.webp",
+          "url": "/uploads/products/IMG_2199-detail.webp",
+          "sizeBytes": 283018
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2199-detail.avif",
+          "url": "/uploads/products/IMG_2199-detail.avif",
+          "sizeBytes": 312738
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.918Z"
+    },
+    {
+      "originalFileName": "IMG_2200.HEIC",
+      "baseName": "IMG_2200",
+      "originalSizeBytes": 1387764,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2200-thumb.webp",
+          "url": "/uploads/products/IMG_2200-thumb.webp",
+          "sizeBytes": 5838
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2200-thumb.avif",
+          "url": "/uploads/products/IMG_2200-thumb.avif",
+          "sizeBytes": 7389
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2200-card.webp",
+          "url": "/uploads/products/IMG_2200-card.webp",
+          "sizeBytes": 53914
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2200-card.avif",
+          "url": "/uploads/products/IMG_2200-card.avif",
+          "sizeBytes": 64422
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2200-detail.webp",
+          "url": "/uploads/products/IMG_2200-detail.webp",
+          "sizeBytes": 298204
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2200-detail.avif",
+          "url": "/uploads/products/IMG_2200-detail.avif",
+          "sizeBytes": 333241
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.921Z"
+    },
+    {
+      "originalFileName": "IMG_2201.HEIC",
+      "baseName": "IMG_2201",
+      "originalSizeBytes": 1827167,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2201-thumb.webp",
+          "url": "/uploads/products/IMG_2201-thumb.webp",
+          "sizeBytes": 8146
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2201-thumb.avif",
+          "url": "/uploads/products/IMG_2201-thumb.avif",
+          "sizeBytes": 10168
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2201-card.webp",
+          "url": "/uploads/products/IMG_2201-card.webp",
+          "sizeBytes": 94678
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2201-card.avif",
+          "url": "/uploads/products/IMG_2201-card.avif",
+          "sizeBytes": 89835
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2201-detail.webp",
+          "url": "/uploads/products/IMG_2201-detail.webp",
+          "sizeBytes": 437306
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2201-detail.avif",
+          "url": "/uploads/products/IMG_2201-detail.avif",
+          "sizeBytes": 451621
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.925Z"
+    },
+    {
+      "originalFileName": "IMG_2217.HEIC",
+      "baseName": "IMG_2217",
+      "originalSizeBytes": 994669,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2217-thumb.webp",
+          "url": "/uploads/products/IMG_2217-thumb.webp",
+          "sizeBytes": 6176
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2217-thumb.avif",
+          "url": "/uploads/products/IMG_2217-thumb.avif",
+          "sizeBytes": 7970
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2217-card.webp",
+          "url": "/uploads/products/IMG_2217-card.webp",
+          "sizeBytes": 64338
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2217-card.avif",
+          "url": "/uploads/products/IMG_2217-card.avif",
+          "sizeBytes": 76370
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2217-detail.webp",
+          "url": "/uploads/products/IMG_2217-detail.webp",
+          "sizeBytes": 235172
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2217-detail.avif",
+          "url": "/uploads/products/IMG_2217-detail.avif",
+          "sizeBytes": 285674
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.928Z"
+    },
+    {
+      "originalFileName": "IMG_2218.HEIC",
+      "baseName": "IMG_2218",
+      "originalSizeBytes": 999279,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2218-thumb.webp",
+          "url": "/uploads/products/IMG_2218-thumb.webp",
+          "sizeBytes": 6272
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2218-thumb.avif",
+          "url": "/uploads/products/IMG_2218-thumb.avif",
+          "sizeBytes": 8056
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2218-card.webp",
+          "url": "/uploads/products/IMG_2218-card.webp",
+          "sizeBytes": 58962
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2218-card.avif",
+          "url": "/uploads/products/IMG_2218-card.avif",
+          "sizeBytes": 74064
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2218-detail.webp",
+          "url": "/uploads/products/IMG_2218-detail.webp",
+          "sizeBytes": 229284
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2218-detail.avif",
+          "url": "/uploads/products/IMG_2218-detail.avif",
+          "sizeBytes": 279623
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.932Z"
+    },
+    {
+      "originalFileName": "IMG_2219.HEIC",
+      "baseName": "IMG_2219",
+      "originalSizeBytes": 991874,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2219-thumb.webp",
+          "url": "/uploads/products/IMG_2219-thumb.webp",
+          "sizeBytes": 6140
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2219-thumb.avif",
+          "url": "/uploads/products/IMG_2219-thumb.avif",
+          "sizeBytes": 7969
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2219-card.webp",
+          "url": "/uploads/products/IMG_2219-card.webp",
+          "sizeBytes": 59356
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2219-card.avif",
+          "url": "/uploads/products/IMG_2219-card.avif",
+          "sizeBytes": 73085
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2219-detail.webp",
+          "url": "/uploads/products/IMG_2219-detail.webp",
+          "sizeBytes": 226232
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2219-detail.avif",
+          "url": "/uploads/products/IMG_2219-detail.avif",
+          "sizeBytes": 278044
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.935Z"
+    },
+    {
+      "originalFileName": "IMG_2226.HEIC",
+      "baseName": "IMG_2226",
+      "originalSizeBytes": 1080501,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2226-thumb.webp",
+          "url": "/uploads/products/IMG_2226-thumb.webp",
+          "sizeBytes": 8594
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2226-thumb.avif",
+          "url": "/uploads/products/IMG_2226-thumb.avif",
+          "sizeBytes": 11219
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2226-card.webp",
+          "url": "/uploads/products/IMG_2226-card.webp",
+          "sizeBytes": 83468
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2226-card.avif",
+          "url": "/uploads/products/IMG_2226-card.avif",
+          "sizeBytes": 99437
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2226-detail.webp",
+          "url": "/uploads/products/IMG_2226-detail.webp",
+          "sizeBytes": 279420
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2226-detail.avif",
+          "url": "/uploads/products/IMG_2226-detail.avif",
+          "sizeBytes": 343515
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.939Z"
+    },
+    {
+      "originalFileName": "IMG_2228.HEIC",
+      "baseName": "IMG_2228",
+      "originalSizeBytes": 1214086,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2228-thumb.webp",
+          "url": "/uploads/products/IMG_2228-thumb.webp",
+          "sizeBytes": 5404
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2228-thumb.avif",
+          "url": "/uploads/products/IMG_2228-thumb.avif",
+          "sizeBytes": 6663
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2228-card.webp",
+          "url": "/uploads/products/IMG_2228-card.webp",
+          "sizeBytes": 42572
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2228-card.avif",
+          "url": "/uploads/products/IMG_2228-card.avif",
+          "sizeBytes": 52632
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2228-detail.webp",
+          "url": "/uploads/products/IMG_2228-detail.webp",
+          "sizeBytes": 203824
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2228-detail.avif",
+          "url": "/uploads/products/IMG_2228-detail.avif",
+          "sizeBytes": 258023
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.942Z"
+    },
+    {
+      "originalFileName": "IMG_2231.HEIC",
+      "baseName": "IMG_2231",
+      "originalSizeBytes": 1628282,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2231-thumb.webp",
+          "url": "/uploads/products/IMG_2231-thumb.webp",
+          "sizeBytes": 5612
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2231-thumb.avif",
+          "url": "/uploads/products/IMG_2231-thumb.avif",
+          "sizeBytes": 7513
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2231-card.webp",
+          "url": "/uploads/products/IMG_2231-card.webp",
+          "sizeBytes": 40570
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2231-card.avif",
+          "url": "/uploads/products/IMG_2231-card.avif",
+          "sizeBytes": 50077
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2231-detail.webp",
+          "url": "/uploads/products/IMG_2231-detail.webp",
+          "sizeBytes": 173362
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2231-detail.avif",
+          "url": "/uploads/products/IMG_2231-detail.avif",
+          "sizeBytes": 221154
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.946Z"
+    },
+    {
+      "originalFileName": "IMG_2235.HEIC",
+      "baseName": "IMG_2235",
+      "originalSizeBytes": 1293638,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2235-thumb.webp",
+          "url": "/uploads/products/IMG_2235-thumb.webp",
+          "sizeBytes": 5684
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2235-thumb.avif",
+          "url": "/uploads/products/IMG_2235-thumb.avif",
+          "sizeBytes": 7578
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2235-card.webp",
+          "url": "/uploads/products/IMG_2235-card.webp",
+          "sizeBytes": 47594
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2235-card.avif",
+          "url": "/uploads/products/IMG_2235-card.avif",
+          "sizeBytes": 59369
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2235-detail.webp",
+          "url": "/uploads/products/IMG_2235-detail.webp",
+          "sizeBytes": 237986
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2235-detail.avif",
+          "url": "/uploads/products/IMG_2235-detail.avif",
+          "sizeBytes": 296328
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.949Z"
+    },
+    {
+      "originalFileName": "IMG_2237.HEIC",
+      "baseName": "IMG_2237",
+      "originalSizeBytes": 1084359,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2237-thumb.webp",
+          "url": "/uploads/products/IMG_2237-thumb.webp",
+          "sizeBytes": 6002
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2237-thumb.avif",
+          "url": "/uploads/products/IMG_2237-thumb.avif",
+          "sizeBytes": 7818
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2237-card.webp",
+          "url": "/uploads/products/IMG_2237-card.webp",
+          "sizeBytes": 47310
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2237-card.avif",
+          "url": "/uploads/products/IMG_2237-card.avif",
+          "sizeBytes": 57085
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2237-detail.webp",
+          "url": "/uploads/products/IMG_2237-detail.webp",
+          "sizeBytes": 199108
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2237-detail.avif",
+          "url": "/uploads/products/IMG_2237-detail.avif",
+          "sizeBytes": 248008
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.952Z"
+    },
+    {
+      "originalFileName": "IMG_2246.HEIC",
+      "baseName": "IMG_2246",
+      "originalSizeBytes": 940756,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2246-thumb.webp",
+          "url": "/uploads/products/IMG_2246-thumb.webp",
+          "sizeBytes": 6152
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2246-thumb.avif",
+          "url": "/uploads/products/IMG_2246-thumb.avif",
+          "sizeBytes": 7937
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2246-card.webp",
+          "url": "/uploads/products/IMG_2246-card.webp",
+          "sizeBytes": 42900
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2246-card.avif",
+          "url": "/uploads/products/IMG_2246-card.avif",
+          "sizeBytes": 51483
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2246-detail.webp",
+          "url": "/uploads/products/IMG_2246-detail.webp",
+          "sizeBytes": 147872
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2246-detail.avif",
+          "url": "/uploads/products/IMG_2246-detail.avif",
+          "sizeBytes": 196103
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.956Z"
+    },
+    {
+      "originalFileName": "IMG_2257.HEIC",
+      "baseName": "IMG_2257",
+      "originalSizeBytes": 1148914,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2257-thumb.webp",
+          "url": "/uploads/products/IMG_2257-thumb.webp",
+          "sizeBytes": 6106
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2257-thumb.avif",
+          "url": "/uploads/products/IMG_2257-thumb.avif",
+          "sizeBytes": 7946
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2257-card.webp",
+          "url": "/uploads/products/IMG_2257-card.webp",
+          "sizeBytes": 51112
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2257-card.avif",
+          "url": "/uploads/products/IMG_2257-card.avif",
+          "sizeBytes": 62172
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2257-detail.webp",
+          "url": "/uploads/products/IMG_2257-detail.webp",
+          "sizeBytes": 218200
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2257-detail.avif",
+          "url": "/uploads/products/IMG_2257-detail.avif",
+          "sizeBytes": 279282
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.959Z"
+    },
+    {
+      "originalFileName": "IMG_2259.HEIC",
+      "baseName": "IMG_2259",
+      "originalSizeBytes": 1040565,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2259-thumb.webp",
+          "url": "/uploads/products/IMG_2259-thumb.webp",
+          "sizeBytes": 5328
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2259-thumb.avif",
+          "url": "/uploads/products/IMG_2259-thumb.avif",
+          "sizeBytes": 7058
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2259-card.webp",
+          "url": "/uploads/products/IMG_2259-card.webp",
+          "sizeBytes": 44166
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2259-card.avif",
+          "url": "/uploads/products/IMG_2259-card.avif",
+          "sizeBytes": 54370
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2259-detail.webp",
+          "url": "/uploads/products/IMG_2259-detail.webp",
+          "sizeBytes": 179772
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2259-detail.avif",
+          "url": "/uploads/products/IMG_2259-detail.avif",
+          "sizeBytes": 234203
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.962Z"
+    },
+    {
+      "originalFileName": "IMG_2262.HEIC",
+      "baseName": "IMG_2262",
+      "originalSizeBytes": 1466501,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2262-thumb.webp",
+          "url": "/uploads/products/IMG_2262-thumb.webp",
+          "sizeBytes": 7598
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2262-thumb.avif",
+          "url": "/uploads/products/IMG_2262-thumb.avif",
+          "sizeBytes": 9449
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2262-card.webp",
+          "url": "/uploads/products/IMG_2262-card.webp",
+          "sizeBytes": 63588
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2262-card.avif",
+          "url": "/uploads/products/IMG_2262-card.avif",
+          "sizeBytes": 79458
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2262-detail.webp",
+          "url": "/uploads/products/IMG_2262-detail.webp",
+          "sizeBytes": 298790
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2262-detail.avif",
+          "url": "/uploads/products/IMG_2262-detail.avif",
+          "sizeBytes": 376635
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.966Z"
+    },
+    {
+      "originalFileName": "IMG_2263.HEIC",
+      "baseName": "IMG_2263",
+      "originalSizeBytes": 1229366,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2263-thumb.webp",
+          "url": "/uploads/products/IMG_2263-thumb.webp",
+          "sizeBytes": 8686
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2263-thumb.avif",
+          "url": "/uploads/products/IMG_2263-thumb.avif",
+          "sizeBytes": 10912
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2263-card.webp",
+          "url": "/uploads/products/IMG_2263-card.webp",
+          "sizeBytes": 73018
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2263-card.avif",
+          "url": "/uploads/products/IMG_2263-card.avif",
+          "sizeBytes": 89455
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2263-detail.webp",
+          "url": "/uploads/products/IMG_2263-detail.webp",
+          "sizeBytes": 315726
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2263-detail.avif",
+          "url": "/uploads/products/IMG_2263-detail.avif",
+          "sizeBytes": 381312
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.969Z"
+    },
+    {
+      "originalFileName": "IMG_2270.HEIC",
+      "baseName": "IMG_2270",
+      "originalSizeBytes": 1546355,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2270-thumb.webp",
+          "url": "/uploads/products/IMG_2270-thumb.webp",
+          "sizeBytes": 6110
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2270-thumb.avif",
+          "url": "/uploads/products/IMG_2270-thumb.avif",
+          "sizeBytes": 8209
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2270-card.webp",
+          "url": "/uploads/products/IMG_2270-card.webp",
+          "sizeBytes": 53952
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2270-card.avif",
+          "url": "/uploads/products/IMG_2270-card.avif",
+          "sizeBytes": 65094
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2270-detail.webp",
+          "url": "/uploads/products/IMG_2270-detail.webp",
+          "sizeBytes": 282926
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2270-detail.avif",
+          "url": "/uploads/products/IMG_2270-detail.avif",
+          "sizeBytes": 351484
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.973Z"
+    },
+    {
+      "originalFileName": "IMG_2279.HEIC",
+      "baseName": "IMG_2279",
+      "originalSizeBytes": 986179,
+      "width": 1440,
+      "height": 1920,
+      "derivatives": [
+        {
+          "format": "webp",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2279-thumb.webp",
+          "url": "/uploads/products/IMG_2279-thumb.webp",
+          "sizeBytes": 6142
+        },
+        {
+          "format": "avif",
+          "size": "thumb",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2279-thumb.avif",
+          "url": "/uploads/products/IMG_2279-thumb.avif",
+          "sizeBytes": 7564
+        },
+        {
+          "format": "webp",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2279-card.webp",
+          "url": "/uploads/products/IMG_2279-card.webp",
+          "sizeBytes": 41244
+        },
+        {
+          "format": "avif",
+          "size": "card",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2279-card.avif",
+          "url": "/uploads/products/IMG_2279-card.avif",
+          "sizeBytes": 52194
+        },
+        {
+          "format": "webp",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2279-detail.webp",
+          "url": "/uploads/products/IMG_2279-detail.webp",
+          "sizeBytes": 161160
+        },
+        {
+          "format": "avif",
+          "size": "detail",
+          "path": "C:\\Users\\Taha\\Documents\\hümramoda\\public\\uploads\\products\\IMG_2279-detail.avif",
+          "url": "/uploads/products/IMG_2279-detail.avif",
+          "sizeBytes": 221867
+        }
+      ],
+      "processedAt": "2026-10-21T11:38:09.976Z"
+    }
+  ]
+}

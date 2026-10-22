@@ -1,0 +1,263 @@
+/* ==============================================================
+ * Hümra Moda — Yönetici Paneli (Admin) Tasarım Sistemi
+ * ============================================================== */
+
+:root {
+  --hm-admin-bg: #F8F9FA;
+  --hm-admin-surface: #FFFFFF;
+  --hm-admin-sidebar: #121316;
+  --hm-admin-sidebar-text: #E2E8F0;
+  --hm-admin-sidebar-hover: #1E2128;
+  --hm-admin-sidebar-active: #2A2E38;
+  --hm-admin-border: #E2E8F0;
+  --hm-admin-border-subtle: #EDF2F7;
+  --hm-admin-text-main: #1A202C;
+  --hm-admin-text-muted: #718096;
+  --hm-admin-accent: #141414;
+  --hm-admin-primary: #8B2635; /* Hümra Moda Merat Kırmızısı */
+  --hm-admin-success: #2E7D32;
+  --hm-admin-warning: #ED6C02;
+  --hm-admin-danger: #D32F2F;
+}
+
+.hm-admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--hm-admin-bg);
+  color: var(--hm-admin-text-main);
+  font-family: var(--hm-font-sans);
+}
+
+/* Sol Yan Menü (Sidebar) */
+.hm-admin-sidebar {
+  width: 260px;
+  background-color: var(--hm-admin-sidebar);
+  color: var(--hm-admin-sidebar-text);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+  z-index: 50;
+}
+
+.hm-admin-sidebar-brand {
+  padding: 1.5rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+}
+
+.hm-admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  color: #A0AEC0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  border-left: 3px solid transparent;
+}
+
+.hm-admin-nav-item:hover {
+  background-color: var(--hm-admin-sidebar-hover);
+  color: #FFFFFF;
+}
+
+.hm-admin-nav-item.active {
+  background-color: var(--hm-admin-sidebar-active);
+  color: #FFFFFF;
+  border-left-color: var(--hm-admin-primary);
+  font-weight: 600;
+}
+
+/* Ana İçerik Alanı */
+.hm-admin-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Üst Çubuk (Top Bar) */
+.hm-admin-topbar {
+  height: 64px;
+  background-color: var(--hm-admin-surface);
+  border-bottom: 1px solid var(--hm-admin-border);
+  display: flex;
+  align-items: center;
+  justifyContent: space-between;
+  padding: 0 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+/* Sayfa İçerik Konteyneri */
+.hm-admin-content {
+  padding: 1.5rem;
+  flex: 1;
+  max-width: 1400px;
+  width: 100%;
+}
+
+/* Kartlar ve Paneller */
+.hm-admin-card {
+  background-color: var(--hm-admin-surface);
+  border: 1px solid var(--hm-admin-border);
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* Tablolar */
+.hm-admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.8125rem;
+}
+
+.hm-admin-table th {
+  background-color: #F8F9FA;
+  padding: 0.75rem 1rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--hm-admin-text-muted);
+  border-bottom: 1px solid var(--hm-admin-border);
+}
+
+.hm-admin-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--hm-admin-border-subtle);
+  vertical-align: middle;
+}
+
+.hm-admin-table tr:hover td {
+  background-color: #FBFBFC;
+}
+
+/* Form Kontrolleri */
+.hm-admin-input,
+.hm-admin-select,
+.hm-admin-textarea {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.8125rem;
+  border: 1px solid var(--hm-admin-border);
+  border-radius: 4px;
+  background-color: #FFFFFF;
+  color: var(--hm-admin-text-main);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  font-family: inherit;
+}
+
+.hm-admin-input:focus,
+.hm-admin-select:focus,
+.hm-admin-textarea:focus {
+  border-color: #141414;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(20, 20, 20, 0.08);
+}
+
+.hm-admin-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.35rem;
+  color: #4A5568;
+}
+
+/* Butonlar */
+.hm-admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  border: none;
+}
+
+.hm-admin-btn-primary {
+  background-color: #141414;
+  color: #FFFFFF;
+}
+
+.hm-admin-btn-primary:hover {
+  background-color: #2D3748;
+}
+
+.hm-admin-btn-outline {
+  background-color: #FFFFFF;
+  border: 1px solid var(--hm-admin-border);
+  color: var(--hm-admin-text-main);
+}
+
+.hm-admin-btn-outline:hover {
+  background-color: #F7FAFC;
+  border-color: #CBD5E0;
+}
+
+.hm-admin-btn-danger {
+  background-color: #FFF5F5;
+  color: #E53E3E;
+  border: 1px solid #FEB2B2;
+}
+
+.hm-admin-btn-danger:hover {
+  background-color: #FED7D7;
+}
+
+.hm-admin-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.hm-admin-badge-success {
+  background-color: #E6F4EA;
+  color: #137333;
+}
+
+.hm-admin-badge-warning {
+  background-color: #FEF7E0;
+  color: #B06000;
+}
+
+.hm-admin-badge-danger {
+  background-color: #FCE8E6;
+  color: #C5221F;
+}
+
+.hm-admin-badge-neutral {
+  background-color: #F1F3F4;
+  color: #5F6368;
+}
+
+@media (max-width: 900px) {
+  .hm-admin-sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    transform: translateX(-100%);
+  }
+  .hm-admin-sidebar.open {
+    transform: translateX(0);
+  }
+}

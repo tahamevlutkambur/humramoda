@@ -1,0 +1,202 @@
+@import "./tokens.css";
+
+/* -------------------------------------------------------------
+ * RESET & FOUNDATION STYLES
+ * ------------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--hm-font-sans);
+  background-color: var(--hm-color-bg);
+  color: var(--hm-color-text-main);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* Links */
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: opacity var(--hm-transition-fast);
+}
+
+a:hover {
+  opacity: 0.75;
+}
+
+/* Images & Media */
+img, video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Form Controls & Buttons */
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  outline: none;
+}
+
+button {
+  cursor: pointer;
+  user-select: none;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+/* Accessible Focus States */
+:focus-visible {
+  outline: var(--hm-focus-ring);
+  outline-offset: var(--hm-focus-offset);
+}
+
+/* Tabular numbers for financial and numerical display */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* -------------------------------------------------------------
+ * REUSABLE LAYOUT UTILITIES
+ * ------------------------------------------------------------- */
+.hm-container {
+  width: 100%;
+  max-width: var(--hm-container-max);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--hm-space-5);
+  padding-right: var(--hm-space-5);
+}
+
+@media (min-width: 768px) {
+  .hm-container {
+    padding-left: var(--hm-space-10);
+    padding-right: var(--hm-space-10);
+  }
+}
+
+.hm-container-editorial {
+  width: 100%;
+  max-width: var(--hm-container-editorial);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--hm-space-5);
+  padding-right: var(--hm-space-5);
+}
+
+@media (min-width: 768px) {
+  .hm-container-editorial {
+    padding-left: var(--hm-space-8);
+    padding-right: var(--hm-space-8);
+  }
+}
+
+/* -------------------------------------------------------------
+ * RESPONSIVE HEADER & MOBILE NAVIGATION BREAKPOINTS
+ * ------------------------------------------------------------- */
+@media (min-width: 1024px) {
+  .hm-header-desktop-nav {
+    display: flex !important;
+  }
+  .hm-header-mobile-toggle {
+    display: none !important;
+  }
+  .hm-header-desktop-fav {
+    display: flex !important;
+  }
+  .hm-mobile-bottom-bar {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  body {
+    padding-bottom: 64px; /* Mobil alt barın içeriği örtmesini engelle */
+  }
+}
+
+/* -------------------------------------------------------------
+ * RESPONSIVE GRID & DETAIL LAYOUT UTILITIES
+ * ------------------------------------------------------------- */
+.hm-product-detail-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--hm-space-8);
+}
+
+@media (min-width: 992px) {
+  .hm-product-detail-layout {
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: var(--hm-space-12);
+  }
+}
+
+.hm-related-products-grid,
+.hm-catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--hm-space-4);
+}
+
+@media (min-width: 768px) {
+  .hm-catalog-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--hm-space-6);
+  }
+}
+
+@media (min-width: 1024px) {
+  .hm-catalog-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .hm-related-products-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--hm-space-6);
+  }
+}
+
+.hm-category-tiles-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--hm-space-4);
+}
+
+@media (min-width: 1024px) {
+  .hm-category-tiles-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--hm-space-6);
+  }
+}
+
+.hm-video-looks-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--hm-space-6);
+}
+
+@media (min-width: 640px) {
+  .hm-video-looks-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+

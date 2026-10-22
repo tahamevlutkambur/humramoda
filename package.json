@@ -1,0 +1,39 @@
+{
+  "name": "humra-moda",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Hümra Moda — Premium Turkish Fashion E-Commerce Platform",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "postinstall": "prisma generate",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:seed": "tsx prisma/seed.ts",
+    "media:process": "tsx scripts/process-images.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "next": "^16.4.2",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@types/heic-convert": "^2.1.1",
+    "@types/node": "^20.17.19",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "eslint": "^9.21.0",
+    "eslint-config-next": "^16.4.2",
+    "heic-convert": "^2.1.0",
+    "prisma": "^6.19.3",
+    "sharp": "^0.35.5",
+    "tsx": "^4.23.15",
+    "typescript": "^5.7.3",
+    "vitest": "^3.2.7"
+  }
+}
