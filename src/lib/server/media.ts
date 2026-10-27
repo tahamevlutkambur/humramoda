@@ -1,6 +1,10 @@
 import fs from "fs";
 import path from "path";
+import os from "os";
 import sharp from "sharp";
+
+export const mediaMemoryCache = new Map<string, { buffer: Buffer; mime: string }>();
+const TMP_UPLOADS_DIR = path.join(os.tmpdir(), "humramoda_uploads");
 
 export interface MediaUploadResult {
   url: string;
@@ -170,15 +174,32 @@ export async function processAndSaveUpload(
     return { error: "Video boyutu en fazla 60 MB olabilir." };
   }
 
-  // 3. Hedef dizini belirle
+  // 3. Hedef dizinleri belirle
   const uploadDir = path.join(
     process.cwd(),
     "public",
     "uploads",
     isVideo ? "videos" : "products"
   );
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+  const tmpUploadDir = path.join(
+    TMP_UPLOADS_DIR,
+    isVideo ? "videos" : "products"
+  );
+
+  try {
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+  } catch {
+    // Vercel serverless salt-okunur dosya sistemi
+  }
+
+  try {
+    if (!fs.existsSync(tmpUploadDir)) {
+      fs.mkdirSync(tmpUploadDir, { recursive: true });
+    }
+  } catch {
+    // ignore
   }
 
   const timestamp = Date.now();
@@ -187,45 +208,89 @@ export async function processAndSaveUpload(
   const nameWithoutExt = path.basename(safeName, ext);
 
   if (isImage) {
-    // Görselleri doğrudan optimize WebP olarak kaydet
-    const cardFileName = `${nameWithoutExt}-${timestamp}-card.webp`;
-    const thumbFileName = `${nameWithoutExt}-${timestamp}-thumb.webp`;
-
-    const cardPath = path.join(uploadDir, cardFileName);
-    const thumbPath = path.join(uploadDir, thumbFileName);
+    let cardBuffer: Buffer;
+    let thumbBuffer: Buffer;
+    let finalMime = "image/webp";
+    let finalExt = "webp";
 
     try {
       // 3:4 oranına uygun 640x853 vitrin boyutu
-      await sharp(buffer)
+      cardBuffer = await sharp(buffer)
         .resize(640, 853, { fit: "cover", position: "center" })
         .webp({ quality: 86 })
-        .toFile(cardPath);
+        .toBuffer();
 
       // 240x320 küçük resim (thumbnail) boyutu
-      await sharp(buffer)
+      thumbBuffer = await sharp(buffer)
         .resize(240, 320, { fit: "cover", position: "center" })
         .webp({ quality: 80 })
-        .toFile(thumbPath);
+        .toBuffer();
+    } catch (sharpErr) {
+      console.warn("Görsel sharp optimizasyonu yapılamadı, orijinal arabellek kullanılıyor:", sharpErr);
+      cardBuffer = buffer;
+      thumbBuffer = buffer;
+      finalMime = mime;
+      finalExt = mime === "image/png" ? "png" : mime === "image/jpeg" ? "jpg" : "webp";
+    }
+
+    const cardFileName = `${nameWithoutExt}-${timestamp}-card.${finalExt}`;
+    const thumbFileName = `${nameWithoutExt}-${timestamp}-thumb.${finalExt}`;
+
+    const cardPath = path.join(uploadDir, cardFileName);
+    const thumbPath = path.join(uploadDir, thumbFileName);
+    const tmpCardPath = path.join(tmpUploadDir, cardFileName);
+    const tmpThumbPath = path.join(tmpUploadDir, thumbFileName);
+
+    try {
+      // 1. Bellek içi önbelleğe ekle
+      mediaMemoryCache.set(cardFileName, { buffer: cardBuffer, mime: finalMime });
+      mediaMemoryCache.set(thumbFileName, { buffer: thumbBuffer, mime: finalMime });
+
+      // 2. /tmp dizinine yaz (Vercel serverless ortamında güvenli)
+      try {
+        fs.writeFileSync(tmpCardPath, cardBuffer);
+        fs.writeFileSync(tmpThumbPath, thumbBuffer);
+      } catch {
+        // ignore
+      }
+
+      // 3. Yerel geliştirme ortamında public dizinine yazmayı dene
+      try {
+        fs.writeFileSync(cardPath, cardBuffer);
+        fs.writeFileSync(thumbPath, thumbBuffer);
+      } catch {
+        // Vercel serverless salt okunur
+      }
 
       return {
         result: {
           url: `/uploads/products/${cardFileName}`,
           thumbnailUrl: `/uploads/products/${thumbFileName}`,
           fileName: cardFileName,
-          sizeBytes: buffer.length,
-          mimeType: "image/webp",
+          sizeBytes: cardBuffer.length,
+          mimeType: finalMime,
           mediaType: "IMAGE",
         },
       };
     } catch (err) {
-      console.error("Görsel işleme hatası:", err);
-      return { error: "Görsel işlenirken bir hata oluştu." };
+      console.error("Görsel kaydetme hatası:", err);
+      return { error: "Görsel kaydedilirken bir hata oluştu." };
     }
   } else {
-    // Video dosyasını kaydet (Fotoğraf dönüştürme işleminden KESİNLİKLE geçirilmez)
+    // Video dosyasını kaydet
     const videoFileName = `${nameWithoutExt}-${timestamp}.mp4`;
     const videoPath = path.join(uploadDir, videoFileName);
-    fs.writeFileSync(videoPath, buffer);
+    const tmpVideoPath = path.join(tmpUploadDir, videoFileName);
+
+    mediaMemoryCache.set(videoFileName, { buffer, mime: "video/mp4" });
+
+    try {
+      fs.writeFileSync(tmpVideoPath, buffer);
+    } catch {}
+
+    try {
+      fs.writeFileSync(videoPath, buffer);
+    } catch {}
 
     return {
       result: {

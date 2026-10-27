@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { getProducts, getAllCategories } from "@/lib/catalog";
 import { CatalogView } from "@/components/catalog/CatalogView";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: "Tüm Modeller & Koleksiyonlar",
   description:

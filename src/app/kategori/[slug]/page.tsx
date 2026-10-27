@@ -4,9 +4,12 @@ import {
   getCategoryBySlug,
   getProducts,
   getAllCategories,
-  CATEGORIES,
 } from "@/lib/catalog";
+import { getStoreData } from "@/lib/server/store";
 import { CatalogView } from "@/components/catalog/CatalogView";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 interface CategoryPageProps {
   params: Promise<{
@@ -14,21 +17,29 @@ interface CategoryPageProps {
   }>;
 }
 
-export async function generateStaticParams() {
-  return CATEGORIES.map((cat) => ({
-    slug: cat.slug,
-  }));
+function resolveCategory(slug: string) {
+  const decoded = decodeURIComponent(slug);
+  try {
+    const store = getStoreData();
+    const found = store.categories.find(
+      (c) => c.slug === decoded || c.id === decoded || c.slug.toLowerCase() === decoded.toLowerCase()
+    );
+    if (found) return found;
+  } catch {
+    // ignore
+  }
+  return getCategoryBySlug(decoded);
 }
 
 export async function generateMetadata({
   params,
 }: CategoryPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const category = getCategoryBySlug(slug);
+  const category = resolveCategory(slug);
 
   if (!category) {
     return {
-      title: "Kategori Bulunamadı | Hümra Moda",
+      title: "Kategori Bulunamadı | Hümra Butik",
     };
   }
 
@@ -46,13 +57,13 @@ export async function generateMetadata({
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = await params;
-  const category = getCategoryBySlug(slug);
+  const category = resolveCategory(slug);
 
   if (!category) {
     notFound();
   }
 
-  const products = getProducts({ categorySlug: slug });
+  const products = getProducts({ categorySlug: category.slug });
   const allCategories = getAllCategories();
 
   return (
