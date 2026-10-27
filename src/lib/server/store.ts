@@ -1268,8 +1268,34 @@ export function authenticateAdmin(
   email: string,
   pass: string
 ): { user?: Omit<AdminUser, "passwordHash">; error?: string } {
-  const store = getStoreData();
   const cleanEmail = email.toLowerCase().trim();
+
+  // Canlı / Vercel ortamında Environment Variables ile acil / dinamik giriş desteği
+  const envEmail = (process.env.ADMIN_INITIAL_EMAIL || "").toLowerCase().trim();
+  const envPassword = process.env.ADMIN_PASSWORD || process.env.ADMIN_INITIAL_PASSWORD;
+
+  if (
+    envPassword &&
+    envPassword.length >= 10 &&
+    (cleanEmail === envEmail || cleanEmail === "humramoda@eyup.com" || cleanEmail === "admin@humramoda.com" || cleanEmail === "admin@humramoda.local")
+  ) {
+    const a = Buffer.from(pass);
+    const b = Buffer.from(envPassword);
+    if (a.length === b.length && crypto.timingSafeEqual(a, b)) {
+      return {
+        user: {
+          id: "admin-env",
+          email: cleanEmail,
+          fullName: "Hümra Moda Yöneticisi",
+          role: "ADMIN",
+          isActive: true,
+          createdAt: new Date().toISOString(),
+        },
+      };
+    }
+  }
+
+  const store = getStoreData();
   const admin = store.adminUsers.find((u) => u.email === cleanEmail && u.isActive);
 
   if (!admin) {
