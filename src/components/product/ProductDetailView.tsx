@@ -62,7 +62,7 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
     "@type": "Product",
     name: product.title,
     description: product.description,
-    image: colorMedia.map((m) => (m.url.startsWith("http") ? m.url : `https://humramoda.com${m.url}`)),
+    image: colorMedia.map((m) => (m.url.startsWith("http") ? m.url : `https://humrabutik.com${m.url}`)),
     offers: {
       "@type": "Offer",
       priceCurrency: "TRY",
@@ -71,7 +71,7 @@ export function ProductDetailView({ product, relatedProducts }: ProductDetailVie
         product.variants.some((v) => v.stockQuantity > 0)
           ? "https://schema.org/InStock"
           : "https://schema.org/OutOfStock",
-      url: `https://humramoda.com/urun/${product.slug}`,
+      url: `https://humrabutik.com/urun/${product.slug}`,
     },
   };
 

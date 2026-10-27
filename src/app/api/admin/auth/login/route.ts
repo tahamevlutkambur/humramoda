@@ -86,8 +86,9 @@ export async function POST(req: Request) {
     return response;
   } catch (err) {
     console.error("Admin login error:", err);
+    const msg = err instanceof Error ? err.message : "Sunucu hatası oluştu. Lütfen tekrar deneyiniz.";
     return NextResponse.json(
-      { error: "Sunucu hatası oluştu. Lütfen tekrar deneyiniz." },
+      { error: msg },
       { status: 500 }
     );
   }

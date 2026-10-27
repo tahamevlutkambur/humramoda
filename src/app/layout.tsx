@@ -20,23 +20,26 @@ const playfairDisplay = Playfair_Display({
   variable: "--hm-font-display-loaded",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://humrabutik.com";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://humramoda.com"),
+  metadataBase: new URL(siteUrl),
   title: {
-    default: "Hümra Moda — Zamansız Kadın Giyim & Modern Koleksiyonlar",
-    template: "%s | Hümra Moda",
+    default: "Hümra Butik — Zamansız Kadın Giyim & Modern Koleksiyonlar",
+    template: "%s | Hümra Butik",
   },
   description:
-    "Hümra Moda: Seçkin kadın giyim, ikili takımlar ve zamansız koleksiyonlar. Premium kumaş kalitesi ve modern kalıplarla güvenli alışveriş.",
+    "Hümra Butik: Seçkin kadın giyim, ikili takımlar ve zamansız koleksiyonlar. Premium kumaş kalitesi ve modern kalıplarla güvenli alışveriş.",
   robots: {
     index: true,
     follow: true,
   },
   openGraph: {
-    title: "Hümra Moda",
+    title: "Hümra Butik",
     description: "Seçkin kadın giyim ve modern koleksiyonlar.",
     locale: "tr_TR",
     type: "website",
+    url: siteUrl,
   },
 };
 

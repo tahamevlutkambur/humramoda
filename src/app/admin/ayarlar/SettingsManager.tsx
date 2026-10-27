@@ -422,13 +422,161 @@ export function SettingsManager({
             </div>
           </div>
 
+          {/* PayTR Sanal POS Ayarları */}
+          <div
+            style={{
+              marginTop: "2rem",
+              marginBottom: "1.5rem",
+              padding: "1.25rem",
+              backgroundColor: "#F8FAFC",
+              borderRadius: "8px",
+              border: "1px solid #E2E8F0",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "1rem",
+                flexWrap: "wrap",
+                gap: "0.5rem",
+              }}
+            >
+              <div>
+                <h3 style={{ fontSize: "1rem", fontWeight: 700, margin: 0, color: "#1E293B" }}>
+                  💳 PayTR Sanal POS Entegrasyonu
+                </h3>
+                <p style={{ margin: "2px 0 0 0", fontSize: "0.8125rem", color: "#64748B" }}>
+                  PayTR başvurunuz onaylandığında mağaza panelinizden aldığınız API anahtarlarını buraya giriniz.
+                </p>
+              </div>
+              <span
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  padding: "0.25rem 0.6rem",
+                  borderRadius: "999px",
+                  backgroundColor: settings.paytr?.merchantId ? "#DCFCE7" : "#FEF3C7",
+                  color: settings.paytr?.merchantId ? "#166534" : "#92400E",
+                }}
+              >
+                {settings.paytr?.merchantId ? "✓ Anahtarlar Tanımlı" : "⏳ Onay / Anahtar Bekleniyor"}
+              </span>
+            </div>
+
+            <div
+              style={{
+                backgroundColor: "#EFF6FF",
+                border: "1px solid #BFDBFE",
+                borderRadius: "6px",
+                padding: "0.75rem 1rem",
+                marginBottom: "1rem",
+                fontSize: "0.8125rem",
+                color: "#1E40AF",
+              }}
+            >
+              <strong>📌 PayTR Bildirim URL (Callback URL):</strong>
+              <div
+                style={{
+                  fontFamily: "monospace",
+                  fontSize: "0.875rem",
+                  marginTop: "4px",
+                  backgroundColor: "#DBEAFE",
+                  padding: "4px 8px",
+                  borderRadius: "4px",
+                  wordBreak: "break-all",
+                }}
+              >
+                https://humrabutik.com/api/payments/paytr/callback
+              </div>
+              <span style={{ fontSize: "0.75rem", marginTop: "4px", display: "block" }}>
+                * PayTR Mağaza Panelinde <em>Ayarlar &gt; Bildirim URL Ayarları</em> kısmına bu adresi ekleyiniz.
+              </span>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+                gap: "1rem",
+                marginBottom: "0.5rem",
+              }}
+            >
+              <div>
+                <label className="hm-admin-label">PayTR Mağaza No (Merchant ID)</label>
+                <input
+                  type="text"
+                  placeholder="Örn: 123456"
+                  value={settings.paytr?.merchantId || ""}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      paytr: { ...(settings.paytr || {}), merchantId: e.target.value.trim() },
+                    })
+                  }
+                  className="hm-admin-input"
+                />
+              </div>
+
+              <div>
+                <label className="hm-admin-label">PayTR Mağaza Parolası (Merchant Key)</label>
+                <input
+                  type="password"
+                  placeholder="••••••••••••••••"
+                  value={settings.paytr?.merchantKey || ""}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      paytr: { ...(settings.paytr || {}), merchantKey: e.target.value.trim() },
+                    })
+                  }
+                  className="hm-admin-input"
+                />
+              </div>
+
+              <div>
+                <label className="hm-admin-label">PayTR Gizli Anahtar (Merchant Salt)</label>
+                <input
+                  type="password"
+                  placeholder="••••••••••••••••"
+                  value={settings.paytr?.merchantSalt || ""}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      paytr: { ...(settings.paytr || {}), merchantSalt: e.target.value.trim() },
+                    })
+                  }
+                  className="hm-admin-input"
+                />
+              </div>
+
+              <div>
+                <label className="hm-admin-label">Çalışma Modu</label>
+                <select
+                  value={settings.paytr?.testMode || "1"}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      paytr: { ...(settings.paytr || {}), testMode: e.target.value as "0" | "1" },
+                    })
+                  }
+                  className="hm-admin-select"
+                >
+                  <option value="1">🧪 Test Modu (Sanal Ödeme Denemesi)</option>
+                  <option value="0">🚀 Canlı Üretim Modu (Gerçek Kart Çekimi)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
             <button
               type="submit"
               className="hm-admin-btn hm-admin-btn-primary"
               disabled={settingsLoading}
             >
-              {settingsLoading ? "Kaydediliyor..." : "Mağaza Ayarlarını Kaydet"}
+              {settingsLoading ? "Kaydediliyor..." : "Tüm Ayarları Kaydet"}
             </button>
           </div>
         </form>

@@ -35,15 +35,20 @@ export interface PayTRConfig {
  * Ortam değişkenlerinden PayTR yapılandırmasını güvenle okur.
  */
 export function getPayTRConfig(): PayTRConfig {
-  const merchantId = (process.env.PAYTR_MERCHANT_ID || "").trim();
-  const merchantKey = (process.env.PAYTR_MERCHANT_KEY || "").trim();
-  const merchantSalt = (process.env.PAYTR_MERCHANT_SALT || "").trim();
-  const testMode = (process.env.PAYTR_TEST_MODE || "1").trim();
-  const debugOn = (process.env.PAYTR_DEBUG_ON || "1").trim();
+  const store = getStoreData();
+  const paytrSettings = store.settings?.paytr;
+
+  const merchantId = (process.env.PAYTR_MERCHANT_ID || paytrSettings?.merchantId || "").trim();
+  const merchantKey = (process.env.PAYTR_MERCHANT_KEY || paytrSettings?.merchantKey || "").trim();
+  const merchantSalt = (process.env.PAYTR_MERCHANT_SALT || paytrSettings?.merchantSalt || "").trim();
+  const testMode = (process.env.PAYTR_TEST_MODE || paytrSettings?.testMode || "1").trim();
+  const debugOn = (process.env.PAYTR_DEBUG_ON || paytrSettings?.debugOn || "1").trim();
   const appBaseUrl = (
     process.env.NEXT_PUBLIC_APP_URL ||
     process.env.APP_BASE_URL ||
-    "http://localhost:3000"
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "") ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
+    "https://humrabutik.com"
   ).replace(/\/$/, "");
 
   // Örnek / şablon anahtarlar gerçek yapılandırma sayılmaz
