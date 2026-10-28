@@ -135,7 +135,14 @@
     "taxOffice": "Beşiktaş Vergi Dairesi [Doğrulama Bekliyor]",
     "taxNumber": "[Vergi No: Panelden Tanımlanacak]",
     "mersisNumber": "[Mersis No: Panelden Tanımlanacak]",
-    "kepAddress": "[KEP Adresi: Opsiyonel]"
+    "kepAddress": "[KEP Adresi: Opsiyonel]",
+    "paytr": {
+      "merchantId": "768079",
+      "merchantKey": "D3gr1fBEUkkgjRaR",
+      "merchantSalt": "mzAPqkRnYqakr2Qo",
+      "testMode": "1",
+      "debugOn": "1"
+    }
   },
   "campaigns": [
     {

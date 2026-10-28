@@ -406,6 +406,13 @@ const DEFAULT_SETTINGS: StoreSettings = {
   taxNumber: "[Vergi No: Panelden Tanımlanacak]",
   mersisNumber: "[Mersis No: Panelden Tanımlanacak]",
   kepAddress: "[KEP Adresi: Opsiyonel]",
+  paytr: {
+    merchantId: "768079",
+    merchantKey: "D3gr1fBEUkkgjRaR",
+    merchantSalt: "mzAPqkRnYqakr2Qo",
+    testMode: "1",
+    debugOn: "1",
+  },
 };
 
 const DEFAULT_CAMPAIGNS: CampaignItem[] = [
@@ -649,7 +656,14 @@ export function getStoreData(): AppStoreData {
       collections: parsed.collections !== undefined && Array.isArray(parsed.collections) ? parsed.collections : COLLECTIONS,
       featuredVideos: parsed.featuredVideos || FEATURED_VIDEOS,
       homepageContent: { ...DEFAULT_HOMEPAGE_CONTENT, ...(parsed.homepageContent || {}) },
-      settings: { ...DEFAULT_SETTINGS, ...(parsed.settings || {}) },
+      settings: {
+        ...DEFAULT_SETTINGS,
+        ...(parsed.settings || {}),
+        paytr: {
+          ...DEFAULT_SETTINGS.paytr,
+          ...(parsed.settings?.paytr || {}),
+        },
+      },
       campaigns: parsed.campaigns || DEFAULT_CAMPAIGNS,
       adminUsers: loadedAdminUsers,
       orders: parsed.orders !== undefined && Array.isArray(parsed.orders) ? parsed.orders : DEFAULT_ORDERS,

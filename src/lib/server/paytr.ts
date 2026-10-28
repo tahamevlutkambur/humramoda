@@ -38,9 +38,21 @@ export function getPayTRConfig(): PayTRConfig {
   const store = getStoreData();
   const paytrSettings = store.settings?.paytr;
 
-  const merchantId = (process.env.PAYTR_MERCHANT_ID || paytrSettings?.merchantId || "").trim();
-  const merchantKey = (process.env.PAYTR_MERCHANT_KEY || paytrSettings?.merchantKey || "").trim();
-  const merchantSalt = (process.env.PAYTR_MERCHANT_SALT || paytrSettings?.merchantSalt || "").trim();
+  const merchantId = (
+    process.env.PAYTR_MERCHANT_ID ||
+    paytrSettings?.merchantId ||
+    "768079"
+  ).trim();
+  const merchantKey = (
+    process.env.PAYTR_MERCHANT_KEY ||
+    paytrSettings?.merchantKey ||
+    "D3gr1fBEUkkgjRaR"
+  ).trim();
+  const merchantSalt = (
+    process.env.PAYTR_MERCHANT_SALT ||
+    paytrSettings?.merchantSalt ||
+    "mzAPqkRnYqakr2Qo"
+  ).trim();
   const testMode = (process.env.PAYTR_TEST_MODE || paytrSettings?.testMode || "1").trim();
   const debugOn = (process.env.PAYTR_DEBUG_ON || paytrSettings?.debugOn || "1").trim();
   const appBaseUrl = (
@@ -201,39 +213,59 @@ export async function requestPayTRIFrameToken(
     testMode: config.testMode,
   });
 
-  const postParams = new URLSearchParams({
-    merchant_id: config.merchantId,
-    user_ip: cleanUserIp,
-    merchant_oid: alphanumericOid,
-    email: order.customerEmail,
-    payment_amount: String(paymentAmountKurus),
-    paytr_token: paytrToken,
-    user_basket: userBasketBase64,
-    debug_on: config.debugOn,
-    no_installment: "0",
-    max_installment: "0",
-    user_name: order.customerFullName,
-    user_address: `${order.shippingAddress.fullAddress} ${order.shippingAddress.district}/${order.shippingAddress.city}`,
-    user_phone: order.customerPhone,
-    merchant_ok_url: `${config.appBaseUrl}/odeme/basarili?orderNumber=${encodeURIComponent(order.orderNumber)}`,
-    merchant_fail_url: `${config.appBaseUrl}/odeme/basarisiz?orderNumber=${encodeURIComponent(order.orderNumber)}`,
-    timeout_limit: "30",
-    currency: "TL",
-    test_mode: config.testMode,
-  });
+  const buildPostParams = (baseUrl: string) =>
+    new URLSearchParams({
+      merchant_id: config.merchantId,
+      user_ip: cleanUserIp,
+      merchant_oid: alphanumericOid,
+      email: order.customerEmail,
+      payment_amount: String(paymentAmountKurus),
+      paytr_token: paytrToken,
+      user_basket: userBasketBase64,
+      debug_on: config.debugOn,
+      no_installment: "0",
+      max_installment: "0",
+      user_name: order.customerFullName,
+      user_address: `${order.shippingAddress.fullAddress} ${order.shippingAddress.district}/${order.shippingAddress.city}`,
+      user_phone: order.customerPhone,
+      merchant_ok_url: `${baseUrl}/odeme/basarili?orderNumber=${encodeURIComponent(order.orderNumber)}`,
+      merchant_fail_url: `${baseUrl}/odeme/basarisiz?orderNumber=${encodeURIComponent(order.orderNumber)}`,
+      timeout_limit: "30",
+      currency: "TL",
+      test_mode: config.testMode,
+    });
 
   try {
-    const response = await fetch("https://www.paytr.com/odeme/api/get-token", {
+    let response = await fetch("https://www.paytr.com/odeme/api/get-token", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: postParams.toString(),
+      body: buildPostParams(config.appBaseUrl).toString(),
       // 15 saniye zaman aşımı
       signal: AbortSignal.timeout(15000),
     });
 
-    const data = await response.json();
+    let data = await response.json();
+
+    // Eğer PayTR'de kayıtlı site adresi henüz humramoda.vercel.app ise ve domain uyuşmazlığı dönerse otomatik yedek adresle tekrar dene
+    if (
+      data.status !== "success" &&
+      config.appBaseUrl !== "https://humramoda.vercel.app"
+    ) {
+      const retryRes = await fetch("https://www.paytr.com/odeme/api/get-token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: buildPostParams("https://humramoda.vercel.app").toString(),
+        signal: AbortSignal.timeout(15000),
+      });
+      const retryData = await retryRes.json();
+      if (retryData.status === "success" && retryData.token) {
+        data = retryData;
+      }
+    }
 
     if (data.status === "success" && data.token) {
       return {
