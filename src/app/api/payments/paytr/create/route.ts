@@ -1,14 +1,19 @@
 import { NextResponse } from "next/server";
-import { createPendingOrder } from "@/lib/server/store";
+import { createPendingOrder, getStoreData, syncStoreSnapshot } from "@/lib/server/store";
+import { getPersistentStoreData, savePersistentStoreData } from "@/lib/server/persistent-store";
 import { requestPayTRIFrameToken } from "@/lib/server/paytr";
 import { logAdminAudit, logSiteActivity } from "@/lib/server/logger";
 
 export async function POST(req: Request) {
   try {
+    await getPersistentStoreData().catch(() => {});
     const body = await req.json();
+    if (body?._snapshot && typeof body._snapshot === "object") {
+      syncStoreSnapshot({ ...body._snapshot, _mergeOnly: true });
+    }
     const { customer, items, campaignCode } = body;
 
-    const forwardedFor = req.headers.get("x-forwarded-for");
+    const forwardedFor = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip");
     const clientIp = forwardedFor ? forwardedFor.split(",")[0].trim() : "127.0.0.1";
 
     // 1. Sunucu tarafında siparişi ve tutarları doğrula, taslak sipariş oluştur
@@ -24,6 +29,8 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
+    await savePersistentStoreData(getStoreData()).catch(() => {});
 
     const order = orderResult.order;
 

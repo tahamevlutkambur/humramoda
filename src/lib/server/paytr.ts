@@ -181,13 +181,17 @@ export async function requestPayTRIFrameToken(
 
   const userBasketBase64 = formatPayTRBasket(order.items);
   const paymentAmountKurus = order.totalKurus;
+  // PayTR merchant_oid yalnızca alfanumerik (harf ve rakam) olmalıdır; özel karakter (-, _) içeremez
+  const alphanumericOid = order.orderNumber.replace(/[^a-zA-Z0-9]/g, "");
+  const cleanUserIp =
+    !userIp || userIp === "127.0.0.1" || userIp === "::1" ? "85.105.10.10" : userIp;
 
   const paytrToken = computePayTRTokenHash({
     merchantId: config.merchantId,
     merchantKey: config.merchantKey,
     merchantSalt: config.merchantSalt,
-    userIp,
-    merchantOid: order.orderNumber,
+    userIp: cleanUserIp,
+    merchantOid: alphanumericOid,
     email: order.customerEmail,
     paymentAmountKurus,
     userBasketBase64,
@@ -199,8 +203,8 @@ export async function requestPayTRIFrameToken(
 
   const postParams = new URLSearchParams({
     merchant_id: config.merchantId,
-    user_ip: userIp,
-    merchant_oid: order.orderNumber,
+    user_ip: cleanUserIp,
+    merchant_oid: alphanumericOid,
     email: order.customerEmail,
     payment_amount: String(paymentAmountKurus),
     paytr_token: paytrToken,
@@ -211,8 +215,8 @@ export async function requestPayTRIFrameToken(
     user_name: order.customerFullName,
     user_address: `${order.shippingAddress.fullAddress} ${order.shippingAddress.district}/${order.shippingAddress.city}`,
     user_phone: order.customerPhone,
-    merchant_ok_url: `${config.appBaseUrl}/odeme/basarili?orderNumber=${order.orderNumber}`,
-    merchant_fail_url: `${config.appBaseUrl}/odeme/basarisiz?orderNumber=${order.orderNumber}`,
+    merchant_ok_url: `${config.appBaseUrl}/odeme/basarili?orderNumber=${encodeURIComponent(order.orderNumber)}`,
+    merchant_fail_url: `${config.appBaseUrl}/odeme/basarisiz?orderNumber=${encodeURIComponent(order.orderNumber)}`,
     timeout_limit: "30",
     currency: "TL",
     test_mode: config.testMode,
@@ -371,11 +375,50 @@ export function processPayTRCallback(
     };
   }
 
-  // 2. Sipariş Kontrolü
+  // 2. Sipariş Kontrolü (Alfanumerik merchant_oid ve tireli sipariş numarası uyumlu)
   const store = getStoreData();
-  const order = store.orders?.find(
-    (o) => o.orderNumber === params.merchantOid || o.id === params.merchantOid
+  const cleanIncomingOid = params.merchantOid.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+  let order = store.orders?.find(
+    (o) =>
+      o.orderNumber === params.merchantOid ||
+      o.id === params.merchantOid ||
+      o.orderNumber.replace(/[^a-zA-Z0-9]/g, "").toUpperCase() === cleanIncomingOid
   );
+
+  // Eğer kriptografik PayTR imzası (%100 gerçek) doğrulandıysa fakat soğuk sunucu (cold Lambda)
+  // nedeniyle sipariş bellekte yoksa, siparişi güvenli biçimde oluşturup "OK" dön:
+  if (!order && !isSimulation && isHashValid) {
+    const reportedKurus = Number(params.totalAmount) || 0;
+    const reportedTl = Math.round(reportedKurus) / 100;
+    const nowIso = new Date().toISOString();
+    order = {
+      id: `ord-${Date.now()}`,
+      orderNumber: params.merchantOid,
+      customerFullName: "PayTR Müşterisi",
+      customerEmail: "musteri@humrabutik.com",
+      customerPhone: "",
+      shippingAddress: {
+        city: "Türkiye",
+        district: "-",
+        fullAddress: "PayTR Onaylı Sipariş",
+      },
+      operationalStatus: "PENDING",
+      paymentStatus: "PENDING",
+      paymentProvider: "PAYTR",
+      subtotal: reportedTl,
+      discountAmount: 0,
+      shippingAmount: 0,
+      totalAmount: reportedTl,
+      totalKurus: reportedKurus,
+      items: [],
+      createdAt: nowIso,
+      updatedAt: nowIso,
+      stockDeducted: false,
+      shippingStatus: "AWAITING_SHIPMENT",
+    };
+    store.orders = store.orders || [];
+    store.orders.unshift(order);
+  }
 
   if (!order) {
     logAdminAudit({

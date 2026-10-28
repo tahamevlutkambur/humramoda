@@ -119,7 +119,17 @@ export default function CheckoutPage() {
     setSubmitting(true);
 
     try {
+      const cartProductsMetadata = items.map((it) => ({
+        ...it.product,
+        media: [],
+        _mediaTruncated: true,
+      }));
+
       const orderPayload = {
+        _snapshot: {
+          updatedAt: Date.now(),
+          products: cartProductsMetadata,
+        },
         customer: formData,
         items: items.map((it) => {
           const variant =

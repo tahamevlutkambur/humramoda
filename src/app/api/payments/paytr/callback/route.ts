@@ -1,4 +1,6 @@
 import { processPayTRCallback } from "@/lib/server/paytr";
+import { getStoreData } from "@/lib/server/store";
+import { getPersistentStoreData, savePersistentStoreData } from "@/lib/server/persistent-store";
 
 /**
  * PayTR 2. Adım: Sunucu-Sunucu Callback Webhook Uç Noktası
@@ -11,7 +13,8 @@ import { processPayTRCallback } from "@/lib/server/paytr";
  */
 export async function POST(req: Request) {
   try {
-    const forwardedFor = req.headers.get("x-forwarded-for");
+    await getPersistentStoreData().catch(() => {});
+    const forwardedFor = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip");
     const clientIp = forwardedFor ? forwardedFor.split(",")[0].trim() : "127.0.0.1";
 
     const contentType = req.headers.get("content-type") || "";
@@ -59,6 +62,10 @@ export async function POST(req: Request) {
       },
       clientIp
     );
+
+    if (result.ok) {
+      await savePersistentStoreData(getStoreData()).catch(() => {});
+    }
 
     return new Response(result.statusText, {
       status: result.httpStatus,
