@@ -10,6 +10,10 @@ import {
   saveClientStoreSnapshot,
   fetchSharedStore,
   subscribeStoreChanges,
+  compressImageBeforeUpload,
+  safeParseJsonResponse,
+  getCompactSnapshotForRequest,
+  optimizeDataUrlIfLarge,
 } from "@/lib/client-store-sync";
 
 interface ProductEditorProps {
@@ -408,7 +412,8 @@ export function ProductEditor({
 
     try {
       for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+        const rawFile = files[i];
+        const file = await compressImageBeforeUpload(rawFile);
         const formData = new FormData();
         formData.append("file", file);
 
@@ -417,7 +422,7 @@ export function ProductEditor({
           body: formData,
         });
 
-        const data = await res.json();
+        const data = await safeParseJsonResponse(res);
         if (!res.ok || !data.media) {
           throw new Error(data.error || "Görsel yüklenemedi.");
         }
@@ -517,16 +522,29 @@ export function ProductEditor({
         : [{ name: "Standart", displayOrder: 1 }];
 
       const targetUpdateId = resolvedId || productId || initialProduct?.id || "";
-      const currentSnapshot = getClientStoreSnapshot() || {
+      const rawSnapshot = getClientStoreSnapshot() || {
         updatedAt: Date.now(),
         categories,
         collections,
         products: initialProduct ? [initialProduct] : [],
       };
+      const compactSnapshot = getCompactSnapshotForRequest(rawSnapshot, targetUpdateId);
+
+      // Recompress any heavy existing base64 images & avoid duplicating thumbnailUrl in JSON
+      const compactMedia = await Promise.all(
+        media.map(async (m) => {
+          const optimizedUrl = await optimizeDataUrlIfLarge(m.url);
+          return {
+            ...m,
+            url: optimizedUrl,
+            thumbnailUrl: optimizedUrl.startsWith("data:") ? "" : m.thumbnailUrl || optimizedUrl,
+          };
+        })
+      );
 
       const payload = {
         ...(isNew ? {} : { id: targetUpdateId }),
-        _snapshot: currentSnapshot,
+        _snapshot: compactSnapshot,
         title: title.trim(),
         slug: slug.trim() || undefined,
         description,
@@ -541,7 +559,7 @@ export function ProductEditor({
         colors: activeColors,
         sizes: computedSizes,
         variants: activeVariants,
-        media,
+        media: compactMedia,
       };
 
       const url = "/api/admin/products";
@@ -553,22 +571,23 @@ export function ProductEditor({
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      const data = await safeParseJsonResponse(res);
       if (!res.ok) {
         throw new Error(data.error || "Ürün kaydedilemedi.");
       }
 
       saveClientStoreSnapshot({
         updatedAt: data.updatedAt,
+        editedProductId: data.product?.id || targetUpdateId,
         products: Array.isArray(data.products)
           ? data.products
           : data.product
           ? isNew
-            ? [data.product, ...(currentSnapshot.products || [])]
-            : (currentSnapshot.products || []).map((p) =>
+            ? [data.product, ...(rawSnapshot.products || [])]
+            : (rawSnapshot.products || []).map((p) =>
                 p.id === data.product.id ? data.product : p
               )
-          : currentSnapshot.products,
+          : rawSnapshot.products,
         categories: Array.isArray(data.categories) ? data.categories : categories,
         collections: Array.isArray(data.collections) ? data.collections : collections,
         bumpVersion: true,

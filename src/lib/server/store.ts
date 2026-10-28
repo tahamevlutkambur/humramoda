@@ -755,22 +755,46 @@ export function syncStoreSnapshot(snapshot: {
   products?: ProductItem[];
   categories?: CategoryItem[];
   collections?: CollectionItem[];
+  _mergeOnly?: boolean;
 }): AppStoreData {
   const store = getStoreData();
   const incomingTime = typeof snapshot.updatedAt === "number" ? snapshot.updatedAt : 0;
   const currentTime = store.updatedAt || 0;
 
-  if (incomingTime > currentTime) {
-    if (Array.isArray(snapshot.products)) {
-      store.products = snapshot.products;
+  if (incomingTime > currentTime || snapshot._mergeOnly) {
+    if (Array.isArray(snapshot.products) && snapshot.products.length > 0) {
+      const existingById = new Map(store.products.map((p) => [p.id, p]));
+      const mergedProducts: ProductItem[] = snapshot.products.map((incomingProd) => {
+        const existing = existingById.get(incomingProd.id);
+        existingById.delete(incomingProd.id);
+        if (
+          existing &&
+          existing.media &&
+          existing.media.length > (incomingProd.media?.length || 0)
+        ) {
+          return { ...incomingProd, media: existing.media };
+        }
+        return incomingProd;
+      });
+      // Preserve any existing server products that were not in a partial chunk
+      for (const leftover of existingById.values()) {
+        mergedProducts.push(leftover);
+      }
+      store.products = mergedProducts;
     }
     if (Array.isArray(snapshot.categories) && snapshot.categories.length > 0) {
-      store.categories = snapshot.categories;
+      const existingCats = new Map(store.categories.map((c) => [c.id, c]));
+      for (const c of snapshot.categories) {
+        existingCats.set(c.id, c);
+      }
+      store.categories = Array.from(existingCats.values());
     }
     if (Array.isArray(snapshot.collections) && snapshot.collections.length > 0) {
       store.collections = snapshot.collections;
     }
-    store.updatedAt = incomingTime;
+    if (incomingTime > currentTime) {
+      store.updatedAt = incomingTime;
+    }
     usePersistentStoreData(store);
   }
   return store;
@@ -1048,7 +1072,7 @@ export function createStoreProduct(input: CreateProductInput): { product?: Produ
       colorId,
       type: m.type || ("IMAGE" as const),
       url: m.url,
-      thumbnailUrl: m.thumbnailUrl || m.url,
+      thumbnailUrl: m.url?.startsWith("data:") ? "" : m.thumbnailUrl || m.url,
       altText: m.altText || `${input.title} görseli`,
       isThumbnail: m.isThumbnail || idx === 0,
       displayOrder: idx + 1,
@@ -1097,7 +1121,7 @@ export function updateStoreProduct(
   const lower = trimmed.toLowerCase();
   const decodedLower = decoded.toLowerCase();
 
-  const index = store.products.findIndex(
+  let index = store.products.findIndex(
     (p) =>
       p.id === trimmed ||
       p.slug === trimmed ||
@@ -1108,6 +1132,32 @@ export function updateStoreProduct(
       p.slug.toLowerCase() === decodedLower
   );
   if (index === -1) {
+    if (input.title && input.basePrice) {
+      const created = createStoreProduct({
+        title: input.title,
+        slug: input.slug,
+        description: input.description || "",
+        fabricDetails: input.fabricDetails,
+        modelDimensions: input.modelDimensions,
+        basePrice: Number(input.basePrice),
+        discountPrice: input.discountPrice,
+        costPrice: input.costPrice,
+        badge: input.badge,
+        categorySlug: input.categorySlug || store.categories[0]?.slug || "takim",
+        collectionSlugs: input.collectionSlugs,
+        colors: input.colors || [{ name: "Siyah", colorCode: "#141414" }],
+        sizes: input.sizes || ["Standart"],
+        variants: input.variants || [],
+        media: input.media || [],
+      });
+      if (created.product) {
+        if (decoded.startsWith("prod-")) {
+          created.product.id = decoded;
+        }
+        saveStoreData(store);
+        return { product: created.product };
+      }
+    }
     return { error: "Güncellenecek ürün bulunamadı." };
   }
 
@@ -1327,7 +1377,7 @@ export function updateStoreProduct(
         colorId,
         type: m.type || "IMAGE",
         url: m.url,
-        thumbnailUrl: m.thumbnailUrl || m.url,
+        thumbnailUrl: m.url?.startsWith("data:") ? "" : m.thumbnailUrl || m.url,
         altText: m.altText || `${current.title} görseli`,
         isThumbnail: m.isThumbnail || idx === 0,
         displayOrder: idx + 1,

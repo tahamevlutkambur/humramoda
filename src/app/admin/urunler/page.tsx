@@ -10,6 +10,8 @@ import {
   saveClientStoreSnapshot,
   fetchSharedStore,
   subscribeStoreChanges,
+  getCompactSnapshotForRequest,
+  safeParseJsonResponse,
 } from "@/lib/client-store-sync";
 
 export default function AdminProductsPage() {
@@ -56,12 +58,13 @@ export default function AdminProductsPage() {
     setIsDeleting(true);
 
     try {
-      const currentSnapshot = getClientStoreSnapshot() || {
+      const rawSnapshot = getClientStoreSnapshot() || {
         updatedAt: Date.now(),
         products,
         categories: [],
         collections: [],
       };
+      const currentSnapshot = getCompactSnapshotForRequest(rawSnapshot);
       const res = await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
@@ -72,7 +75,7 @@ export default function AdminProductsPage() {
         }),
       });
       if (res.ok) {
-        const data = await res.json().catch(() => null);
+        const data = await safeParseJsonResponse(res);
         const nextProducts: ProductItem[] =
           data && Array.isArray(data.products)
             ? data.products
@@ -80,6 +83,7 @@ export default function AdminProductsPage() {
         setProducts(nextProducts);
         saveClientStoreSnapshot({
           updatedAt: data?.updatedAt,
+          deletedProductId: id,
           products: nextProducts,
           categories: data?.categories,
           collections: data?.collections,

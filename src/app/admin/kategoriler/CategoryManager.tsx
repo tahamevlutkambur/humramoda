@@ -9,6 +9,9 @@ import {
   saveClientStoreSnapshot,
   fetchSharedStore,
   subscribeStoreChanges,
+  compressImageBeforeUpload,
+  safeParseJsonResponse,
+  getCompactSnapshotForRequest,
 } from "@/lib/client-store-sync";
 
 interface CategoryManagerProps {
@@ -69,13 +72,14 @@ export function CategoryManager({
   const categoryFileInputRef = useRef<HTMLInputElement>(null);
 
   const handleCategoryFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const rawFile = e.target.files?.[0];
+    if (!rawFile) return;
 
     setUploadingImage(true);
     setErrorMsg("");
 
     try {
+      const file = await compressImageBeforeUpload(rawFile);
       const formData = new FormData();
       formData.append("file", file);
 
@@ -84,7 +88,7 @@ export function CategoryManager({
         body: formData,
       });
 
-      const data = await res.json();
+      const data = await safeParseJsonResponse(res);
       if (!res.ok || !data.media) {
         throw new Error(data.error || "Görsel yüklenemedi.");
       }
@@ -131,12 +135,13 @@ export function CategoryManager({
     setSuccessMsg("");
 
     try {
-      const currentSnapshot = getClientStoreSnapshot() || {
+      const rawSnapshot = getClientStoreSnapshot() || {
         updatedAt: Date.now(),
         categories,
         products,
         collections: [],
       };
+      const currentSnapshot = getCompactSnapshotForRequest(rawSnapshot);
 
       const payload = {
         _entity: "category",
@@ -154,7 +159,7 @@ export function CategoryManager({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...payload, id: editingId }),
         });
-        const data = await res.json();
+        const data = await safeParseJsonResponse(res);
         if (!res.ok) {
           throw new Error(data.error || "Güncelleme başarısız.");
         }
@@ -183,7 +188,7 @@ export function CategoryManager({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        const data = await res.json();
+        const data = await safeParseJsonResponse(res);
         if (!res.ok) {
           throw new Error(data.error || "Kategori oluşturulamadı.");
         }
@@ -251,12 +256,13 @@ export function CategoryManager({
     try {
       const targetId = cat.id || cat.slug;
       const reassignQuery = reassignTo ? `&reassignTo=${encodeURIComponent(reassignTo)}` : "";
-      const currentSnapshot = getClientStoreSnapshot() || {
+      const rawSnapshot = getClientStoreSnapshot() || {
         updatedAt: Date.now(),
         categories,
         products,
         collections: [],
       };
+      const currentSnapshot = getCompactSnapshotForRequest(rawSnapshot);
       const res = await fetch(
         `/api/admin/products?entity=category&id=${encodeURIComponent(targetId)}${reassignQuery}`,
         {
@@ -270,7 +276,7 @@ export function CategoryManager({
           }),
         }
       );
-      const data = await res.json();
+      const data = await safeParseJsonResponse(res);
       if (!res.ok) {
         throw new Error(data.error || "Silme işlemi başarısız.");
       }

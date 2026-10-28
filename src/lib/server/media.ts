@@ -239,18 +239,18 @@ export async function processAndSaveUpload(
     let finalExt = "webp";
 
     try {
-      // Yüksek çözünürlüklü (1080x1440) en-boy oranını koruyan detay & vitrin boyutu
+      // Yüksek çözünürlüklü ama hafif (960x1280) en-boy oranını koruyan detay & vitrin boyutu
       cardBuffer = await sharp(buffer)
         .rotate()
-        .resize(1080, 1440, { fit: "inside", withoutEnlargement: true })
-        .webp({ quality: 88 })
+        .resize(960, 1280, { fit: "inside", withoutEnlargement: true })
+        .webp({ quality: 80 })
         .toBuffer();
 
-      // 360x480 küçük resim (thumbnail) boyutu
+      // 320x426 küçük resim (thumbnail) boyutu
       thumbBuffer = await sharp(buffer)
         .rotate()
-        .resize(360, 480, { fit: "cover", position: "attention" })
-        .webp({ quality: 82 })
+        .resize(320, 426, { fit: "cover", position: "attention" })
+        .webp({ quality: 75 })
         .toBuffer();
     } catch (sharpErr) {
       console.warn("Görsel sharp optimizasyonu yapılamadı, orijinal arabellek kullanılıyor:", sharpErr);
@@ -296,9 +296,10 @@ export async function processAndSaveUpload(
       const finalCardUrl = savedToPublicDisk
         ? `/uploads/products/${cardFileName}`
         : `data:${finalMime};base64,${cardBuffer.toString("base64")}`;
+      // Base64 modunda JSON boyutunu ikiye katlamamak için thumbnailUrl boş bırakılır (tüm bileşenler url'ye düşer)
       const finalThumbUrl = savedToPublicDisk
         ? `/uploads/products/${thumbFileName}`
-        : `data:${finalMime};base64,${thumbBuffer.toString("base64")}`;
+        : "";
 
       return {
         result: {
