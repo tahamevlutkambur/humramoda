@@ -38,23 +38,38 @@ export function getPayTRConfig(): PayTRConfig {
   const store = getStoreData();
   const paytrSettings = store.settings?.paytr;
 
+  const hasCustomCredentials = Boolean(
+    paytrSettings?.merchantId &&
+      paytrSettings.merchantId !== "123456" &&
+      paytrSettings?.merchantKey &&
+      !paytrSettings.merchantKey.includes("ornek_")
+  );
+
   const merchantId = (
     process.env.PAYTR_MERCHANT_ID ||
-    paytrSettings?.merchantId ||
+    (hasCustomCredentials ? paytrSettings?.merchantId : "") ||
     "768079"
   ).trim();
   const merchantKey = (
     process.env.PAYTR_MERCHANT_KEY ||
-    paytrSettings?.merchantKey ||
+    (hasCustomCredentials ? paytrSettings?.merchantKey : "") ||
     "D3gr1fBEUkkgjRaR"
   ).trim();
   const merchantSalt = (
     process.env.PAYTR_MERCHANT_SALT ||
-    paytrSettings?.merchantSalt ||
+    (hasCustomCredentials ? paytrSettings?.merchantSalt : "") ||
     "mzAPqkRnYqakr2Qo"
   ).trim();
-  const testMode = (process.env.PAYTR_TEST_MODE || paytrSettings?.testMode || "1").trim();
-  const debugOn = (process.env.PAYTR_DEBUG_ON || paytrSettings?.debugOn || "1").trim();
+  const testMode = (
+    process.env.PAYTR_TEST_MODE ||
+    (hasCustomCredentials ? paytrSettings?.testMode : "") ||
+    "1"
+  ).trim();
+  const debugOn = (
+    process.env.PAYTR_DEBUG_ON ||
+    (hasCustomCredentials ? paytrSettings?.debugOn : "") ||
+    "1"
+  ).trim();
   const appBaseUrl = (
     process.env.NEXT_PUBLIC_APP_URL ||
     process.env.APP_BASE_URL ||
@@ -198,29 +213,29 @@ export async function requestPayTRIFrameToken(
   const cleanUserIp =
     !userIp || userIp === "127.0.0.1" || userIp === "::1" ? "85.105.10.10" : userIp;
 
-  const paytrToken = computePayTRTokenHash({
-    merchantId: config.merchantId,
-    merchantKey: config.merchantKey,
-    merchantSalt: config.merchantSalt,
-    userIp: cleanUserIp,
-    merchantOid: alphanumericOid,
-    email: order.customerEmail,
-    paymentAmountKurus,
-    userBasketBase64,
-    noInstallment: "0",
-    maxInstallment: "0",
-    currency: "TL",
-    testMode: config.testMode,
-  });
+  const buildPostParams = (baseUrl: string, mode = config.testMode) => {
+    const tokenHash = computePayTRTokenHash({
+      merchantId: config.merchantId,
+      merchantKey: config.merchantKey,
+      merchantSalt: config.merchantSalt,
+      userIp: cleanUserIp,
+      merchantOid: alphanumericOid,
+      email: order.customerEmail,
+      paymentAmountKurus,
+      userBasketBase64,
+      noInstallment: "0",
+      maxInstallment: "0",
+      currency: "TL",
+      testMode: mode,
+    });
 
-  const buildPostParams = (baseUrl: string) =>
-    new URLSearchParams({
+    return new URLSearchParams({
       merchant_id: config.merchantId,
       user_ip: cleanUserIp,
       merchant_oid: alphanumericOid,
       email: order.customerEmail,
       payment_amount: String(paymentAmountKurus),
-      paytr_token: paytrToken,
+      paytr_token: tokenHash,
       user_basket: userBasketBase64,
       debug_on: config.debugOn,
       no_installment: "0",
@@ -232,38 +247,47 @@ export async function requestPayTRIFrameToken(
       merchant_fail_url: `${baseUrl}/odeme/basarisiz?orderNumber=${encodeURIComponent(order.orderNumber)}`,
       timeout_limit: "30",
       currency: "TL",
-      test_mode: config.testMode,
+      test_mode: mode,
     });
+  };
 
   try {
-    let response = await fetch("https://www.paytr.com/odeme/api/get-token", {
+    const response = await fetch("https://www.paytr.com/odeme/api/get-token", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: buildPostParams(config.appBaseUrl).toString(),
+      body: buildPostParams(config.appBaseUrl, config.testMode).toString(),
       // 15 saniye zaman aşımı
       signal: AbortSignal.timeout(15000),
     });
 
     let data = await response.json();
 
-    // Eğer PayTR'de kayıtlı site adresi henüz humramoda.vercel.app ise ve domain uyuşmazlığı dönerse otomatik yedek adresle tekrar dene
-    if (
-      data.status !== "success" &&
-      config.appBaseUrl !== "https://humramoda.vercel.app"
-    ) {
-      const retryRes = await fetch("https://www.paytr.com/odeme/api/get-token", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: buildPostParams("https://humramoda.vercel.app").toString(),
-        signal: AbortSignal.timeout(15000),
-      });
-      const retryData = await retryRes.json();
-      if (retryData.status === "success" && retryData.token) {
-        data = retryData;
+    // Eğer domain uyuşmazlığı veya test/canlı mod geçişi nedeniyle hata dönerse yedek kombinasyonlarla tekrar dene
+    if (data.status !== "success") {
+      const altMode = config.testMode === "1" ? "0" : "1";
+      const fallbacks: Array<[string, string]> = [
+        ["https://humramoda.vercel.app", config.testMode],
+        [config.appBaseUrl, altMode],
+        ["https://humramoda.vercel.app", altMode],
+      ];
+
+      for (const [fbUrl, fbMode] of fallbacks) {
+        if (fbUrl === config.appBaseUrl && fbMode === config.testMode) continue;
+        const retryRes = await fetch("https://www.paytr.com/odeme/api/get-token", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: buildPostParams(fbUrl, fbMode).toString(),
+          signal: AbortSignal.timeout(15000),
+        });
+        const retryData = await retryRes.json();
+        if (retryData.status === "success" && retryData.token) {
+          data = retryData;
+          break;
+        }
       }
     }
 
