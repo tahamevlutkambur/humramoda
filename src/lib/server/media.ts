@@ -25,6 +25,7 @@ const ALLOWED_IMAGE_MIMES = new Set([
   "image/avif",
   "image/heic",
   "image/heif",
+  "image/gif",
 ]);
 
 const ALLOWED_VIDEO_MIMES = new Set(["video/mp4", "video/webm"]);
@@ -58,6 +59,11 @@ export function verifyMagicBytes(buffer: Buffer): {
     buffer[7] === 0x0a
   ) {
     return { isValid: true, detectedType: "image/png", mediaType: "IMAGE" };
+  }
+
+  // GIF: 47 49 46 (GIF87a / GIF89a)
+  if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46) {
+    return { isValid: true, detectedType: "image/gif", mediaType: "IMAGE" };
   }
 
   // WebP: RIFF .... WEBP
@@ -140,7 +146,26 @@ export async function processAndSaveUpload(
   claimedMime?: string
 ): Promise<{ result?: MediaUploadResult; error?: string }> {
   // 1. Sihirli bayt doğrulama
-  const magic = verifyMagicBytes(buffer);
+  let magic = verifyMagicBytes(buffer);
+
+  // Sihirli bayt katı kontrolden geçemezse Sharp görsel ayrıştırıcısını dene
+  if (!magic.isValid || !magic.detectedType || !magic.mediaType) {
+    try {
+      const meta = await sharp(buffer).metadata();
+      if (meta.format) {
+        const fmt = meta.format.toLowerCase();
+        const mime = fmt === "jpeg" || fmt === "jpg" ? "image/jpeg" : `image/${fmt}`;
+        magic = {
+          isValid: true,
+          detectedType: mime,
+          mediaType: "IMAGE",
+        };
+      }
+    } catch {
+      // Geçersiz format
+    }
+  }
+
   if (!magic.isValid || !magic.detectedType || !magic.mediaType) {
     return {
       error:

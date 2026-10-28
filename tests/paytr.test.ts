@@ -17,8 +17,11 @@
  * 13. Gizli anahtarların (merchant_key, salt) ve hassas verilerin loglara ve yanıtlara sızmaması
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
 import crypto from "crypto";
+import fs from "fs";
+import path from "path";
+import { PRODUCTS } from "../src/lib/catalog";
 import {
   computePayTRTokenHash,
   computePayTRCallbackHash,
@@ -39,8 +42,26 @@ describe("Faz 5: PayTR Ödeme Entegrasyonu ve Güvenlik Denetimleri", () => {
   const TEST_MERCHANT_KEY = "test_merchant_key_1234567890abcdef";
   const TEST_MERCHANT_SALT = "test_merchant_salt_abcdef1234567890";
   const TEST_MERCHANT_ID = "999888";
+  const storeFilePath = path.join(process.cwd(), "data", "store.json");
+  let snapshot: string | null = null;
+
+  beforeAll(() => {
+    if (fs.existsSync(storeFilePath)) {
+      snapshot = fs.readFileSync(storeFilePath, "utf-8");
+    }
+  });
+
+  afterAll(() => {
+    if (snapshot && fs.existsSync(storeFilePath)) {
+      fs.writeFileSync(storeFilePath, snapshot, "utf-8");
+    }
+  });
+
   beforeEach(() => {
     const store = getStoreData();
+    if (!store.products || store.products.length === 0) {
+      store.products = JSON.parse(JSON.stringify(PRODUCTS));
+    }
     for (const p of store.products) {
       for (const v of p.variants) {
         if (v.stockQuantity < 20) {

@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
 import { updateStoreCategory, deleteStoreCategory } from "@/lib/server/store";
+import { logAdminAudit } from "@/lib/server/logger";
+import { revalidatePath } from "next/cache";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 interface RouteParams {
   params: Promise<{
@@ -9,18 +14,37 @@ interface RouteParams {
 }
 
 export async function PUT(req: Request, { params }: RouteParams) {
-  const session = await getAuthenticatedAdmin();
+  const session = await getAuthenticatedAdmin(req);
   if (!session) {
     return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
   }
 
   try {
-    const { id } = await params;
+    const resolvedParams = await Promise.resolve(params);
+    const id = resolvedParams.id;
     const body = await req.json();
 
     const { category, error } = updateStoreCategory(id, body);
     if (error || !category) {
       return NextResponse.json({ error: error || "Kategori güncellenemedi." }, { status: 400 });
+    }
+
+    logAdminAudit({
+      adminId: session.userId,
+      adminEmail: session.email,
+      action: "CATEGORY_UPDATED",
+      targetType: "CATEGORY",
+      targetId: category.id,
+      result: "SUCCESS",
+      details: { name: category.name, slug: category.slug },
+    });
+
+    try {
+      revalidatePath("/admin/kategoriler");
+      revalidatePath("/");
+      revalidatePath("/urunler");
+    } catch {
+      // Revalidation is best effort
     }
 
     return NextResponse.json({ success: true, category });
@@ -31,16 +55,53 @@ export async function PUT(req: Request, { params }: RouteParams) {
 }
 
 export async function DELETE(req: Request, { params }: RouteParams) {
-  const session = await getAuthenticatedAdmin();
+  const session = await getAuthenticatedAdmin(req);
   if (!session) {
     return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
   }
 
-  const { id } = await params;
-  const deleted = deleteStoreCategory(id);
-  if (!deleted) {
-    return NextResponse.json({ error: "Kategori bulunamadı." }, { status: 404 });
-  }
+  try {
+    const resolvedParams = await Promise.resolve(params);
+    const id = resolvedParams.id;
+    let reassignTo: string | undefined;
 
-  return NextResponse.json({ success: true });
+    try {
+      const url = new URL(req.url);
+      reassignTo = url.searchParams.get("reassignTo") || undefined;
+      if (!reassignTo && req.headers.get("content-type")?.includes("application/json")) {
+        const body = await req.json().catch(() => null);
+        if (body?.reassignTo) reassignTo = body.reassignTo;
+      }
+    } catch {
+      // Optional parameter extraction
+    }
+
+    const deleted = deleteStoreCategory(id, reassignTo);
+    if (!deleted) {
+      return NextResponse.json({ error: "Kategori bulunamadı veya silinemedi." }, { status: 404 });
+    }
+
+    logAdminAudit({
+      adminId: session.userId,
+      adminEmail: session.email,
+      action: "CATEGORY_DELETED",
+      targetType: "CATEGORY",
+      targetId: id,
+      result: "SUCCESS",
+      details: { id, reassignTo },
+    });
+
+    try {
+      revalidatePath("/admin/kategoriler");
+      revalidatePath("/");
+      revalidatePath("/urunler");
+    } catch {
+      // Revalidation is best effort
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("Delete category error:", err);
+    return NextResponse.json({ error: "Kategori silinirken sunucu hatası oluştu." }, { status: 500 });
+  }
 }

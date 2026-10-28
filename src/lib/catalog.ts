@@ -748,7 +748,18 @@ export function getAllCategories(): CategoryItem[] {
 }
 
 export function getCategoryBySlug(slug: string): CategoryItem | undefined {
-  return getActiveCategoriesList().find((c) => c.slug === slug);
+  if (!slug) return undefined;
+  const decoded = decodeURIComponent(slug).trim();
+  const lower = decoded.toLowerCase();
+  return getActiveCategoriesList().find(
+    (c) =>
+      c.slug === slug ||
+      c.id === slug ||
+      c.slug === decoded ||
+      c.id === decoded ||
+      c.slug.toLowerCase() === lower ||
+      c.id.toLowerCase() === lower
+  );
 }
 
 export function getAllCollections(): CollectionItem[] {
@@ -757,7 +768,18 @@ export function getAllCollections(): CollectionItem[] {
 }
 
 export function getCollectionBySlug(slug: string): CollectionItem | undefined {
-  return getActiveCollectionsList().find((c) => c.slug === slug);
+  if (!slug) return undefined;
+  const decoded = decodeURIComponent(slug).trim();
+  const lower = decoded.toLowerCase();
+  return getActiveCollectionsList().find(
+    (c) =>
+      c.slug === slug ||
+      c.id === slug ||
+      c.slug === decoded ||
+      c.id === decoded ||
+      c.slug.toLowerCase() === lower ||
+      c.id.toLowerCase() === lower
+  );
 }
 
 export interface GetProductsOptions {
@@ -771,11 +793,13 @@ export function getProducts(options: GetProductsOptions = {}): ProductItem[] {
   let list = [...getActiveProductsList()];
 
   if (options.categorySlug) {
-    list = list.filter((p) => p.categorySlug === options.categorySlug);
+    const catSlug = options.categorySlug.toLowerCase();
+    list = list.filter((p) => p.categorySlug.toLowerCase() === catSlug);
   }
 
   if (options.collectionSlug) {
-    list = list.filter((p) => p.collectionSlugs.includes(options.collectionSlug!));
+    const colSlug = options.collectionSlug.toLowerCase();
+    list = list.filter((p) => p.collectionSlugs.some((s) => s.toLowerCase() === colSlug));
   }
 
   if (options.query) {
@@ -801,7 +825,18 @@ export function getProducts(options: GetProductsOptions = {}): ProductItem[] {
 }
 
 export function getProductBySlug(slug: string): ProductItem | undefined {
-  return getActiveProductsList().find((p) => p.slug === slug);
+  if (!slug) return undefined;
+  const decoded = decodeURIComponent(slug).trim();
+  const lower = decoded.toLowerCase();
+  return getActiveProductsList().find(
+    (p) =>
+      p.slug === slug ||
+      p.id === slug ||
+      p.slug === decoded ||
+      p.id === decoded ||
+      p.slug.toLowerCase() === lower ||
+      p.id.toLowerCase() === lower
+  );
 }
 
 export function getRelatedProducts(productId: string, limit = 4): ProductItem[] {

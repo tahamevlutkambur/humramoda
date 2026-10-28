@@ -10,6 +10,9 @@ import { BrandValues } from "@/components/home/BrandValues";
 import { getProducts } from "@/lib/catalog";
 import { getStoreHomepageContent } from "@/lib/server/store";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default function HomePage() {
   const newArrivals = getProducts({ collectionSlug: "yeni-sezon" });
   const bestSellers = getProducts({ collectionSlug: "cok-satanlar" });

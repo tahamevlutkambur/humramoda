@@ -70,7 +70,7 @@ export function ProductEditor({
 
   // 2. Renkler ve Bedenler
   const [colors, setColors] = useState<EditableColor[]>(
-    initialProduct?.colors.map((c) => ({
+    initialProduct?.colors?.map((c) => ({
       id: c.id,
       name: c.name,
       slug: c.slug,
@@ -80,14 +80,14 @@ export function ProductEditor({
 
   // 3. Varyant Matrisi
   const [variants, setVariants] = useState<EditableVariant[]>(() => {
-    if (initialProduct?.variants) {
+    if (initialProduct?.variants && Array.isArray(initialProduct.variants)) {
       return initialProduct.variants.map((v) => {
-        const c = initialProduct.colors.find((col) => col.id === v.colorId);
-        const s = initialProduct.sizes.find((siz) => siz.id === v.sizeId);
+        const c = initialProduct.colors?.find((col) => col.id === v.colorId);
+        const s = initialProduct.sizes?.find((siz) => siz.id === v.sizeId);
         return {
           id: v.id,
-          colorName: c?.name || "",
-          sizeName: s?.name || "",
+          colorName: c?.name || (v as any).colorName || "",
+          sizeName: s?.name || (v as any).sizeName || "",
           sku: v.sku,
           stockQuantity: v.stockQuantity,
           costPrice: v.costPrice,
@@ -99,11 +99,11 @@ export function ProductEditor({
 
   // 4. Medyalar
   const [media, setMedia] = useState<EditableMedia[]>(
-    initialProduct?.media.map((m) => {
-      const c = initialProduct.colors.find((col) => col.id === m.colorId);
+    initialProduct?.media?.map((m) => {
+      const c = initialProduct.colors?.find((col) => col.id === m.colorId);
       return {
         id: m.id,
-        colorName: c?.name,
+        colorName: c?.name || (m as any).colorName,
         type: m.type,
         url: m.url,
         thumbnailUrl: m.thumbnailUrl || m.url,
@@ -375,7 +375,11 @@ export function ProductEditor({
   };
 
   return (
-    <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+    <form
+      onSubmit={handleSave}
+      encType="multipart/form-data"
+      style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
+    >
       {/* Üst Bar */}
       <div
         style={{

@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { CategoryItem, ProductItem } from "@/lib/catalog";
 
 interface CategoryManagerProps {
@@ -14,7 +15,13 @@ export function CategoryManager({
   initialCategories,
   products,
 }: CategoryManagerProps) {
+  const router = useRouter();
   const [categories, setCategories] = useState<CategoryItem[]>(initialCategories);
+
+  React.useEffect(() => {
+    setCategories(initialCategories);
+  }, [initialCategories]);
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
 
@@ -132,6 +139,7 @@ export function CategoryManager({
         setSuccessMsg(`"${data.category.name}" kategorisi başarıyla eklendi.`);
       }
 
+      router.refresh();
       resetForm();
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -145,22 +153,39 @@ export function CategoryManager({
   };
 
   const handleDelete = async (cat: CategoryItem) => {
-    const attachedCount = products.filter((p) => p.categorySlug === cat.slug).length;
-    if (attachedCount > 0) {
-      alert(
-        `Bu kategoriye bağlı ${attachedCount} adet ürün bulunmaktadır. Kategori silinmeden önce bu ürünlerin kategorisini değiştiriniz.`
-      );
-      return;
-    }
+    const attachedCount = products.filter(
+      (p) => p.categorySlug === cat.slug || (p as any).categoryId === cat.id
+    ).length;
+    let reassignTo: string | undefined;
 
-    if (!confirm(`"${cat.name}" kategorisini silmek istediğinizden emin misiniz?`)) {
-      return;
+    if (attachedCount > 0) {
+      const otherCategories = categories.filter((c) => c.id !== cat.id && c.slug !== cat.slug);
+      if (otherCategories.length === 0) {
+        alert(
+          `"${cat.name}" kategorisine bağlı ${attachedCount} adet ürün bulunmaktadır ve başka kategori mevcut olmadığı için silinemez.\n\nLütfen önce ürünleri silin veya başka bir kategori oluşturun.`
+        );
+        return;
+      }
+      const targetCategoryName = otherCategories[0]?.name || "Diğer";
+      const confirmMove = confirm(
+        `"${cat.name}" kategorisine bağlı ${attachedCount} adet ürün bulunmaktadır.\n\n` +
+        `Kategoriyi sildiğinizde, bu ${attachedCount} ürün otomatik olarak "${targetCategoryName}" kategorisine aktarılacaktır.\n\n` +
+        `Kategoriyi silmek istiyor musunuz?`
+      );
+      if (!confirmMove) return;
+      reassignTo = otherCategories[0]?.slug;
+    } else {
+      if (!confirm(`"${cat.name}" kategorisini silmek istediğinizden emin misiniz?`)) {
+        return;
+      }
     }
 
     setLoading(true);
     setErrorMsg("");
     try {
-      const res = await fetch(`/api/admin/categories/${cat.id}`, {
+      const queryParam = reassignTo ? `?reassignTo=${encodeURIComponent(reassignTo)}` : "";
+      const targetId = cat.id || cat.slug;
+      const res = await fetch(`/api/admin/categories/${encodeURIComponent(targetId)}${queryParam}`, {
         method: "DELETE",
       });
       const data = await res.json();
@@ -168,8 +193,16 @@ export function CategoryManager({
         throw new Error(data.error || "Silme işlemi başarısız.");
       }
 
-      setCategories((prev) => prev.filter((c) => c.id !== cat.id));
+      setCategories((prev) => prev.filter((c) => c.id !== cat.id && c.slug !== cat.slug));
+      if (reassignTo) {
+        products.forEach((p) => {
+          if (p.categorySlug === cat.slug || (p as any).categoryId === cat.id) {
+            p.categorySlug = reassignTo;
+          }
+        });
+      }
       setSuccessMsg(`"${cat.name}" kategorisi başarıyla silindi.`);
+      router.refresh();
     } catch (err: unknown) {
       if (err instanceof Error) {
         setErrorMsg(err.message);
@@ -268,7 +301,7 @@ export function CategoryManager({
           <h2 style={{ fontSize: "1.125rem", fontWeight: 600, margin: "0 0 1rem 0" }}>
             {editingId ? "Kategoriyi Düzenle" : "Yeni Kategori Ekle"}
           </h2>
-          <form onSubmit={handleSave}>
+          <form onSubmit={handleSave} encType="multipart/form-data">
             <div
               style={{
                 display: "grid",

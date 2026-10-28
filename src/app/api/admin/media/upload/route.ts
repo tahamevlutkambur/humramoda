@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
 import { processAndSaveUpload } from "@/lib/server/media";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: Request) {
   const session = await getAuthenticatedAdmin();
   if (!session) {
@@ -10,7 +12,7 @@ export async function POST(req: Request) {
 
   try {
     const formData = await req.formData();
-    const file = formData.get("file") as File | null;
+    const file = (formData.get("file") || formData.get("image") || formData.get("media")) as File | null;
 
     if (!file) {
       return NextResponse.json({ error: "Yüklenecek dosya seçilmedi." }, { status: 400 });

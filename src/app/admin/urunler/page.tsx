@@ -41,9 +41,9 @@ export default function AdminProductsPage() {
     setIsDeleting(true);
 
     try {
-      const res = await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/products/${encodeURIComponent(id)}`, { method: "DELETE" });
       if (res.ok) {
-        setProducts((prev) => prev.filter((p) => p.id !== id));
+        setProducts((prev) => prev.filter((p) => p.id !== id && p.slug !== id));
       } else {
         alert("Ürün silinemedi.");
       }
@@ -216,7 +216,7 @@ export default function AdminProductsPage() {
                       <td>
                         <div style={{ display: "flex", flexDirection: "column" }}>
                           <Link
-                            href={`/admin/urunler/${product.id}`}
+                            href={`/admin/urunler/${encodeURIComponent(product.id)}`}
                             style={{
                               fontWeight: 600,
                               color: "#1A202C",
@@ -314,7 +314,7 @@ export default function AdminProductsPage() {
                       <td style={{ textAlign: "right" }}>
                         <div style={{ display: "inline-flex", gap: "0.5rem" }}>
                           <Link
-                            href={`/admin/urunler/${product.id}`}
+                            href={`/admin/urunler/${encodeURIComponent(product.id)}`}
                             className="hm-admin-btn hm-admin-btn-outline"
                             style={{ padding: "0.3rem 0.65rem", fontSize: "0.75rem" }}
                           >

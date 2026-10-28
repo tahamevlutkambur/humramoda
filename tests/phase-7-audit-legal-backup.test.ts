@@ -2,9 +2,10 @@
  * Hümra Moda — Faz 7: Uçtan Uca Sistem Denetimi, İade/Değişim, Yedekleme ve Yasal Sayfalar Testleri
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from "vitest";
 import fs from "fs";
 import path from "path";
+import { PRODUCTS } from "../src/lib/catalog";
 import {
   createReturnRequest,
   lookupOrderForReturns,
@@ -30,8 +31,26 @@ describe("Faz 7: Uçtan Uca Sistem Denetimi ve Canlıya Geçiş Test Paketi", ()
   let paidOrder: StoreOrder;
   let shippedOrder: StoreOrder;
 
+  const storeFilePath = path.join(process.cwd(), "data", "store.json");
+  let snapshot: string | null = null;
+
+  beforeAll(() => {
+    if (fs.existsSync(storeFilePath)) {
+      snapshot = fs.readFileSync(storeFilePath, "utf-8");
+    }
+  });
+
+  afterAll(() => {
+    if (snapshot && fs.existsSync(storeFilePath)) {
+      fs.writeFileSync(storeFilePath, snapshot, "utf-8");
+    }
+  });
+
   beforeEach(() => {
     const store = getStoreData();
+    if (!store.products || store.products.length === 0) {
+      store.products = JSON.parse(JSON.stringify(PRODUCTS));
+    }
 
     // Test için stokları ve ürünleri sıfırla / güvenceye al
     if (store.products && store.products.length > 0) {

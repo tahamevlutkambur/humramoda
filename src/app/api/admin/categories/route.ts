@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
 import { getAllStoreCategories, createStoreCategory } from "@/lib/server/store";
+import { logAdminAudit } from "@/lib/server/logger";
+import { revalidatePath } from "next/cache";
 
-export async function GET() {
-  const session = await getAuthenticatedAdmin();
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+export async function GET(req: Request) {
+  const session = await getAuthenticatedAdmin(req);
   if (!session) {
     return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
   }
@@ -13,7 +18,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const session = await getAuthenticatedAdmin();
+  const session = await getAuthenticatedAdmin(req);
   if (!session) {
     return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
   }
@@ -24,6 +29,24 @@ export async function POST(req: Request) {
 
     if (error || !category) {
       return NextResponse.json({ error: error || "Kategori oluşturulamadı." }, { status: 400 });
+    }
+
+    logAdminAudit({
+      adminId: session.userId,
+      adminEmail: session.email,
+      action: "CATEGORY_CREATED",
+      targetType: "CATEGORY",
+      targetId: category.id,
+      result: "SUCCESS",
+      details: { name: category.name, slug: category.slug },
+    });
+
+    try {
+      revalidatePath("/admin/kategoriler");
+      revalidatePath("/");
+      revalidatePath("/urunler");
+    } catch {
+      // Revalidation is best effort
     }
 
     return NextResponse.json({ success: true, category }, { status: 201 });

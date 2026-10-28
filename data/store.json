@@ -1,553 +1,5 @@
 {
-  "products": [
-    {
-      "id": "prod-1",
-      "title": "Qapitone Garnili Scuba İkili Takım",
-      "slug": "qapitone-garnili-scuba-ikili-takim",
-      "description": "Ön panelinde mikro kapitone garni detayları, dik yaka formu ve dökümlü scuba kumaşıyla hem günlük hem özel davetlerde zamansız bir zarafet sunar. Pantolonu beli lastikli ve konforlu boru paçadır.",
-      "fabricDetails": "%70 Viskon, %25 Poliamid, %5 Elastan (Scuba kumaş). Kırışmaya dayanıklı, nefes alabilir yapı.",
-      "modelDimensions": "Boy: 176 cm, Göğüs: 84 cm, Bel: 62 cm, Basen: 90 cm. Manken üzerindeki beden: 1 Beden (36-38).",
-      "basePrice": 1749,
-      "discountPrice": 1574.1,
-      "badge": "YENİ ÜRÜN",
-      "categorySlug": "takim",
-      "categoryName": "İkili & Üçlü Takım",
-      "collectionSlugs": [
-        "yeni-sezon",
-        "cok-satanlar"
-      ],
-      "createdAt": "2026-10-15T10:00:00Z",
-      "colors": [
-        {
-          "id": "col-prod-1-0",
-          "name": "Siyah",
-          "slug": "siyah",
-          "colorCode": "#141414",
-          "displayOrder": 1
-        },
-        {
-          "id": "col-prod-1-1",
-          "name": "Haki",
-          "slug": "haki",
-          "colorCode": "#4B5320",
-          "displayOrder": 2
-        },
-        {
-          "id": "col-prod-1-2",
-          "name": "beyaz",
-          "slug": "beyaz",
-          "colorCode": "#fffbf5",
-          "displayOrder": 3
-        }
-      ],
-      "sizes": [
-        {
-          "id": "size-prod-1-0",
-          "name": "1 Beden (36-38)",
-          "slug": "1-beden-36-38",
-          "displayOrder": 1
-        },
-        {
-          "id": "size-prod-1-1",
-          "name": "2 Beden (40-42)",
-          "slug": "2-beden-40-42",
-          "displayOrder": 2
-        },
-        {
-          "id": "size-prod-1-2",
-          "name": "deneme",
-          "slug": "deneme",
-          "displayOrder": 3
-        }
-      ],
-      "variants": [
-        {
-          "id": "var-prod-1-0",
-          "colorId": "col-prod-1-0",
-          "sizeId": "size-prod-1-0",
-          "sku": "HM-SCB-SYH-B1",
-          "stockQuantity": 44,
-          "isActive": true
-        },
-        {
-          "id": "var-prod-1-1",
-          "colorId": "col-prod-1-0",
-          "sizeId": "size-prod-1-1",
-          "sku": "HM-SCB-SYH-B2",
-          "stockQuantity": 50,
-          "isActive": true
-        },
-        {
-          "id": "var-prod-1-2",
-          "colorId": "col-prod-1-1",
-          "sizeId": "size-prod-1-0",
-          "sku": "HM-SCB-HKI-B1",
-          "stockQuantity": 50,
-          "isActive": true
-        },
-        {
-          "id": "var-prod-1-3",
-          "colorId": "col-prod-1-1",
-          "sizeId": "size-prod-1-1",
-          "sku": "HM-SCB-HKI-B2",
-          "stockQuantity": 50,
-          "isActive": true
-        }
-      ],
-      "media": [
-        {
-          "id": "med-prod-1-0",
-          "colorId": "col-prod-1-0",
-          "type": "IMAGE",
-          "url": "/uploads/products/IMG_2190-detail.webp",
-          "thumbnailUrl": "/uploads/products/IMG_2190-thumb.webp",
-          "altText": "Qapitone Garnili Scuba İkili Takım — Siyah Önden Görünüm",
-          "isThumbnail": true,
-          "displayOrder": 1
-        },
-        {
-          "id": "med-prod-1-1",
-          "colorId": "col-prod-1-0",
-          "type": "IMAGE",
-          "url": "/uploads/products/IMG_2192-detail.webp",
-          "thumbnailUrl": "/uploads/products/IMG_2192-thumb.webp",
-          "altText": "Qapitone Garnili Scuba İkili Takım — Siyah Yan Detay",
-          "isThumbnail": false,
-          "displayOrder": 2
-        },
-        {
-          "id": "med-prod-1-2",
-          "colorId": "col-prod-1-0",
-          "type": "IMAGE",
-          "url": "/uploads/products/IMG_2193-detail.webp",
-          "thumbnailUrl": "/uploads/products/IMG_2193-thumb.webp",
-          "altText": "Qapitone Garnili Scuba İkili Takım — Siyah Kumaş Dokusu",
-          "isThumbnail": false,
-          "displayOrder": 3
-        },
-        {
-          "id": "med-prod-1-3",
-          "colorId": "col-prod-1-1",
-          "type": "IMAGE",
-          "url": "/uploads/products/IMG_2199-detail.webp",
-          "thumbnailUrl": "/uploads/products/IMG_2199-thumb.webp",
-          "altText": "Qapitone Garnili Scuba İkili Takım — Haki Önden Görünüm",
-          "isThumbnail": false,
-          "displayOrder": 4
-        },
-        {
-          "id": "med-prod-1-4",
-          "colorId": "col-prod-1-1",
-          "type": "IMAGE",
-          "url": "/uploads/products/IMG_2200-detail.webp",
-          "thumbnailUrl": "/uploads/products/IMG_2200-thumb.webp",
-          "altText": "Qapitone Garnili Scuba İkili Takım — Haki Yakın Detay",
-          "isThumbnail": false,
-          "displayOrder": 5
-        },
-        {
-          "id": "med-prod-1-5",
-          "colorId": "col-prod-1-1",
-          "type": "IMAGE",
-          "url": "/uploads/products/IMG_2201-detail.webp",
-          "thumbnailUrl": "/uploads/products/IMG_2201-thumb.webp",
-          "altText": "Qapitone Garnili Scuba İkili Takım — Haki Boydan",
-          "isThumbnail": false,
-          "displayOrder": 6
-        },
-        {
-          "id": "med-prod-1-6",
-          "colorId": "col-prod-1-2",
-          "type": "VIDEO",
-          "url": "/uploads/videos/img_2279-1792591962004.mp4",
-          "thumbnailUrl": "/uploads/videos/img_2279-1792591962004.mp4",
-          "altText": "Qapitone Garnili Scuba İkili Takım görseli",
-          "isThumbnail": true,
-          "displayOrder": 7
-        }
-      ]
-    },
-    {
-      "id": "prod-2",
-      "title": "Şardonlu Ceket & Geniş Paça Pantolon Takımı",
-      "slug": "sardonlu-ceket-genis-paca-pantolon-takimi",
-      "description": "İç kısmı yumuşak şardonlu pamuk dokusuyla serin havalarda sıcak tutan, vatkalı dik omuz formu ve akıcı paça kesimiyle modern şehir stilini tanımlayan takım.",
-      "fabricDetails": "%80 Pamuk, %20 Polyester (Şardonlu 3 İplik). Tüylenme yapmayan kompakt iplik.",
-      "modelDimensions": "Boy: 177 cm, Göğüs: 82 cm, Bel: 60 cm, Basen: 89 cm. Manken üzerindeki beden: 1 Beden.",
-      "basePrice": 1890,
-      "discountPrice": 1701,
-      "badge": "ÇOK SATAN",
-      "categorySlug": "takim",
-      "categoryName": "İkili & Üçlü Takım",
-      "collectionSlugs": [
-        "yeni-sezon",
-        "cok-satanlar"
-      ],
-      "createdAt": "2026-10-16T11:00:00Z",
-      "colors": [
-        {
-          "id": "col-p2-vizon",
-          "name": "Vizon Bej",
-          "slug": "vizon-bej",
-          "colorCode": "#C8B89C",
-          "displayOrder": 1
-        },
-        {
-          "id": "col-p2-bordo",
-          "name": "Bordo Merat",
-          "slug": "bordo-merat",
-          "colorCode": "#8B2635",
-          "displayOrder": 2
-        }
-      ],
-      "sizes": [
-        {
-          "id": "size-1",
-          "name": "1 Beden (36-38)",
-          "slug": "1-beden-36-38",
-          "displayOrder": 1
-        },
-        {
-          "id": "size-2",
-          "name": "2 Beden (40-42)",
-          "slug": "2-beden-40-42",
-          "displayOrder": 2
-        }
-      ],
-      "variants": [
-        {
-          "id": "var-2-1",
-          "colorId": "col-p2-vizon",
-          "sizeId": "size-1",
-          "sku": "HM-SRD-VZN-B1",
-          "stockQuantity": 50,
-          "isActive": true
-        },
-        {
-          "id": "var-2-2",
-          "colorId": "col-p2-vizon",
-          "sizeId": "size-2",
-          "sku": "HM-SRD-VZN-B2",
-          "stockQuantity": 50,
-          "isActive": true
-        },
-        {
-          "id": "var-2-3",
-          "colorId": "col-p2-bordo",
-          "sizeId": "size-1",
-          "sku": "HM-SRD-BRD-B1",
-          "stockQuantity": 50,
-          "isActive": true
-        },
-        {
-          "id": "var-2-4",
-          "colorId": "col-p2-bordo",
-          "sizeId": "size-2",
-          "sku": "HM-SRD-BRD-B2",
-          "stockQuantity": 50,
-          "isActive": true
-        }
-      ],
-      "media": [
-        {
-          "id": "med-2-1",
-          "colorId": "col-p2-vizon",
-          "type": "IMAGE",
-          "url": "/uploads/products/IMG_2217-detail.webp",
-          "thumbnailUrl": "/uploads/products/IMG_2217-thumb.webp",
-          "altText": "Şardonlu Takım — Vizon Bej",
-          "isThumbnail": true,
-          "displayOrder": 1
-        },
-        {
-          "id": "med-2-2",
-          "colorId": "col-p2-vizon",
-          "type": "IMAGE",
-          "url": "/uploads/products/IMG_2218-detail.webp",
-          "thumbnailUrl": "/uploads/products/IMG_2218-thumb.webp",
-          "altText": "Şardonlu Takım — Vizon Detay",
-          "isThumbnail": false,
-          "displayOrder": 2
-        },
-        {
-          "id": "med-2-3",
-          "colorId": "col-p2-vizon",
-          "type": "IMAGE",
-          "url": "/uploads/products/IMG_2219-detail.webp",
-          "thumbnailUrl": "/uploads/products/IMG_2219-thumb.webp",
-          "altText": "Şardonlu Takım — Vizon Yan",
-          "isThumbnail": false,
-          "displayOrder": 3
-        },
-        {
-          "id": "med-2-4",
-          "colorId": "col-p2-vizon",
-          "type": "IMAGE",
-          "url": "/uploads/products/IMG_2226-detail.webp",
-          "thumbnailUrl": "/uploads/products/IMG_2226-thumb.webp",
-          "altText": "Şardonlu Takım — Vizon Arka Kesim",
-          "isThumbnail": false,
-          "displayOrder": 4
-        },
-        {
-          "id": "med-2-5",
-          "colorId": "col-p2-bordo",
-          "type": "IMAGE",
-          "url": "/uploads/products/IMG_2228-detail.webp",
-          "thumbnailUrl": "/uploads/products/IMG_2228-thumb.webp",
-          "altText": "Şardonlu Takım — Bordo Merat",
-          "isThumbnail": true,
-          "displayOrder": 1
-        },
-        {
-          "id": "med-2-6",
-          "colorId": "col-p2-bordo",
-          "type": "IMAGE",
-          "url": "/uploads/products/IMG_2231-detail.webp",
-          "thumbnailUrl": "/uploads/products/IMG_2231-thumb.webp",
-          "altText": "Şardonlu Takım — Bordo Yaka Detay",
-          "isThumbnail": false,
-          "displayOrder": 2
-        },
-        {
-          "id": "med-2-7",
-          "colorId": "col-p2-bordo",
-          "type": "IMAGE",
-          "url": "/uploads/products/IMG_2235-detail.webp",
-          "thumbnailUrl": "/uploads/products/IMG_2235-thumb.webp",
-          "altText": "Şardonlu Takım — Bordo Duruş",
-          "isThumbnail": false,
-          "displayOrder": 3
-        }
-      ]
-    },
-    {
-      "id": "prod-3",
-      "title": "Düğmeli ve Kemerli Oversize Trençkot",
-      "slug": "dugmeli-kemerli-oversize-trenckot",
-      "description": "Zamansız camel rengi, geniş klapa yakası, çift sıra boynuz düğmeleri ve tok kumaşıyla sonbahar-kış gardırobunun temel yıldız parçası. Astarı saten dokulu olup dökümlü duruş sağlar.",
-      "fabricDetails": "%65 Pamuk Gabardin, %35 Polyester. Su itici apre kaplama.",
-      "modelDimensions": "Boy: 175 cm. Manken üzerindeki beden: Standart (36-42 uyumlu).",
-      "basePrice": 2250,
-      "badge": "ÖN SİPARİŞ",
-      "isPreOrder": true,
-      "preOrderNote": "Tahmini kargoya veriliş: 5 iş günü içerisinde.",
-      "categorySlug": "dis-giyim",
-      "categoryName": "Dış Giyim & Trenç",
-      "collectionSlugs": [
-        "yeni-sezon"
-      ],
-      "createdAt": "2026-10-17T09:00:00Z",
-      "colors": [
-        {
-          "id": "col-p3-camel",
-          "name": "Camel",
-          "slug": "camel",
-          "colorCode": "#BFA07A",
-          "displayOrder": 1
-        },
-        {
-          "id": "col-p3-siyah",
-          "name": "Siyah",
-          "slug": "siyah",
-          "colorCode": "#141414",
-          "displayOrder": 2
-        }
-      ],
-      "sizes": [
-        {
-          "id": "size-std",
-          "name": "Standart (36-42)",
-          "slug": "standart",
-          "displayOrder": 1
-        }
-      ],
-      "variants": [
-        {
-          "id": "var-3-1",
-          "colorId": "col-p3-camel",
-          "sizeId": "size-std",
-          "sku": "HM-TRN-CML-STD",
-          "stockQuantity": 20,
-          "isActive": true
-        },
-        {
-          "id": "var-3-2",
-          "colorId": "col-p3-siyah",
-          "sizeId": "size-std",
-          "sku": "HM-TRN-SYH-STD",
-          "stockQuantity": 50,
-          "isActive": true
-        }
-      ],
-      "media": [
-        {
-          "id": "med-3-1",
-          "colorId": "col-p3-camel",
-          "type": "IMAGE",
-          "url": "/uploads/products/IMG_2237-detail.webp",
-          "thumbnailUrl": "/uploads/products/IMG_2237-thumb.webp",
-          "altText": "Oversize Trençkot — Camel",
-          "isThumbnail": true,
-          "displayOrder": 1
-        },
-        {
-          "id": "med-3-2",
-          "colorId": "col-p3-camel",
-          "type": "IMAGE",
-          "url": "/uploads/products/IMG_2246-detail.webp",
-          "thumbnailUrl": "/uploads/products/IMG_2246-thumb.webp",
-          "altText": "Oversize Trençkot — Camel Kemer Detay",
-          "isThumbnail": false,
-          "displayOrder": 2
-        },
-        {
-          "id": "med-3-3",
-          "colorId": "col-p3-camel",
-          "type": "IMAGE",
-          "url": "/uploads/products/IMG_2257-detail.webp",
-          "thumbnailUrl": "/uploads/products/IMG_2257-thumb.webp",
-          "altText": "Oversize Trençkot — Camel Yaka Detay",
-          "isThumbnail": false,
-          "displayOrder": 3
-        },
-        {
-          "id": "med-3-4",
-          "colorId": "col-p3-siyah",
-          "type": "IMAGE",
-          "url": "/uploads/products/IMG_2259-detail.webp",
-          "thumbnailUrl": "/uploads/products/IMG_2259-thumb.webp",
-          "altText": "Oversize Trençkot — Siyah",
-          "isThumbnail": true,
-          "displayOrder": 1
-        },
-        {
-          "id": "med-3-5",
-          "colorId": "col-p3-siyah",
-          "type": "IMAGE",
-          "url": "/uploads/products/IMG_2262-detail.webp",
-          "thumbnailUrl": "/uploads/products/IMG_2262-thumb.webp",
-          "altText": "Oversize Trençkot — Siyah Boydan",
-          "isThumbnail": false,
-          "displayOrder": 2
-        }
-      ]
-    },
-    {
-      "id": "prod-4",
-      "title": "Brode Garnili Triko İkili Takım",
-      "slug": "brode-garnili-triko-ikili-takim",
-      "description": "Zarif brode işlemeleri, manşet detayları ve dökümlü triko eteği ile feminen ve asil bir görünüm sunar. Özel günlerde ve günlük şıklıkta yüksek konfor sağlar.",
-      "fabricDetails": "%50 Pamuk, %50 Akrilik Triko dokuma. Yumuşak tuşe, batma yapmaz.",
-      "modelDimensions": "Boy: 176 cm. Manken üzerindeki beden: 1 Beden.",
-      "basePrice": 1650,
-      "discountPrice": 1485,
-      "badge": "YENİ ÜRÜN",
-      "categorySlug": "triko",
-      "categoryName": "Triko & Tunik",
-      "collectionSlugs": [
-        "yeni-sezon",
-        "ozel-firsatlar"
-      ],
-      "createdAt": "2026-10-18T14:00:00Z",
-      "colors": [
-        {
-          "id": "col-p4-ekru",
-          "name": "Ekru",
-          "slug": "ekru",
-          "colorCode": "#F5F2EB",
-          "displayOrder": 1
-        },
-        {
-          "id": "col-p4-lacivert",
-          "name": "Gece Laciverti",
-          "slug": "gece-laciverti",
-          "colorCode": "#1E293B",
-          "displayOrder": 2
-        }
-      ],
-      "sizes": [
-        {
-          "id": "size-1",
-          "name": "1 Beden (36-38)",
-          "slug": "1-beden-36-38",
-          "displayOrder": 1
-        },
-        {
-          "id": "size-2",
-          "name": "2 Beden (40-42)",
-          "slug": "2-beden-40-42",
-          "displayOrder": 2
-        }
-      ],
-      "variants": [
-        {
-          "id": "var-4-1",
-          "colorId": "col-p4-ekru",
-          "sizeId": "size-1",
-          "sku": "HM-BRD-EKR-B1",
-          "stockQuantity": 50,
-          "isActive": true
-        },
-        {
-          "id": "var-4-2",
-          "colorId": "col-p4-ekru",
-          "sizeId": "size-2",
-          "sku": "HM-BRD-EKR-B2",
-          "stockQuantity": 50,
-          "isActive": true
-        },
-        {
-          "id": "var-4-3",
-          "colorId": "col-p4-lacivert",
-          "sizeId": "size-1",
-          "sku": "HM-BRD-LCV-B1",
-          "stockQuantity": 50,
-          "isActive": true
-        },
-        {
-          "id": "var-4-4",
-          "colorId": "col-p4-lacivert",
-          "sizeId": "size-2",
-          "sku": "HM-BRD-LCV-B2",
-          "stockQuantity": 50,
-          "isActive": true
-        }
-      ],
-      "media": [
-        {
-          "id": "med-4-1",
-          "colorId": "col-p4-ekru",
-          "type": "IMAGE",
-          "url": "/uploads/products/IMG_2263-detail.webp",
-          "thumbnailUrl": "/uploads/products/IMG_2263-thumb.webp",
-          "altText": "Brode Garnili Triko — Ekru",
-          "isThumbnail": true,
-          "displayOrder": 1
-        },
-        {
-          "id": "med-4-2",
-          "colorId": "col-p4-ekru",
-          "type": "IMAGE",
-          "url": "/uploads/products/IMG_2270-detail.webp",
-          "thumbnailUrl": "/uploads/products/IMG_2270-thumb.webp",
-          "altText": "Brode Garnili Triko — Ekru Detay",
-          "isThumbnail": false,
-          "displayOrder": 2
-        },
-        {
-          "id": "med-4-3",
-          "colorId": "col-p4-lacivert",
-          "type": "IMAGE",
-          "url": "/uploads/products/IMG_2279-detail.webp",
-          "thumbnailUrl": "/uploads/products/IMG_2279-thumb.webp",
-          "altText": "Brode Garnili Triko — Gece Laciverti",
-          "isThumbnail": true,
-          "displayOrder": 1
-        }
-      ]
-    }
-  ],
+  "products": [],
   "categories": [
     {
       "id": "cat-1",
@@ -580,14 +32,6 @@
       "description": "Doğal ipliklerden dokunan nefes alan trikolar ve dökümlü üstler. aaa",
       "imageUrl": "/uploads/products/IMG_2263-card.webp",
       "displayOrder": 4
-    },
-    {
-      "id": "cat-1792592222825",
-      "name": "deneme",
-      "slug": "deneme",
-      "description": "deneme111",
-      "displayOrder": 5,
-      "imageUrl": "/uploads/products/ekran-goruntusu-2026-10-21-172245-1792596845310-card.webp"
     }
   ],
   "collections": [
@@ -727,7 +171,1297 @@
     }
   ],
   "orders": [],
-  "shipments": [],
-  "returnRequests": [],
-  "notifications": []
+  "shipments": [
+    {
+      "id": "shp-a8e1fe03092e",
+      "orderId": "ord-1793136250750",
+      "orderNumber": "HM-20261027-7322",
+      "carrier": "mng",
+      "carrierName": "MNG Kargo",
+      "trackingNumber": "MNG691853519",
+      "trackingUrl": "https://www.mngkargo.com.tr/gonderitakip?takipNo=MNG691853519",
+      "labelUrl": "/api/shipping/labels/shp-a8e1fe03092e",
+      "status": "AWAITING_SHIPMENT",
+      "method": "API_INTEGRATED",
+      "providerReference": "SIM_REF_MNG691853519",
+      "events": [
+        {
+          "id": "evt-bfefb121bba2",
+          "timestamp": "2026-10-27T21:24:10.755Z",
+          "status": "AWAITING_SHIPMENT",
+          "description": "Kargo gönderi kaydı oluşturuldu (Simülasyon Adaptörü - Test Ortamı).",
+          "location": "Hümra Moda Merkez Depo / İstanbul",
+          "carrierReference": "SIMULATED_MOCK_REF",
+          "createdAt": "2026-10-27T21:24:10.755Z"
+        }
+      ],
+      "createdAt": "2026-10-27T21:24:10.755Z",
+      "updatedAt": "2026-10-27T21:24:10.755Z"
+    },
+    {
+      "id": "shp-42304da1d62e",
+      "orderId": "ord-1793136250771",
+      "orderNumber": "HM-20261027-5336",
+      "carrier": "yurtici",
+      "carrierName": "Yurtiçi Kargo",
+      "trackingNumber": "YUR334967550",
+      "trackingUrl": "https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=YUR334967550",
+      "labelUrl": "/api/shipping/labels/shp-42304da1d62e",
+      "status": "DELIVERED",
+      "method": "API_INTEGRATED",
+      "providerReference": "SIM_REF_YUR334967550",
+      "events": [
+        {
+          "id": "evt-25e641dcada6",
+          "timestamp": "2026-10-27T21:24:10.776Z",
+          "status": "AWAITING_SHIPMENT",
+          "description": "Kargo gönderi kaydı oluşturuldu (Simülasyon Adaptörü - Test Ortamı).",
+          "location": "Hümra Moda Merkez Depo / İstanbul",
+          "carrierReference": "SIMULATED_MOCK_REF",
+          "createdAt": "2026-10-27T21:24:10.776Z"
+        },
+        {
+          "id": "evt-c3810b6a1453",
+          "timestamp": "2026-10-27T21:24:10.794Z",
+          "status": "DELIVERED",
+          "description": "Alıcıya bizzat teslim edildi.",
+          "location": "Kadıköy Şubesi",
+          "carrierReference": "EVT_DELIVER_001",
+          "createdAt": "2026-10-27T21:24:10.794Z"
+        }
+      ],
+      "createdAt": "2026-10-27T21:24:10.776Z",
+      "updatedAt": "2026-10-27T21:24:10.794Z",
+      "deliveredAt": "2026-10-27T21:24:10.794Z"
+    },
+    {
+      "id": "shp-fac3767d8656",
+      "orderId": "ord-1793136250815",
+      "orderNumber": "HM-20261027-9187",
+      "carrier": "aras",
+      "carrierName": "Aras Kargo",
+      "trackingNumber": "ARA920500587",
+      "trackingUrl": "https://kargotakip.araskargo.com.tr/mainpage.aspx?code=ARA920500587",
+      "labelUrl": "/api/shipping/labels/shp-fac3767d8656",
+      "status": "OUT_FOR_DELIVERY",
+      "method": "API_INTEGRATED",
+      "providerReference": "SIM_REF_ARA920500587",
+      "events": [
+        {
+          "id": "evt-2fe1652f78c6",
+          "timestamp": "2026-10-27T21:24:10.821Z",
+          "status": "AWAITING_SHIPMENT",
+          "description": "Kargo gönderi kaydı oluşturuldu (Simülasyon Adaptörü - Test Ortamı).",
+          "location": "Hümra Moda Merkez Depo / İstanbul",
+          "carrierReference": "SIMULATED_MOCK_REF",
+          "createdAt": "2026-10-27T21:24:10.821Z"
+        },
+        {
+          "id": "evt-d3eefb44e29d",
+          "timestamp": "2026-10-27T21:24:10.837Z",
+          "status": "OUT_FOR_DELIVERY",
+          "description": "Kurye teslimat için adrese çıktı",
+          "carrierReference": "EVT_OUT_001",
+          "createdAt": "2026-10-27T21:24:10.837Z"
+        }
+      ],
+      "createdAt": "2026-10-27T21:24:10.821Z",
+      "updatedAt": "2026-10-27T21:24:10.837Z"
+    },
+    {
+      "id": "shp-712514344381",
+      "orderId": "ord-1793136250990",
+      "orderNumber": "HM-20261027-7526",
+      "carrier": "hepsijet",
+      "carrierName": "HepsiJet",
+      "trackingNumber": "HJ123456789",
+      "trackingUrl": "https://hepsijet.com/gonderi-takibi/HJ123456789",
+      "status": "DELIVERED",
+      "method": "MANUAL",
+      "events": [
+        {
+          "id": "evt-177af7947e01",
+          "timestamp": "2026-10-27T21:24:10.998Z",
+          "status": "SHIPPED",
+          "description": "Takip bilgileri güncellendi (HepsiJet - Takip No: HJ123456789)",
+          "location": "Yönetim Paneli",
+          "createdAt": "2026-10-27T21:24:10.998Z"
+        },
+        {
+          "id": "evt-b10ae0ff29cc",
+          "timestamp": "2026-10-27T21:24:11.007Z",
+          "status": "DELIVERED",
+          "description": "Paket müşteriye teslim edildi",
+          "createdAt": "2026-10-27T21:24:11.007Z"
+        }
+      ],
+      "createdAt": "2026-10-27T21:24:10.998Z",
+      "updatedAt": "2026-10-27T21:24:11.007Z",
+      "shippedAt": "2026-10-27T21:24:10.998Z",
+      "deliveredAt": "2026-10-27T21:24:11.007Z"
+    },
+    {
+      "id": "shp-6067c2d3feb7",
+      "orderId": "ord-1793136310130",
+      "orderNumber": "HM-20261027-1230",
+      "carrier": "mng",
+      "carrierName": "MNG Kargo",
+      "trackingNumber": "MNG906421155",
+      "trackingUrl": "https://www.mngkargo.com.tr/gonderitakip?takipNo=MNG906421155",
+      "labelUrl": "/api/shipping/labels/shp-6067c2d3feb7",
+      "status": "AWAITING_SHIPMENT",
+      "method": "API_INTEGRATED",
+      "providerReference": "SIM_REF_MNG906421155",
+      "events": [
+        {
+          "id": "evt-6f027136b631",
+          "timestamp": "2026-10-27T21:25:10.141Z",
+          "status": "AWAITING_SHIPMENT",
+          "description": "Kargo gönderi kaydı oluşturuldu (Simülasyon Adaptörü - Test Ortamı).",
+          "location": "Hümra Moda Merkez Depo / İstanbul",
+          "carrierReference": "SIMULATED_MOCK_REF",
+          "createdAt": "2026-10-27T21:25:10.141Z"
+        }
+      ],
+      "createdAt": "2026-10-27T21:25:10.141Z",
+      "updatedAt": "2026-10-27T21:25:10.141Z"
+    },
+    {
+      "id": "shp-12ee4c1dccfd",
+      "orderId": "ord-1793136310160",
+      "orderNumber": "HM-20261027-9494",
+      "carrier": "yurtici",
+      "carrierName": "Yurtiçi Kargo",
+      "trackingNumber": "YUR293904969",
+      "trackingUrl": "https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=YUR293904969",
+      "labelUrl": "/api/shipping/labels/shp-12ee4c1dccfd",
+      "status": "DELIVERED",
+      "method": "API_INTEGRATED",
+      "providerReference": "SIM_REF_YUR293904969",
+      "events": [
+        {
+          "id": "evt-55d45b11f901",
+          "timestamp": "2026-10-27T21:25:10.170Z",
+          "status": "AWAITING_SHIPMENT",
+          "description": "Kargo gönderi kaydı oluşturuldu (Simülasyon Adaptörü - Test Ortamı).",
+          "location": "Hümra Moda Merkez Depo / İstanbul",
+          "carrierReference": "SIMULATED_MOCK_REF",
+          "createdAt": "2026-10-27T21:25:10.170Z"
+        },
+        {
+          "id": "evt-e8b7a5569e9e",
+          "timestamp": "2026-10-27T21:25:10.188Z",
+          "status": "DELIVERED",
+          "description": "Alıcıya bizzat teslim edildi.",
+          "location": "Kadıköy Şubesi",
+          "carrierReference": "EVT_DELIVER_001",
+          "createdAt": "2026-10-27T21:25:10.188Z"
+        }
+      ],
+      "createdAt": "2026-10-27T21:25:10.170Z",
+      "updatedAt": "2026-10-27T21:25:10.188Z",
+      "deliveredAt": "2026-10-27T21:25:10.188Z"
+    },
+    {
+      "id": "shp-8d2a1b4b0a5b",
+      "orderId": "ord-1793136310217",
+      "orderNumber": "HM-20261027-2535",
+      "carrier": "aras",
+      "carrierName": "Aras Kargo",
+      "trackingNumber": "ARA170683249",
+      "trackingUrl": "https://kargotakip.araskargo.com.tr/mainpage.aspx?code=ARA170683249",
+      "labelUrl": "/api/shipping/labels/shp-8d2a1b4b0a5b",
+      "status": "OUT_FOR_DELIVERY",
+      "method": "API_INTEGRATED",
+      "providerReference": "SIM_REF_ARA170683249",
+      "events": [
+        {
+          "id": "evt-3dac06311ea8",
+          "timestamp": "2026-10-27T21:25:10.228Z",
+          "status": "AWAITING_SHIPMENT",
+          "description": "Kargo gönderi kaydı oluşturuldu (Simülasyon Adaptörü - Test Ortamı).",
+          "location": "Hümra Moda Merkez Depo / İstanbul",
+          "carrierReference": "SIMULATED_MOCK_REF",
+          "createdAt": "2026-10-27T21:25:10.228Z"
+        },
+        {
+          "id": "evt-a7875a2cc5ab",
+          "timestamp": "2026-10-27T21:25:10.247Z",
+          "status": "OUT_FOR_DELIVERY",
+          "description": "Kurye teslimat için adrese çıktı",
+          "carrierReference": "EVT_OUT_001",
+          "createdAt": "2026-10-27T21:25:10.247Z"
+        }
+      ],
+      "createdAt": "2026-10-27T21:25:10.228Z",
+      "updatedAt": "2026-10-27T21:25:10.247Z"
+    },
+    {
+      "id": "shp-6326b5b85f96",
+      "orderId": "ord-1793136310464",
+      "orderNumber": "HM-20261027-9970",
+      "carrier": "hepsijet",
+      "carrierName": "HepsiJet",
+      "trackingNumber": "HJ123456789",
+      "trackingUrl": "https://hepsijet.com/gonderi-takibi/HJ123456789",
+      "status": "DELIVERED",
+      "method": "MANUAL",
+      "events": [
+        {
+          "id": "evt-1204bed0134c",
+          "timestamp": "2026-10-27T21:25:10.478Z",
+          "status": "SHIPPED",
+          "description": "Takip bilgileri güncellendi (HepsiJet - Takip No: HJ123456789)",
+          "location": "Yönetim Paneli",
+          "createdAt": "2026-10-27T21:25:10.478Z"
+        },
+        {
+          "id": "evt-c879bfe202af",
+          "timestamp": "2026-10-27T21:25:10.488Z",
+          "status": "DELIVERED",
+          "description": "Paket müşteriye teslim edildi",
+          "createdAt": "2026-10-27T21:25:10.488Z"
+        }
+      ],
+      "createdAt": "2026-10-27T21:25:10.478Z",
+      "updatedAt": "2026-10-27T21:25:10.488Z",
+      "shippedAt": "2026-10-27T21:25:10.478Z",
+      "deliveredAt": "2026-10-27T21:25:10.488Z"
+    },
+    {
+      "id": "shp-ad7f19c0242c",
+      "orderId": "ord-1793167747938",
+      "orderNumber": "HM-20261028-6348",
+      "carrier": "mng",
+      "carrierName": "MNG Kargo",
+      "trackingNumber": "MNG458865667",
+      "trackingUrl": "https://www.mngkargo.com.tr/gonderitakip?takipNo=MNG458865667",
+      "labelUrl": "/api/shipping/labels/shp-ad7f19c0242c",
+      "status": "AWAITING_SHIPMENT",
+      "method": "API_INTEGRATED",
+      "providerReference": "SIM_REF_MNG458865667",
+      "events": [
+        {
+          "id": "evt-365a687ef353",
+          "timestamp": "2026-10-28T06:09:07.951Z",
+          "status": "AWAITING_SHIPMENT",
+          "description": "Kargo gönderi kaydı oluşturuldu (Simülasyon Adaptörü - Test Ortamı).",
+          "location": "Hümra Moda Merkez Depo / İstanbul",
+          "carrierReference": "SIMULATED_MOCK_REF",
+          "createdAt": "2026-10-28T06:09:07.951Z"
+        }
+      ],
+      "createdAt": "2026-10-28T06:09:07.951Z",
+      "updatedAt": "2026-10-28T06:09:07.951Z"
+    },
+    {
+      "id": "shp-a2dcf27d09d6",
+      "orderId": "ord-1793167747972",
+      "orderNumber": "HM-20261028-3572",
+      "carrier": "yurtici",
+      "carrierName": "Yurtiçi Kargo",
+      "trackingNumber": "YUR823120977",
+      "trackingUrl": "https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=YUR823120977",
+      "labelUrl": "/api/shipping/labels/shp-a2dcf27d09d6",
+      "status": "DELIVERED",
+      "method": "API_INTEGRATED",
+      "providerReference": "SIM_REF_YUR823120977",
+      "events": [
+        {
+          "id": "evt-4a996e8ec82c",
+          "timestamp": "2026-10-28T06:09:07.985Z",
+          "status": "AWAITING_SHIPMENT",
+          "description": "Kargo gönderi kaydı oluşturuldu (Simülasyon Adaptörü - Test Ortamı).",
+          "location": "Hümra Moda Merkez Depo / İstanbul",
+          "carrierReference": "SIMULATED_MOCK_REF",
+          "createdAt": "2026-10-28T06:09:07.985Z"
+        },
+        {
+          "id": "evt-61ff32fbfbc3",
+          "timestamp": "2026-10-28T06:09:08.005Z",
+          "status": "DELIVERED",
+          "description": "Alıcıya bizzat teslim edildi.",
+          "location": "Kadıköy Şubesi",
+          "carrierReference": "EVT_DELIVER_001",
+          "createdAt": "2026-10-28T06:09:08.005Z"
+        }
+      ],
+      "createdAt": "2026-10-28T06:09:07.985Z",
+      "updatedAt": "2026-10-28T06:09:08.005Z",
+      "deliveredAt": "2026-10-28T06:09:08.005Z"
+    },
+    {
+      "id": "shp-db91ca02a760",
+      "orderId": "ord-1793167748050",
+      "orderNumber": "HM-20261028-2008",
+      "carrier": "aras",
+      "carrierName": "Aras Kargo",
+      "trackingNumber": "ARA133275726",
+      "trackingUrl": "https://kargotakip.araskargo.com.tr/mainpage.aspx?code=ARA133275726",
+      "labelUrl": "/api/shipping/labels/shp-db91ca02a760",
+      "status": "OUT_FOR_DELIVERY",
+      "method": "API_INTEGRATED",
+      "providerReference": "SIM_REF_ARA133275726",
+      "events": [
+        {
+          "id": "evt-9e752d70877f",
+          "timestamp": "2026-10-28T06:09:08.071Z",
+          "status": "AWAITING_SHIPMENT",
+          "description": "Kargo gönderi kaydı oluşturuldu (Simülasyon Adaptörü - Test Ortamı).",
+          "location": "Hümra Moda Merkez Depo / İstanbul",
+          "carrierReference": "SIMULATED_MOCK_REF",
+          "createdAt": "2026-10-28T06:09:08.071Z"
+        },
+        {
+          "id": "evt-f5d5628e146c",
+          "timestamp": "2026-10-28T06:09:08.092Z",
+          "status": "OUT_FOR_DELIVERY",
+          "description": "Kurye teslimat için adrese çıktı",
+          "carrierReference": "EVT_OUT_001",
+          "createdAt": "2026-10-28T06:09:08.092Z"
+        }
+      ],
+      "createdAt": "2026-10-28T06:09:08.071Z",
+      "updatedAt": "2026-10-28T06:09:08.092Z"
+    },
+    {
+      "id": "shp-36f0e0d97d55",
+      "orderId": "ord-1793167748329",
+      "orderNumber": "HM-20261028-3223",
+      "carrier": "hepsijet",
+      "carrierName": "HepsiJet",
+      "trackingNumber": "HJ123456789",
+      "trackingUrl": "https://hepsijet.com/gonderi-takibi/HJ123456789",
+      "status": "DELIVERED",
+      "method": "MANUAL",
+      "events": [
+        {
+          "id": "evt-cff9ae4744ab",
+          "timestamp": "2026-10-28T06:09:08.346Z",
+          "status": "SHIPPED",
+          "description": "Takip bilgileri güncellendi (HepsiJet - Takip No: HJ123456789)",
+          "location": "Yönetim Paneli",
+          "createdAt": "2026-10-28T06:09:08.346Z"
+        },
+        {
+          "id": "evt-0f793129acfb",
+          "timestamp": "2026-10-28T06:09:08.356Z",
+          "status": "DELIVERED",
+          "description": "Paket müşteriye teslim edildi",
+          "createdAt": "2026-10-28T06:09:08.356Z"
+        }
+      ],
+      "createdAt": "2026-10-28T06:09:08.346Z",
+      "updatedAt": "2026-10-28T06:09:08.356Z",
+      "shippedAt": "2026-10-28T06:09:08.346Z",
+      "deliveredAt": "2026-10-28T06:09:08.356Z"
+    }
+  ],
+  "returnRequests": [
+    {
+      "id": "ret-7f44dcdcef90",
+      "orderId": "ord-1793167748206",
+      "orderNumber": "HM-20261028-2388",
+      "customerEmail": "ayse.yilmaz@example.com",
+      "customerPhone": "05321112233",
+      "requestType": "RETURN",
+      "items": [
+        {
+          "id": "ritem-9080134df5ce",
+          "orderItemId": "ord-item-1793167748206-0",
+          "productId": "prod-1",
+          "productName": "Qapitone Garnili Scuba İkili Takım",
+          "variantSku": "HM-SCB-SYH-B1",
+          "colorName": "Siyah",
+          "sizeName": "1 Beden (36-38)",
+          "quantity": 1,
+          "unitPrice": 1574.1,
+          "totalPrice": 1574.1,
+          "reason": "Vazgeçtim",
+          "condition": "Kullanılmamış / Etiketli"
+        }
+      ],
+      "requestedAmount": 1574.1,
+      "refundedAmount": 1574.1,
+      "status": "REFUND_COMPLETED",
+      "reason": "Vazgeçtim",
+      "restockDecision": "PENDING",
+      "isRestocked": false,
+      "actualRefundVerified": true,
+      "createdAt": "2026-10-28T06:09:08.220Z",
+      "updatedAt": "2026-10-28T06:09:08.239Z",
+      "refundTransactionRef": "PAYTR_TEST_REFUND_TX_9876",
+      "processedAt": "2026-10-28T06:09:08.239Z"
+    },
+    {
+      "id": "ret-c6775e375c7f",
+      "orderId": "ord-1793167748136",
+      "orderNumber": "HM-20261028-7364",
+      "customerEmail": "ayse.yilmaz@example.com",
+      "customerPhone": "05321112233",
+      "requestType": "RETURN",
+      "items": [
+        {
+          "id": "ritem-2e103003c0b2",
+          "orderItemId": "ord-item-1793167748136-0",
+          "productId": "prod-1",
+          "productName": "Qapitone Garnili Scuba İkili Takım",
+          "variantSku": "HM-SCB-SYH-B1",
+          "colorName": "Siyah",
+          "sizeName": "1 Beden (36-38)",
+          "quantity": 1,
+          "unitPrice": 1574.1,
+          "totalPrice": 1574.1,
+          "reason": "Beden Uymadı",
+          "condition": "Kullanılmamış / Etiketli"
+        }
+      ],
+      "requestedAmount": 1574.1,
+      "refundedAmount": 0,
+      "status": "APPROVED",
+      "reason": "Beden Uymadı",
+      "customerNotes": "Bir beden küçüğü ile değiştirmek istiyorum.",
+      "restockDecision": "PENDING",
+      "isRestocked": false,
+      "actualRefundVerified": false,
+      "createdAt": "2026-10-28T06:09:08.152Z",
+      "updatedAt": "2026-10-28T06:09:08.171Z",
+      "adminNotes": "İade onaylandı. Lütfen anlaşmalı Yurtiçi Kargo kodumuz ile gönderiniz.",
+      "processedAt": "2026-10-28T06:09:08.171Z"
+    },
+    {
+      "id": "ret-c01fb0a4c7be",
+      "orderId": "ord-1793136310348",
+      "orderNumber": "HM-20261027-7837",
+      "customerEmail": "ayse.yilmaz@example.com",
+      "customerPhone": "05321112233",
+      "requestType": "RETURN",
+      "items": [
+        {
+          "id": "ritem-747398e74614",
+          "orderItemId": "ord-item-1793136310348-0",
+          "productId": "prod-1",
+          "productName": "Qapitone Garnili Scuba İkili Takım",
+          "variantSku": "HM-SCB-SYH-B1",
+          "colorName": "Siyah",
+          "sizeName": "1 Beden (36-38)",
+          "quantity": 1,
+          "unitPrice": 1574.1,
+          "totalPrice": 1574.1,
+          "reason": "Vazgeçtim",
+          "condition": "Kullanılmamış / Etiketli"
+        }
+      ],
+      "requestedAmount": 1574.1,
+      "refundedAmount": 1574.1,
+      "status": "REFUND_COMPLETED",
+      "reason": "Vazgeçtim",
+      "restockDecision": "PENDING",
+      "isRestocked": false,
+      "actualRefundVerified": true,
+      "createdAt": "2026-10-27T21:25:10.361Z",
+      "updatedAt": "2026-10-27T21:25:10.380Z",
+      "refundTransactionRef": "PAYTR_TEST_REFUND_TX_9876",
+      "processedAt": "2026-10-27T21:25:10.380Z"
+    },
+    {
+      "id": "ret-782031f7baee",
+      "orderId": "ord-1793136310285",
+      "orderNumber": "HM-20261027-4832",
+      "customerEmail": "ayse.yilmaz@example.com",
+      "customerPhone": "05321112233",
+      "requestType": "RETURN",
+      "items": [
+        {
+          "id": "ritem-4abd83585c14",
+          "orderItemId": "ord-item-1793136310285-0",
+          "productId": "prod-1",
+          "productName": "Qapitone Garnili Scuba İkili Takım",
+          "variantSku": "HM-SCB-SYH-B1",
+          "colorName": "Siyah",
+          "sizeName": "1 Beden (36-38)",
+          "quantity": 1,
+          "unitPrice": 1574.1,
+          "totalPrice": 1574.1,
+          "reason": "Beden Uymadı",
+          "condition": "Kullanılmamış / Etiketli"
+        }
+      ],
+      "requestedAmount": 1574.1,
+      "refundedAmount": 0,
+      "status": "APPROVED",
+      "reason": "Beden Uymadı",
+      "customerNotes": "Bir beden küçüğü ile değiştirmek istiyorum.",
+      "restockDecision": "PENDING",
+      "isRestocked": false,
+      "actualRefundVerified": false,
+      "createdAt": "2026-10-27T21:25:10.299Z",
+      "updatedAt": "2026-10-27T21:25:10.317Z",
+      "adminNotes": "İade onaylandı. Lütfen anlaşmalı Yurtiçi Kargo kodumuz ile gönderiniz.",
+      "processedAt": "2026-10-27T21:25:10.317Z"
+    },
+    {
+      "id": "ret-90827e5a3658",
+      "orderId": "ord-1793136250907",
+      "orderNumber": "HM-20261027-1246",
+      "customerEmail": "ayse.yilmaz@example.com",
+      "customerPhone": "05321112233",
+      "requestType": "RETURN",
+      "items": [
+        {
+          "id": "ritem-ff22d21ebae1",
+          "orderItemId": "ord-item-1793136250907-0",
+          "productId": "prod-1",
+          "productName": "Qapitone Garnili Scuba İkili Takım",
+          "variantSku": "HM-SCB-SYH-B1",
+          "colorName": "Siyah",
+          "sizeName": "1 Beden (36-38)",
+          "quantity": 1,
+          "unitPrice": 1574.1,
+          "totalPrice": 1574.1,
+          "reason": "Vazgeçtim",
+          "condition": "Kullanılmamış / Etiketli"
+        }
+      ],
+      "requestedAmount": 1574.1,
+      "refundedAmount": 1574.1,
+      "status": "REFUND_COMPLETED",
+      "reason": "Vazgeçtim",
+      "restockDecision": "PENDING",
+      "isRestocked": false,
+      "actualRefundVerified": true,
+      "createdAt": "2026-10-27T21:24:10.915Z",
+      "updatedAt": "2026-10-27T21:24:10.930Z",
+      "refundTransactionRef": "PAYTR_TEST_REFUND_TX_9876",
+      "processedAt": "2026-10-27T21:24:10.930Z"
+    },
+    {
+      "id": "ret-fcf1f7cbb9b2",
+      "orderId": "ord-1793136250861",
+      "orderNumber": "HM-20261027-8835",
+      "customerEmail": "ayse.yilmaz@example.com",
+      "customerPhone": "05321112233",
+      "requestType": "RETURN",
+      "items": [
+        {
+          "id": "ritem-593f163443b4",
+          "orderItemId": "ord-item-1793136250861-0",
+          "productId": "prod-1",
+          "productName": "Qapitone Garnili Scuba İkili Takım",
+          "variantSku": "HM-SCB-SYH-B1",
+          "colorName": "Siyah",
+          "sizeName": "1 Beden (36-38)",
+          "quantity": 1,
+          "unitPrice": 1574.1,
+          "totalPrice": 1574.1,
+          "reason": "Beden Uymadı",
+          "condition": "Kullanılmamış / Etiketli"
+        }
+      ],
+      "requestedAmount": 1574.1,
+      "refundedAmount": 0,
+      "status": "APPROVED",
+      "reason": "Beden Uymadı",
+      "customerNotes": "Bir beden küçüğü ile değiştirmek istiyorum.",
+      "restockDecision": "PENDING",
+      "isRestocked": false,
+      "actualRefundVerified": false,
+      "createdAt": "2026-10-27T21:24:10.869Z",
+      "updatedAt": "2026-10-27T21:24:10.884Z",
+      "adminNotes": "İade onaylandı. Lütfen anlaşmalı Yurtiçi Kargo kodumuz ile gönderiniz.",
+      "processedAt": "2026-10-27T21:24:10.884Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif-1366e557f875",
+      "orderId": "ord-1793136250750",
+      "orderNumber": "HM-20261027-7322",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_CREATED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Kargoya Verildi - HM-20261027-7322 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p>Harika bir haber! <strong>HM-20261027-7322</strong> numaralı siparişiniz kargoya teslim edilmiştir.</p>\n            <div style=\"background-color: #f9f9f9; padding: 15px; border-radius: 4px; margin: 20px 0;\">\n              <p style=\"margin: 0 0 8px 0;\"><strong>Kargo Firması:</strong> MNG Kargo</p>\n              <p style=\"margin: 0 0 12px 0;\"><strong>Takip Numarası:</strong> MNG691853519</p>\n              <a href=\"https://www.mngkargo.com.tr/gonderitakip?takipNo=MNG691853519\" target=\"_blank\" style=\"display: inline-block; background-color: #141414; color: #fff; padding: 10px 18px; text-decoration: none; border-radius: 4px; font-size: 13px;\">Kargomu Takip Et</a>\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-7322 numaralı siparişiniz MNG Kargo firmasına teslim edilmiştir.\nTakip No: MNG691853519\nTakip Bağlantısı: https://www.mngkargo.com.tr/gonderitakip?takipNo=MNG691853519\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_CREATED:HM-20261027-7322:default",
+      "sentAt": "2026-10-27T21:24:10.763Z",
+      "createdAt": "2026-10-27T21:24:10.763Z"
+    },
+    {
+      "id": "notif-6f0ed164433e",
+      "orderId": "ord-1793136250771",
+      "orderNumber": "HM-20261027-5336",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_CREATED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Kargoya Verildi - HM-20261027-5336 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p>Harika bir haber! <strong>HM-20261027-5336</strong> numaralı siparişiniz kargoya teslim edilmiştir.</p>\n            <div style=\"background-color: #f9f9f9; padding: 15px; border-radius: 4px; margin: 20px 0;\">\n              <p style=\"margin: 0 0 8px 0;\"><strong>Kargo Firması:</strong> Yurtiçi Kargo</p>\n              <p style=\"margin: 0 0 12px 0;\"><strong>Takip Numarası:</strong> YUR334967550</p>\n              <a href=\"https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=YUR334967550\" target=\"_blank\" style=\"display: inline-block; background-color: #141414; color: #fff; padding: 10px 18px; text-decoration: none; border-radius: 4px; font-size: 13px;\">Kargomu Takip Et</a>\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-5336 numaralı siparişiniz Yurtiçi Kargo firmasına teslim edilmiştir.\nTakip No: YUR334967550\nTakip Bağlantısı: https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=YUR334967550\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_CREATED:HM-20261027-5336:default",
+      "sentAt": "2026-10-27T21:24:10.784Z",
+      "createdAt": "2026-10-27T21:24:10.784Z"
+    },
+    {
+      "id": "notif-425fd3b64e6e",
+      "orderId": "ord-1793136250771",
+      "orderNumber": "HM-20261027-5336",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_DELIVERED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Teslim Edildi - HM-20261027-5336 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261027-5336</strong> numaralı siparişinizin kargo teslimatı tamamlanmıştır.</p>\n            <p>Hümra Moda'yı tercih ettiğiniz için teşekkür eder, keyifli günlerde kullanmanızı dileriz.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-5336 numaralı siparişiniz teslim edilmiştir. Ürünlerinizi keyifle kullanmanızı dileriz.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_DELIVERED:HM-20261027-5336:default",
+      "sentAt": "2026-10-27T21:24:10.796Z",
+      "createdAt": "2026-10-27T21:24:10.796Z"
+    },
+    {
+      "id": "notif-0a0222741abe",
+      "orderId": "ord-1793136250815",
+      "orderNumber": "HM-20261027-9187",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_CREATED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Kargoya Verildi - HM-20261027-9187 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p>Harika bir haber! <strong>HM-20261027-9187</strong> numaralı siparişiniz kargoya teslim edilmiştir.</p>\n            <div style=\"background-color: #f9f9f9; padding: 15px; border-radius: 4px; margin: 20px 0;\">\n              <p style=\"margin: 0 0 8px 0;\"><strong>Kargo Firması:</strong> Aras Kargo</p>\n              <p style=\"margin: 0 0 12px 0;\"><strong>Takip Numarası:</strong> ARA920500587</p>\n              <a href=\"https://kargotakip.araskargo.com.tr/mainpage.aspx?code=ARA920500587\" target=\"_blank\" style=\"display: inline-block; background-color: #141414; color: #fff; padding: 10px 18px; text-decoration: none; border-radius: 4px; font-size: 13px;\">Kargomu Takip Et</a>\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-9187 numaralı siparişiniz Aras Kargo firmasına teslim edilmiştir.\nTakip No: ARA920500587\nTakip Bağlantısı: https://kargotakip.araskargo.com.tr/mainpage.aspx?code=ARA920500587\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_CREATED:HM-20261027-9187:default",
+      "sentAt": "2026-10-27T21:24:10.829Z",
+      "createdAt": "2026-10-27T21:24:10.829Z"
+    },
+    {
+      "id": "notif-c4d3f5568c39",
+      "orderId": "ord-1793136250815",
+      "orderNumber": "HM-20261027-9187",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_IN_TRANSIT",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Kargoya Verildi - HM-20261027-9187 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p>Harika bir haber! <strong>HM-20261027-9187</strong> numaralı siparişiniz kargoya teslim edilmiştir.</p>\n            <div style=\"background-color: #f9f9f9; padding: 15px; border-radius: 4px; margin: 20px 0;\">\n              <p style=\"margin: 0 0 8px 0;\"><strong>Kargo Firması:</strong> Aras Kargo</p>\n              <p style=\"margin: 0 0 12px 0;\"><strong>Takip Numarası:</strong> ARA920500587</p>\n              <a href=\"https://kargotakip.araskargo.com.tr/mainpage.aspx?code=ARA920500587\" target=\"_blank\" style=\"display: inline-block; background-color: #141414; color: #fff; padding: 10px 18px; text-decoration: none; border-radius: 4px; font-size: 13px;\">Kargomu Takip Et</a>\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-9187 numaralı siparişiniz Aras Kargo firmasına teslim edilmiştir.\nTakip No: ARA920500587\nTakip Bağlantısı: https://kargotakip.araskargo.com.tr/mainpage.aspx?code=ARA920500587\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_IN_TRANSIT:HM-20261027-9187:default",
+      "sentAt": "2026-10-27T21:24:10.839Z",
+      "createdAt": "2026-10-27T21:24:10.839Z"
+    },
+    {
+      "id": "notif-ac21fe49f298",
+      "orderId": "ord-1793136250861",
+      "orderNumber": "HM-20261027-8835",
+      "channel": "EMAIL",
+      "eventType": "RETURN_REQUESTED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "İade Talebiniz Alındı - HM-20261027-8835 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261027-8835</strong> numaralı siparişiniz için oluşturduğunuz iade talebi başarıyla alınmıştır.</p>\n            <p>Talebiniz operasyon ekibimiz tarafından incelendikten sonra kargo iade süreci hakkında bilgilendirileceksiniz.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-8835 numaralı siparişinize ait iade talebiniz incelemeye alınmıştır. Yetkililerimiz talebi inceledikten sonra size geri dönüş yapacaktır.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "RETURN_REQUESTED:HM-20261027-8835:default",
+      "sentAt": "2026-10-27T21:24:10.875Z",
+      "createdAt": "2026-10-27T21:24:10.875Z"
+    },
+    {
+      "id": "notif-f981315ad0f3",
+      "orderId": "ord-1793136250861",
+      "orderNumber": "HM-20261027-8835",
+      "channel": "EMAIL",
+      "eventType": "RETURN_DECISION",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "İade Talebiniz Onaylandı - HM-20261027-8835 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261027-8835</strong> numaralı iade talebiniz <strong>KABUL EDİLMİŞTİR</strong>.</p>\n            <p><strong>Açıklama:</strong> İade onaylandı. Lütfen anlaşmalı Yurtiçi Kargo kodumuz ile gönderiniz.</p>\n            <p>Ürünü orijinal ambalajında ve faturasıyla birlikte anlaşmalı kargo kodumuz ile gönderebilirsiniz.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-8835 numaralı siparişinize ait iade talebiniz onaylanmıştır.\nAçıklama: İade onaylandı. Lütfen anlaşmalı Yurtiçi Kargo kodumuz ile gönderiniz.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "RETURN_DECISION:HM-20261027-8835:default",
+      "sentAt": "2026-10-27T21:24:10.892Z",
+      "createdAt": "2026-10-27T21:24:10.892Z"
+    },
+    {
+      "id": "notif-31aaa61fbe35",
+      "orderId": "ord-1793136250907",
+      "orderNumber": "HM-20261027-1246",
+      "channel": "EMAIL",
+      "eventType": "RETURN_REQUESTED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "İade Talebiniz Alındı - HM-20261027-1246 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261027-1246</strong> numaralı siparişiniz için oluşturduğunuz iade talebi başarıyla alınmıştır.</p>\n            <p>Talebiniz operasyon ekibimiz tarafından incelendikten sonra kargo iade süreci hakkında bilgilendirileceksiniz.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-1246 numaralı siparişinize ait iade talebiniz incelemeye alınmıştır. Yetkililerimiz talebi inceledikten sonra size geri dönüş yapacaktır.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "RETURN_REQUESTED:HM-20261027-1246:default",
+      "sentAt": "2026-10-27T21:24:10.923Z",
+      "createdAt": "2026-10-27T21:24:10.923Z"
+    },
+    {
+      "id": "notif-03013e5728ad",
+      "orderId": "ord-1793136250907",
+      "orderNumber": "HM-20261027-1246",
+      "channel": "EMAIL",
+      "eventType": "REFUND_CONFIRMED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Para İadeniz Gerçekleştirildi - HM-20261027-1246 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261027-1246</strong> numaralı siparişiniz için onaylanan <strong>1574.1 ₺</strong> para iadesi bankanıza iletilmiştir.</p>\n            <p>Bankanızın işlem sürelerine bağlı olarak tutar 2-7 iş günü içinde hesabınıza yansıyacaktır.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-1246 numaralı siparişiniz için 1574.1 ₺ tutarındaki para iadesi bankanıza iletilmiştir.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "REFUND_CONFIRMED:HM-20261027-1246:default",
+      "sentAt": "2026-10-27T21:24:10.936Z",
+      "createdAt": "2026-10-27T21:24:10.936Z"
+    },
+    {
+      "id": "notif-86d8b809452b",
+      "orderId": "ord-1793136250952",
+      "orderNumber": "HM-20261027-7153",
+      "channel": "EMAIL",
+      "eventType": "ORDER_CREATED",
+      "recipient": "invalid-email-format",
+      "subject": "Siparişiniz Alındı - HM-20261027-7153 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Test Müşteri</strong>,</p>\n            <p><strong>HM-20261027-7153</strong> numaralı siparişiniz başarıyla alınmıştır.</p>\n            \n            <p>Siparişiniz hazırlandığında ve kargoya verildiğinde sizi bilgilendireceğiz.</p>\n            <div style=\"margin-top: 30px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 15px;\">\n              Bu e-posta Hümra Moda sipariş bildirim sisteminden otomatik olarak gönderilmiştir.\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Test Müşteri,\n\nHM-20261027-7153 numaralı siparişiniz başarıyla alınmıştır. Toplam Tutar: \n\nÖdeme ve hazırlık sürecini takip etmek için web sitemizi ziyaret edebilirsiniz.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "ORDER_CREATED:HM-20261027-7153:default",
+      "sentAt": "2026-10-27T21:24:10.959Z",
+      "createdAt": "2026-10-27T21:24:10.959Z"
+    },
+    {
+      "id": "notif-fcb72abdba60",
+      "orderId": "ord-1793136250966",
+      "orderNumber": "HM-20261027-3920",
+      "channel": "EMAIL",
+      "eventType": "PAYMENT_CONFIRMED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Ödemeniz Onaylandı - HM-20261027-3920 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261027-3920</strong> numaralı siparişinizin ödemesi PayTR güvencesiyle başarıyla onaylanmıştır.</p>\n            <p>Ürünleriniz özenle hazırlanarak en kısa sürede kargoya teslim edilecektir.</p>\n            <div style=\"margin-top: 30px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 15px;\">\n              Hümra Moda Müşteri Hizmetleri\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-3920 numaralı siparişinizin ödemesi başarıyla onaylanmıştır. Siparişiniz paketleme departmanımıza iletilmiştir.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "PAYMENT_CONFIRMED:HM-20261027-3920:unit-test-key",
+      "sentAt": "2026-10-27T21:24:10.975Z",
+      "createdAt": "2026-10-27T21:24:10.975Z"
+    },
+    {
+      "id": "notif-f8fbf36c62ba",
+      "orderId": "ord-1793136250990",
+      "orderNumber": "HM-20261027-7526",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_DELIVERED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Teslim Edildi - HM-20261027-7526 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261027-7526</strong> numaralı siparişinizin kargo teslimatı tamamlanmıştır.</p>\n            <p>Hümra Moda'yı tercih ettiğiniz için teşekkür eder, keyifli günlerde kullanmanızı dileriz.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-7526 numaralı siparişiniz teslim edilmiştir. Ürünlerinizi keyifle kullanmanızı dileriz.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_DELIVERED:HM-20261027-7526:default",
+      "sentAt": "2026-10-27T21:24:11.009Z",
+      "createdAt": "2026-10-27T21:24:11.009Z"
+    },
+    {
+      "id": "notif-fc654edce01c",
+      "orderId": "ord-test-p7-1",
+      "orderNumber": "HM-20261021-P701",
+      "channel": "EMAIL",
+      "eventType": "RETURN_REQUESTED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "İade Talebiniz Alındı - HM-20261021-P701 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261021-P701</strong> numaralı siparişiniz için oluşturduğunuz iade talebi başarıyla alınmıştır.</p>\n            <p>Talebiniz operasyon ekibimiz tarafından incelendikten sonra kargo iade süreci hakkında bilgilendirileceksiniz.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261021-P701 numaralı siparişinize ait iade talebiniz incelemeye alınmıştır. Yetkililerimiz talebi inceledikten sonra size geri dönüş yapacaktır.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "RETURN_REQUESTED:HM-20261021-P701:default",
+      "sentAt": "2026-10-27T21:24:11.742Z",
+      "createdAt": "2026-10-27T21:24:11.742Z"
+    },
+    {
+      "id": "notif-b735a135be3f",
+      "orderId": "ord-1793136252074",
+      "orderNumber": "HM-20261027-5921",
+      "channel": "EMAIL",
+      "eventType": "PAYMENT_CONFIRMED",
+      "recipient": "fatma@example.com",
+      "subject": "Ödemeniz Onaylandı - HM-20261027-5921 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Fatma Şahin</strong>,</p>\n            <p><strong>HM-20261027-5921</strong> numaralı siparişinizin ödemesi PayTR güvencesiyle başarıyla onaylanmıştır.</p>\n            <p>Ürünleriniz özenle hazırlanarak en kısa sürede kargoya teslim edilecektir.</p>\n            <div style=\"margin-top: 30px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 15px;\">\n              Hümra Moda Müşteri Hizmetleri\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Fatma Şahin,\n\nHM-20261027-5921 numaralı siparişinizin ödemesi başarıyla onaylanmıştır. Siparişiniz paketleme departmanımıza iletilmiştir.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "PAYMENT_CONFIRMED:HM-20261027-5921:default",
+      "sentAt": "2026-10-27T21:24:12.079Z",
+      "createdAt": "2026-10-27T21:24:12.079Z"
+    },
+    {
+      "id": "notif-c620a7148001",
+      "orderId": "ord-1793136252098",
+      "orderNumber": "HM-20261027-4509",
+      "channel": "EMAIL",
+      "eventType": "PAYMENT_CONFIRMED",
+      "recipient": "fatma@example.com",
+      "subject": "Ödemeniz Onaylandı - HM-20261027-4509 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Fatma Şahin</strong>,</p>\n            <p><strong>HM-20261027-4509</strong> numaralı siparişinizin ödemesi PayTR güvencesiyle başarıyla onaylanmıştır.</p>\n            <p>Ürünleriniz özenle hazırlanarak en kısa sürede kargoya teslim edilecektir.</p>\n            <div style=\"margin-top: 30px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 15px;\">\n              Hümra Moda Müşteri Hizmetleri\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Fatma Şahin,\n\nHM-20261027-4509 numaralı siparişinizin ödemesi başarıyla onaylanmıştır. Siparişiniz paketleme departmanımıza iletilmiştir.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "PAYMENT_CONFIRMED:HM-20261027-4509:default",
+      "sentAt": "2026-10-27T21:24:12.102Z",
+      "createdAt": "2026-10-27T21:24:12.102Z"
+    },
+    {
+      "id": "notif-28ada245d552",
+      "orderId": "ord-1793136252141",
+      "orderNumber": "HM-20261027-6436",
+      "channel": "EMAIL",
+      "eventType": "ORDER_CANCELLED",
+      "recipient": "fatma@example.com",
+      "subject": "Siparişiniz İptal Edildi - HM-20261027-6436 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Fatma Şahin</strong>,</p>\n            <p><strong>HM-20261027-6436</strong> numaralı siparişiniz iptal edilmiştir.</p>\n            <p>Eğer bir ödeme yapılmışsa ilgili tutar banka prosedürlerine göre kartınıza iade edilecektir.</p>\n          </div>\n        ",
+      "contentText": "Sayın Fatma Şahin,\n\nHM-20261027-6436 numaralı siparişiniz iptal edilmiştir. Sorularınız için bizimle iletişime geçebilirsiniz.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "ORDER_CANCELLED:HM-20261027-6436:default",
+      "sentAt": "2026-10-27T21:24:12.145Z",
+      "createdAt": "2026-10-27T21:24:12.145Z"
+    },
+    {
+      "id": "notif-50ad15e993bd",
+      "orderId": "ord-1793136310130",
+      "orderNumber": "HM-20261027-1230",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_CREATED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Kargoya Verildi - HM-20261027-1230 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p>Harika bir haber! <strong>HM-20261027-1230</strong> numaralı siparişiniz kargoya teslim edilmiştir.</p>\n            <div style=\"background-color: #f9f9f9; padding: 15px; border-radius: 4px; margin: 20px 0;\">\n              <p style=\"margin: 0 0 8px 0;\"><strong>Kargo Firması:</strong> MNG Kargo</p>\n              <p style=\"margin: 0 0 12px 0;\"><strong>Takip Numarası:</strong> MNG906421155</p>\n              <a href=\"https://www.mngkargo.com.tr/gonderitakip?takipNo=MNG906421155\" target=\"_blank\" style=\"display: inline-block; background-color: #141414; color: #fff; padding: 10px 18px; text-decoration: none; border-radius: 4px; font-size: 13px;\">Kargomu Takip Et</a>\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-1230 numaralı siparişiniz MNG Kargo firmasına teslim edilmiştir.\nTakip No: MNG906421155\nTakip Bağlantısı: https://www.mngkargo.com.tr/gonderitakip?takipNo=MNG906421155\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_CREATED:HM-20261027-1230:default",
+      "sentAt": "2026-10-27T21:25:10.151Z",
+      "createdAt": "2026-10-27T21:25:10.151Z"
+    },
+    {
+      "id": "notif-7c696abb3fed",
+      "orderId": "ord-1793136310160",
+      "orderNumber": "HM-20261027-9494",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_CREATED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Kargoya Verildi - HM-20261027-9494 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p>Harika bir haber! <strong>HM-20261027-9494</strong> numaralı siparişiniz kargoya teslim edilmiştir.</p>\n            <div style=\"background-color: #f9f9f9; padding: 15px; border-radius: 4px; margin: 20px 0;\">\n              <p style=\"margin: 0 0 8px 0;\"><strong>Kargo Firması:</strong> Yurtiçi Kargo</p>\n              <p style=\"margin: 0 0 12px 0;\"><strong>Takip Numarası:</strong> YUR293904969</p>\n              <a href=\"https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=YUR293904969\" target=\"_blank\" style=\"display: inline-block; background-color: #141414; color: #fff; padding: 10px 18px; text-decoration: none; border-radius: 4px; font-size: 13px;\">Kargomu Takip Et</a>\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-9494 numaralı siparişiniz Yurtiçi Kargo firmasına teslim edilmiştir.\nTakip No: YUR293904969\nTakip Bağlantısı: https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=YUR293904969\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_CREATED:HM-20261027-9494:default",
+      "sentAt": "2026-10-27T21:25:10.179Z",
+      "createdAt": "2026-10-27T21:25:10.179Z"
+    },
+    {
+      "id": "notif-fb196acbfb64",
+      "orderId": "ord-1793136310160",
+      "orderNumber": "HM-20261027-9494",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_DELIVERED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Teslim Edildi - HM-20261027-9494 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261027-9494</strong> numaralı siparişinizin kargo teslimatı tamamlanmıştır.</p>\n            <p>Hümra Moda'yı tercih ettiğiniz için teşekkür eder, keyifli günlerde kullanmanızı dileriz.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-9494 numaralı siparişiniz teslim edilmiştir. Ürünlerinizi keyifle kullanmanızı dileriz.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_DELIVERED:HM-20261027-9494:default",
+      "sentAt": "2026-10-27T21:25:10.191Z",
+      "createdAt": "2026-10-27T21:25:10.191Z"
+    },
+    {
+      "id": "notif-dd0a530483cc",
+      "orderId": "ord-1793136310217",
+      "orderNumber": "HM-20261027-2535",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_CREATED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Kargoya Verildi - HM-20261027-2535 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p>Harika bir haber! <strong>HM-20261027-2535</strong> numaralı siparişiniz kargoya teslim edilmiştir.</p>\n            <div style=\"background-color: #f9f9f9; padding: 15px; border-radius: 4px; margin: 20px 0;\">\n              <p style=\"margin: 0 0 8px 0;\"><strong>Kargo Firması:</strong> Aras Kargo</p>\n              <p style=\"margin: 0 0 12px 0;\"><strong>Takip Numarası:</strong> ARA170683249</p>\n              <a href=\"https://kargotakip.araskargo.com.tr/mainpage.aspx?code=ARA170683249\" target=\"_blank\" style=\"display: inline-block; background-color: #141414; color: #fff; padding: 10px 18px; text-decoration: none; border-radius: 4px; font-size: 13px;\">Kargomu Takip Et</a>\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-2535 numaralı siparişiniz Aras Kargo firmasına teslim edilmiştir.\nTakip No: ARA170683249\nTakip Bağlantısı: https://kargotakip.araskargo.com.tr/mainpage.aspx?code=ARA170683249\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_CREATED:HM-20261027-2535:default",
+      "sentAt": "2026-10-27T21:25:10.238Z",
+      "createdAt": "2026-10-27T21:25:10.238Z"
+    },
+    {
+      "id": "notif-3d5e45b03a5e",
+      "orderId": "ord-1793136310217",
+      "orderNumber": "HM-20261027-2535",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_IN_TRANSIT",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Kargoya Verildi - HM-20261027-2535 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p>Harika bir haber! <strong>HM-20261027-2535</strong> numaralı siparişiniz kargoya teslim edilmiştir.</p>\n            <div style=\"background-color: #f9f9f9; padding: 15px; border-radius: 4px; margin: 20px 0;\">\n              <p style=\"margin: 0 0 8px 0;\"><strong>Kargo Firması:</strong> Aras Kargo</p>\n              <p style=\"margin: 0 0 12px 0;\"><strong>Takip Numarası:</strong> ARA170683249</p>\n              <a href=\"https://kargotakip.araskargo.com.tr/mainpage.aspx?code=ARA170683249\" target=\"_blank\" style=\"display: inline-block; background-color: #141414; color: #fff; padding: 10px 18px; text-decoration: none; border-radius: 4px; font-size: 13px;\">Kargomu Takip Et</a>\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-2535 numaralı siparişiniz Aras Kargo firmasına teslim edilmiştir.\nTakip No: ARA170683249\nTakip Bağlantısı: https://kargotakip.araskargo.com.tr/mainpage.aspx?code=ARA170683249\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_IN_TRANSIT:HM-20261027-2535:default",
+      "sentAt": "2026-10-27T21:25:10.251Z",
+      "createdAt": "2026-10-27T21:25:10.251Z"
+    },
+    {
+      "id": "notif-048e788270b4",
+      "orderId": "ord-1793136310285",
+      "orderNumber": "HM-20261027-4832",
+      "channel": "EMAIL",
+      "eventType": "RETURN_REQUESTED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "İade Talebiniz Alındı - HM-20261027-4832 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261027-4832</strong> numaralı siparişiniz için oluşturduğunuz iade talebi başarıyla alınmıştır.</p>\n            <p>Talebiniz operasyon ekibimiz tarafından incelendikten sonra kargo iade süreci hakkında bilgilendirileceksiniz.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-4832 numaralı siparişinize ait iade talebiniz incelemeye alınmıştır. Yetkililerimiz talebi inceledikten sonra size geri dönüş yapacaktır.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "RETURN_REQUESTED:HM-20261027-4832:default",
+      "sentAt": "2026-10-27T21:25:10.308Z",
+      "createdAt": "2026-10-27T21:25:10.308Z"
+    },
+    {
+      "id": "notif-e156e741f1f5",
+      "orderId": "ord-1793136310285",
+      "orderNumber": "HM-20261027-4832",
+      "channel": "EMAIL",
+      "eventType": "RETURN_DECISION",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "İade Talebiniz Onaylandı - HM-20261027-4832 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261027-4832</strong> numaralı iade talebiniz <strong>KABUL EDİLMİŞTİR</strong>.</p>\n            <p><strong>Açıklama:</strong> İade onaylandı. Lütfen anlaşmalı Yurtiçi Kargo kodumuz ile gönderiniz.</p>\n            <p>Ürünü orijinal ambalajında ve faturasıyla birlikte anlaşmalı kargo kodumuz ile gönderebilirsiniz.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-4832 numaralı siparişinize ait iade talebiniz onaylanmıştır.\nAçıklama: İade onaylandı. Lütfen anlaşmalı Yurtiçi Kargo kodumuz ile gönderiniz.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "RETURN_DECISION:HM-20261027-4832:default",
+      "sentAt": "2026-10-27T21:25:10.326Z",
+      "createdAt": "2026-10-27T21:25:10.326Z"
+    },
+    {
+      "id": "notif-8df427b601b8",
+      "orderId": "ord-1793136310348",
+      "orderNumber": "HM-20261027-7837",
+      "channel": "EMAIL",
+      "eventType": "RETURN_REQUESTED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "İade Talebiniz Alındı - HM-20261027-7837 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261027-7837</strong> numaralı siparişiniz için oluşturduğunuz iade talebi başarıyla alınmıştır.</p>\n            <p>Talebiniz operasyon ekibimiz tarafından incelendikten sonra kargo iade süreci hakkında bilgilendirileceksiniz.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-7837 numaralı siparişinize ait iade talebiniz incelemeye alınmıştır. Yetkililerimiz talebi inceledikten sonra size geri dönüş yapacaktır.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "RETURN_REQUESTED:HM-20261027-7837:default",
+      "sentAt": "2026-10-27T21:25:10.370Z",
+      "createdAt": "2026-10-27T21:25:10.370Z"
+    },
+    {
+      "id": "notif-6565eb1d4c7c",
+      "orderId": "ord-1793136310348",
+      "orderNumber": "HM-20261027-7837",
+      "channel": "EMAIL",
+      "eventType": "REFUND_CONFIRMED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Para İadeniz Gerçekleştirildi - HM-20261027-7837 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261027-7837</strong> numaralı siparişiniz için onaylanan <strong>1574.1 ₺</strong> para iadesi bankanıza iletilmiştir.</p>\n            <p>Bankanızın işlem sürelerine bağlı olarak tutar 2-7 iş günü içinde hesabınıza yansıyacaktır.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-7837 numaralı siparişiniz için 1574.1 ₺ tutarındaki para iadesi bankanıza iletilmiştir.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "REFUND_CONFIRMED:HM-20261027-7837:default",
+      "sentAt": "2026-10-27T21:25:10.386Z",
+      "createdAt": "2026-10-27T21:25:10.386Z"
+    },
+    {
+      "id": "notif-16676f60f73d",
+      "orderId": "ord-1793136310404",
+      "orderNumber": "HM-20261027-8405",
+      "channel": "EMAIL",
+      "eventType": "ORDER_CREATED",
+      "recipient": "invalid-email-format",
+      "subject": "Siparişiniz Alındı - HM-20261027-8405 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Test Müşteri</strong>,</p>\n            <p><strong>HM-20261027-8405</strong> numaralı siparişiniz başarıyla alınmıştır.</p>\n            \n            <p>Siparişiniz hazırlandığında ve kargoya verildiğinde sizi bilgilendireceğiz.</p>\n            <div style=\"margin-top: 30px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 15px;\">\n              Bu e-posta Hümra Moda sipariş bildirim sisteminden otomatik olarak gönderilmiştir.\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Test Müşteri,\n\nHM-20261027-8405 numaralı siparişiniz başarıyla alınmıştır. Toplam Tutar: \n\nÖdeme ve hazırlık sürecini takip etmek için web sitemizi ziyaret edebilirsiniz.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "ORDER_CREATED:HM-20261027-8405:default",
+      "sentAt": "2026-10-27T21:25:10.417Z",
+      "createdAt": "2026-10-27T21:25:10.417Z"
+    },
+    {
+      "id": "notif-41fb45607f8c",
+      "orderId": "ord-1793136310426",
+      "orderNumber": "HM-20261027-3654",
+      "channel": "EMAIL",
+      "eventType": "PAYMENT_CONFIRMED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Ödemeniz Onaylandı - HM-20261027-3654 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261027-3654</strong> numaralı siparişinizin ödemesi PayTR güvencesiyle başarıyla onaylanmıştır.</p>\n            <p>Ürünleriniz özenle hazırlanarak en kısa sürede kargoya teslim edilecektir.</p>\n            <div style=\"margin-top: 30px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 15px;\">\n              Hümra Moda Müşteri Hizmetleri\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-3654 numaralı siparişinizin ödemesi başarıyla onaylanmıştır. Siparişiniz paketleme departmanımıza iletilmiştir.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "PAYMENT_CONFIRMED:HM-20261027-3654:unit-test-key",
+      "sentAt": "2026-10-27T21:25:10.441Z",
+      "createdAt": "2026-10-27T21:25:10.441Z"
+    },
+    {
+      "id": "notif-c7cd8a63f9a1",
+      "orderId": "ord-1793136310464",
+      "orderNumber": "HM-20261027-9970",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_DELIVERED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Teslim Edildi - HM-20261027-9970 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261027-9970</strong> numaralı siparişinizin kargo teslimatı tamamlanmıştır.</p>\n            <p>Hümra Moda'yı tercih ettiğiniz için teşekkür eder, keyifli günlerde kullanmanızı dileriz.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261027-9970 numaralı siparişiniz teslim edilmiştir. Ürünlerinizi keyifle kullanmanızı dileriz.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_DELIVERED:HM-20261027-9970:default",
+      "sentAt": "2026-10-27T21:25:10.491Z",
+      "createdAt": "2026-10-27T21:25:10.491Z"
+    },
+    {
+      "id": "notif-3d003d7c2a0b",
+      "orderId": "ord-1793136311263",
+      "orderNumber": "HM-20261027-8038",
+      "channel": "EMAIL",
+      "eventType": "PAYMENT_CONFIRMED",
+      "recipient": "fatma@example.com",
+      "subject": "Ödemeniz Onaylandı - HM-20261027-8038 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Fatma Şahin</strong>,</p>\n            <p><strong>HM-20261027-8038</strong> numaralı siparişinizin ödemesi PayTR güvencesiyle başarıyla onaylanmıştır.</p>\n            <p>Ürünleriniz özenle hazırlanarak en kısa sürede kargoya teslim edilecektir.</p>\n            <div style=\"margin-top: 30px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 15px;\">\n              Hümra Moda Müşteri Hizmetleri\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Fatma Şahin,\n\nHM-20261027-8038 numaralı siparişinizin ödemesi başarıyla onaylanmıştır. Siparişiniz paketleme departmanımıza iletilmiştir.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "PAYMENT_CONFIRMED:HM-20261027-8038:default",
+      "sentAt": "2026-10-27T21:25:11.271Z",
+      "createdAt": "2026-10-27T21:25:11.271Z"
+    },
+    {
+      "id": "notif-1c012442a6a6",
+      "orderId": "ord-1793136311292",
+      "orderNumber": "HM-20261027-4523",
+      "channel": "EMAIL",
+      "eventType": "PAYMENT_CONFIRMED",
+      "recipient": "fatma@example.com",
+      "subject": "Ödemeniz Onaylandı - HM-20261027-4523 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Fatma Şahin</strong>,</p>\n            <p><strong>HM-20261027-4523</strong> numaralı siparişinizin ödemesi PayTR güvencesiyle başarıyla onaylanmıştır.</p>\n            <p>Ürünleriniz özenle hazırlanarak en kısa sürede kargoya teslim edilecektir.</p>\n            <div style=\"margin-top: 30px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 15px;\">\n              Hümra Moda Müşteri Hizmetleri\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Fatma Şahin,\n\nHM-20261027-4523 numaralı siparişinizin ödemesi başarıyla onaylanmıştır. Siparişiniz paketleme departmanımıza iletilmiştir.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "PAYMENT_CONFIRMED:HM-20261027-4523:default",
+      "sentAt": "2026-10-27T21:25:11.300Z",
+      "createdAt": "2026-10-27T21:25:11.300Z"
+    },
+    {
+      "id": "notif-711021e9bea9",
+      "orderId": "ord-1793136311349",
+      "orderNumber": "HM-20261027-4057",
+      "channel": "EMAIL",
+      "eventType": "ORDER_CANCELLED",
+      "recipient": "fatma@example.com",
+      "subject": "Siparişiniz İptal Edildi - HM-20261027-4057 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Fatma Şahin</strong>,</p>\n            <p><strong>HM-20261027-4057</strong> numaralı siparişiniz iptal edilmiştir.</p>\n            <p>Eğer bir ödeme yapılmışsa ilgili tutar banka prosedürlerine göre kartınıza iade edilecektir.</p>\n          </div>\n        ",
+      "contentText": "Sayın Fatma Şahin,\n\nHM-20261027-4057 numaralı siparişiniz iptal edilmiştir. Sorularınız için bizimle iletişime geçebilirsiniz.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "ORDER_CANCELLED:HM-20261027-4057:default",
+      "sentAt": "2026-10-27T21:25:11.355Z",
+      "createdAt": "2026-10-27T21:25:11.355Z"
+    },
+    {
+      "id": "notif-0df70ff75c20",
+      "orderId": "ord-1793167747938",
+      "orderNumber": "HM-20261028-6348",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_CREATED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Kargoya Verildi - HM-20261028-6348 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p>Harika bir haber! <strong>HM-20261028-6348</strong> numaralı siparişiniz kargoya teslim edilmiştir.</p>\n            <div style=\"background-color: #f9f9f9; padding: 15px; border-radius: 4px; margin: 20px 0;\">\n              <p style=\"margin: 0 0 8px 0;\"><strong>Kargo Firması:</strong> MNG Kargo</p>\n              <p style=\"margin: 0 0 12px 0;\"><strong>Takip Numarası:</strong> MNG458865667</p>\n              <a href=\"https://www.mngkargo.com.tr/gonderitakip?takipNo=MNG458865667\" target=\"_blank\" style=\"display: inline-block; background-color: #141414; color: #fff; padding: 10px 18px; text-decoration: none; border-radius: 4px; font-size: 13px;\">Kargomu Takip Et</a>\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261028-6348 numaralı siparişiniz MNG Kargo firmasına teslim edilmiştir.\nTakip No: MNG458865667\nTakip Bağlantısı: https://www.mngkargo.com.tr/gonderitakip?takipNo=MNG458865667\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_CREATED:HM-20261028-6348:default",
+      "sentAt": "2026-10-28T06:09:07.962Z",
+      "createdAt": "2026-10-28T06:09:07.962Z"
+    },
+    {
+      "id": "notif-bb132b571936",
+      "orderId": "ord-1793167747972",
+      "orderNumber": "HM-20261028-3572",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_CREATED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Kargoya Verildi - HM-20261028-3572 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p>Harika bir haber! <strong>HM-20261028-3572</strong> numaralı siparişiniz kargoya teslim edilmiştir.</p>\n            <div style=\"background-color: #f9f9f9; padding: 15px; border-radius: 4px; margin: 20px 0;\">\n              <p style=\"margin: 0 0 8px 0;\"><strong>Kargo Firması:</strong> Yurtiçi Kargo</p>\n              <p style=\"margin: 0 0 12px 0;\"><strong>Takip Numarası:</strong> YUR823120977</p>\n              <a href=\"https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=YUR823120977\" target=\"_blank\" style=\"display: inline-block; background-color: #141414; color: #fff; padding: 10px 18px; text-decoration: none; border-radius: 4px; font-size: 13px;\">Kargomu Takip Et</a>\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261028-3572 numaralı siparişiniz Yurtiçi Kargo firmasına teslim edilmiştir.\nTakip No: YUR823120977\nTakip Bağlantısı: https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=YUR823120977\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_CREATED:HM-20261028-3572:default",
+      "sentAt": "2026-10-28T06:09:07.995Z",
+      "createdAt": "2026-10-28T06:09:07.995Z"
+    },
+    {
+      "id": "notif-f72a14ecd494",
+      "orderId": "ord-1793167747972",
+      "orderNumber": "HM-20261028-3572",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_DELIVERED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Teslim Edildi - HM-20261028-3572 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261028-3572</strong> numaralı siparişinizin kargo teslimatı tamamlanmıştır.</p>\n            <p>Hümra Moda'yı tercih ettiğiniz için teşekkür eder, keyifli günlerde kullanmanızı dileriz.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261028-3572 numaralı siparişiniz teslim edilmiştir. Ürünlerinizi keyifle kullanmanızı dileriz.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_DELIVERED:HM-20261028-3572:default",
+      "sentAt": "2026-10-28T06:09:08.009Z",
+      "createdAt": "2026-10-28T06:09:08.009Z"
+    },
+    {
+      "id": "notif-7ea33c233ddd",
+      "orderId": "ord-1793167748050",
+      "orderNumber": "HM-20261028-2008",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_CREATED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Kargoya Verildi - HM-20261028-2008 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p>Harika bir haber! <strong>HM-20261028-2008</strong> numaralı siparişiniz kargoya teslim edilmiştir.</p>\n            <div style=\"background-color: #f9f9f9; padding: 15px; border-radius: 4px; margin: 20px 0;\">\n              <p style=\"margin: 0 0 8px 0;\"><strong>Kargo Firması:</strong> Aras Kargo</p>\n              <p style=\"margin: 0 0 12px 0;\"><strong>Takip Numarası:</strong> ARA133275726</p>\n              <a href=\"https://kargotakip.araskargo.com.tr/mainpage.aspx?code=ARA133275726\" target=\"_blank\" style=\"display: inline-block; background-color: #141414; color: #fff; padding: 10px 18px; text-decoration: none; border-radius: 4px; font-size: 13px;\">Kargomu Takip Et</a>\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261028-2008 numaralı siparişiniz Aras Kargo firmasına teslim edilmiştir.\nTakip No: ARA133275726\nTakip Bağlantısı: https://kargotakip.araskargo.com.tr/mainpage.aspx?code=ARA133275726\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_CREATED:HM-20261028-2008:default",
+      "sentAt": "2026-10-28T06:09:08.081Z",
+      "createdAt": "2026-10-28T06:09:08.081Z"
+    },
+    {
+      "id": "notif-ead4ccafb85d",
+      "orderId": "ord-1793167748050",
+      "orderNumber": "HM-20261028-2008",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_IN_TRANSIT",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Kargoya Verildi - HM-20261028-2008 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p>Harika bir haber! <strong>HM-20261028-2008</strong> numaralı siparişiniz kargoya teslim edilmiştir.</p>\n            <div style=\"background-color: #f9f9f9; padding: 15px; border-radius: 4px; margin: 20px 0;\">\n              <p style=\"margin: 0 0 8px 0;\"><strong>Kargo Firması:</strong> Aras Kargo</p>\n              <p style=\"margin: 0 0 12px 0;\"><strong>Takip Numarası:</strong> ARA133275726</p>\n              <a href=\"https://kargotakip.araskargo.com.tr/mainpage.aspx?code=ARA133275726\" target=\"_blank\" style=\"display: inline-block; background-color: #141414; color: #fff; padding: 10px 18px; text-decoration: none; border-radius: 4px; font-size: 13px;\">Kargomu Takip Et</a>\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261028-2008 numaralı siparişiniz Aras Kargo firmasına teslim edilmiştir.\nTakip No: ARA133275726\nTakip Bağlantısı: https://kargotakip.araskargo.com.tr/mainpage.aspx?code=ARA133275726\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_IN_TRANSIT:HM-20261028-2008:default",
+      "sentAt": "2026-10-28T06:09:08.095Z",
+      "createdAt": "2026-10-28T06:09:08.095Z"
+    },
+    {
+      "id": "notif-65762f486414",
+      "orderId": "ord-1793167748136",
+      "orderNumber": "HM-20261028-7364",
+      "channel": "EMAIL",
+      "eventType": "RETURN_REQUESTED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "İade Talebiniz Alındı - HM-20261028-7364 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261028-7364</strong> numaralı siparişiniz için oluşturduğunuz iade talebi başarıyla alınmıştır.</p>\n            <p>Talebiniz operasyon ekibimiz tarafından incelendikten sonra kargo iade süreci hakkında bilgilendirileceksiniz.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261028-7364 numaralı siparişinize ait iade talebiniz incelemeye alınmıştır. Yetkililerimiz talebi inceledikten sonra size geri dönüş yapacaktır.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "RETURN_REQUESTED:HM-20261028-7364:default",
+      "sentAt": "2026-10-28T06:09:08.161Z",
+      "createdAt": "2026-10-28T06:09:08.161Z"
+    },
+    {
+      "id": "notif-82a1bedfc5e1",
+      "orderId": "ord-1793167748136",
+      "orderNumber": "HM-20261028-7364",
+      "channel": "EMAIL",
+      "eventType": "RETURN_DECISION",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "İade Talebiniz Onaylandı - HM-20261028-7364 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261028-7364</strong> numaralı iade talebiniz <strong>KABUL EDİLMİŞTİR</strong>.</p>\n            <p><strong>Açıklama:</strong> İade onaylandı. Lütfen anlaşmalı Yurtiçi Kargo kodumuz ile gönderiniz.</p>\n            <p>Ürünü orijinal ambalajında ve faturasıyla birlikte anlaşmalı kargo kodumuz ile gönderebilirsiniz.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261028-7364 numaralı siparişinize ait iade talebiniz onaylanmıştır.\nAçıklama: İade onaylandı. Lütfen anlaşmalı Yurtiçi Kargo kodumuz ile gönderiniz.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "RETURN_DECISION:HM-20261028-7364:default",
+      "sentAt": "2026-10-28T06:09:08.181Z",
+      "createdAt": "2026-10-28T06:09:08.181Z"
+    },
+    {
+      "id": "notif-9a0a6c279f56",
+      "orderId": "ord-1793167748206",
+      "orderNumber": "HM-20261028-2388",
+      "channel": "EMAIL",
+      "eventType": "RETURN_REQUESTED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "İade Talebiniz Alındı - HM-20261028-2388 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261028-2388</strong> numaralı siparişiniz için oluşturduğunuz iade talebi başarıyla alınmıştır.</p>\n            <p>Talebiniz operasyon ekibimiz tarafından incelendikten sonra kargo iade süreci hakkında bilgilendirileceksiniz.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261028-2388 numaralı siparişinize ait iade talebiniz incelemeye alınmıştır. Yetkililerimiz talebi inceledikten sonra size geri dönüş yapacaktır.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "RETURN_REQUESTED:HM-20261028-2388:default",
+      "sentAt": "2026-10-28T06:09:08.230Z",
+      "createdAt": "2026-10-28T06:09:08.230Z"
+    },
+    {
+      "id": "notif-8b737e268d47",
+      "orderId": "ord-1793167748206",
+      "orderNumber": "HM-20261028-2388",
+      "channel": "EMAIL",
+      "eventType": "REFUND_CONFIRMED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Para İadeniz Gerçekleştirildi - HM-20261028-2388 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261028-2388</strong> numaralı siparişiniz için onaylanan <strong>1574.1 ₺</strong> para iadesi bankanıza iletilmiştir.</p>\n            <p>Bankanızın işlem sürelerine bağlı olarak tutar 2-7 iş günü içinde hesabınıza yansıyacaktır.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261028-2388 numaralı siparişiniz için 1574.1 ₺ tutarındaki para iadesi bankanıza iletilmiştir.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "REFUND_CONFIRMED:HM-20261028-2388:default",
+      "sentAt": "2026-10-28T06:09:08.245Z",
+      "createdAt": "2026-10-28T06:09:08.245Z"
+    },
+    {
+      "id": "notif-934cfa478dc4",
+      "orderId": "ord-1793167748263",
+      "orderNumber": "HM-20261028-2673",
+      "channel": "EMAIL",
+      "eventType": "ORDER_CREATED",
+      "recipient": "invalid-email-format",
+      "subject": "Siparişiniz Alındı - HM-20261028-2673 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Test Müşteri</strong>,</p>\n            <p><strong>HM-20261028-2673</strong> numaralı siparişiniz başarıyla alınmıştır.</p>\n            \n            <p>Siparişiniz hazırlandığında ve kargoya verildiğinde sizi bilgilendireceğiz.</p>\n            <div style=\"margin-top: 30px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 15px;\">\n              Bu e-posta Hümra Moda sipariş bildirim sisteminden otomatik olarak gönderilmiştir.\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Test Müşteri,\n\nHM-20261028-2673 numaralı siparişiniz başarıyla alınmıştır. Toplam Tutar: \n\nÖdeme ve hazırlık sürecini takip etmek için web sitemizi ziyaret edebilirsiniz.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "ORDER_CREATED:HM-20261028-2673:default",
+      "sentAt": "2026-10-28T06:09:08.278Z",
+      "createdAt": "2026-10-28T06:09:08.278Z"
+    },
+    {
+      "id": "notif-056b3832fcda",
+      "orderId": "ord-1793167748288",
+      "orderNumber": "HM-20261028-5492",
+      "channel": "EMAIL",
+      "eventType": "PAYMENT_CONFIRMED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Ödemeniz Onaylandı - HM-20261028-5492 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261028-5492</strong> numaralı siparişinizin ödemesi PayTR güvencesiyle başarıyla onaylanmıştır.</p>\n            <p>Ürünleriniz özenle hazırlanarak en kısa sürede kargoya teslim edilecektir.</p>\n            <div style=\"margin-top: 30px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 15px;\">\n              Hümra Moda Müşteri Hizmetleri\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261028-5492 numaralı siparişinizin ödemesi başarıyla onaylanmıştır. Siparişiniz paketleme departmanımıza iletilmiştir.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "PAYMENT_CONFIRMED:HM-20261028-5492:unit-test-key",
+      "sentAt": "2026-10-28T06:09:08.304Z",
+      "createdAt": "2026-10-28T06:09:08.304Z"
+    },
+    {
+      "id": "notif-844de81bb310",
+      "orderId": "ord-1793167748329",
+      "orderNumber": "HM-20261028-3223",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_DELIVERED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Teslim Edildi - HM-20261028-3223 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261028-3223</strong> numaralı siparişinizin kargo teslimatı tamamlanmıştır.</p>\n            <p>Hümra Moda'yı tercih ettiğiniz için teşekkür eder, keyifli günlerde kullanmanızı dileriz.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261028-3223 numaralı siparişiniz teslim edilmiştir. Ürünlerinizi keyifle kullanmanızı dileriz.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_DELIVERED:HM-20261028-3223:default",
+      "sentAt": "2026-10-28T06:09:08.360Z",
+      "createdAt": "2026-10-28T06:09:08.360Z"
+    },
+    {
+      "id": "notif-4f70051780ee",
+      "orderId": "ord-1793167749069",
+      "orderNumber": "HM-20261028-6540",
+      "channel": "EMAIL",
+      "eventType": "PAYMENT_CONFIRMED",
+      "recipient": "fatma@example.com",
+      "subject": "Ödemeniz Onaylandı - HM-20261028-6540 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Fatma Şahin</strong>,</p>\n            <p><strong>HM-20261028-6540</strong> numaralı siparişinizin ödemesi PayTR güvencesiyle başarıyla onaylanmıştır.</p>\n            <p>Ürünleriniz özenle hazırlanarak en kısa sürede kargoya teslim edilecektir.</p>\n            <div style=\"margin-top: 30px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 15px;\">\n              Hümra Moda Müşteri Hizmetleri\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Fatma Şahin,\n\nHM-20261028-6540 numaralı siparişinizin ödemesi başarıyla onaylanmıştır. Siparişiniz paketleme departmanımıza iletilmiştir.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "PAYMENT_CONFIRMED:HM-20261028-6540:default",
+      "sentAt": "2026-10-28T06:09:09.078Z",
+      "createdAt": "2026-10-28T06:09:09.078Z"
+    },
+    {
+      "id": "notif-fcce7829300b",
+      "orderId": "ord-1793167749099",
+      "orderNumber": "HM-20261028-6707",
+      "channel": "EMAIL",
+      "eventType": "PAYMENT_CONFIRMED",
+      "recipient": "fatma@example.com",
+      "subject": "Ödemeniz Onaylandı - HM-20261028-6707 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Fatma Şahin</strong>,</p>\n            <p><strong>HM-20261028-6707</strong> numaralı siparişinizin ödemesi PayTR güvencesiyle başarıyla onaylanmıştır.</p>\n            <p>Ürünleriniz özenle hazırlanarak en kısa sürede kargoya teslim edilecektir.</p>\n            <div style=\"margin-top: 30px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 15px;\">\n              Hümra Moda Müşteri Hizmetleri\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Fatma Şahin,\n\nHM-20261028-6707 numaralı siparişinizin ödemesi başarıyla onaylanmıştır. Siparişiniz paketleme departmanımıza iletilmiştir.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "PAYMENT_CONFIRMED:HM-20261028-6707:default",
+      "sentAt": "2026-10-28T06:09:09.107Z",
+      "createdAt": "2026-10-28T06:09:09.107Z"
+    },
+    {
+      "id": "notif-9c2fae51b8ed",
+      "orderId": "ord-1793167749157",
+      "orderNumber": "HM-20261028-4102",
+      "channel": "EMAIL",
+      "eventType": "ORDER_CANCELLED",
+      "recipient": "fatma@example.com",
+      "subject": "Siparişiniz İptal Edildi - HM-20261028-4102 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Fatma Şahin</strong>,</p>\n            <p><strong>HM-20261028-4102</strong> numaralı siparişiniz iptal edilmiştir.</p>\n            <p>Eğer bir ödeme yapılmışsa ilgili tutar banka prosedürlerine göre kartınıza iade edilecektir.</p>\n          </div>\n        ",
+      "contentText": "Sayın Fatma Şahin,\n\nHM-20261028-4102 numaralı siparişiniz iptal edilmiştir. Sorularınız için bizimle iletişime geçebilirsiniz.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "ORDER_CANCELLED:HM-20261028-4102:default",
+      "sentAt": "2026-10-28T06:09:09.166Z",
+      "createdAt": "2026-10-28T06:09:09.166Z"
+    }
+  ]
 }

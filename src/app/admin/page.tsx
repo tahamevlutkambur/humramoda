@@ -3,6 +3,9 @@ import Link from "next/link";
 import { getStoreData } from "@/lib/server/store";
 import { formatCurrency } from "@/lib/formatters";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default function AdminDashboardPage() {
   const store = getStoreData();
   const products = store.products;
@@ -217,7 +220,7 @@ export default function AdminDashboardPage() {
                     </td>
                     <td style={{ textAlign: "right" }}>
                       <Link
-                        href={`/admin/urunler/${item.productId}`}
+                        href={`/admin/urunler/${encodeURIComponent(item.productId)}`}
                         className="hm-admin-btn hm-admin-btn-outline"
                         style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
                       >

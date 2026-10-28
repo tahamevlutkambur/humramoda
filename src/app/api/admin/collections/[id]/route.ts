@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
 import { updateStoreCollection, deleteStoreCollection } from "@/lib/server/store";
+import { logAdminAudit } from "@/lib/server/logger";
+import { revalidatePath } from "next/cache";
 
 interface RouteParams {
   params: Promise<{
@@ -23,6 +25,25 @@ export async function PUT(req: Request, { params }: RouteParams) {
       return NextResponse.json({ error: error || "Koleksiyon güncellenemedi." }, { status: 400 });
     }
 
+    logAdminAudit({
+      adminId: session.userId,
+      adminEmail: session.email,
+      action: "COLLECTION_UPDATED",
+      targetType: "COLLECTION",
+      targetId: collection.id,
+      result: "SUCCESS",
+      details: { name: collection.name, slug: collection.slug },
+    });
+
+    try {
+      revalidatePath("/admin/koleksiyonlar");
+      revalidatePath(`/koleksiyon/${encodeURIComponent(collection.slug)}`);
+      revalidatePath("/");
+      revalidatePath("/urunler");
+    } catch {
+      // Revalidation is best effort
+    }
+
     return NextResponse.json({ success: true, collection });
   } catch (err) {
     console.error("Update collection error:", err);
@@ -40,6 +61,24 @@ export async function DELETE(req: Request, { params }: RouteParams) {
   const deleted = deleteStoreCollection(id);
   if (!deleted) {
     return NextResponse.json({ error: "Koleksiyon bulunamadı." }, { status: 404 });
+  }
+
+  logAdminAudit({
+    adminId: session.userId,
+    adminEmail: session.email,
+    action: "COLLECTION_UPDATED",
+    targetType: "COLLECTION",
+    targetId: id,
+    result: "SUCCESS",
+    details: { id, action: "DELETED" },
+  });
+
+  try {
+    revalidatePath("/admin/koleksiyonlar");
+    revalidatePath("/");
+    revalidatePath("/urunler");
+  } catch {
+    // Revalidation is best effort
   }
 
   return NextResponse.json({ success: true });

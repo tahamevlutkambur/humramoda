@@ -1,8 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import fs from "fs";
 import path from "path";
+import { PRODUCTS } from "../src/lib/catalog";
 import {
   getStoreData,
+  saveStoreData,
   createStoreProduct,
   updateStoreProduct,
   deleteStoreProduct,
@@ -37,6 +39,53 @@ describe("Admin Store Engine & Validation Constraints", () => {
   beforeAll(() => {
     if (fs.existsSync(storeFilePath)) {
       snapshot = fs.readFileSync(storeFilePath, "utf-8");
+    }
+    const store = getStoreData();
+    let changed = false;
+    if (!store.products || store.products.length === 0) {
+      store.products = JSON.parse(JSON.stringify(PRODUCTS));
+      changed = true;
+    }
+    if (!store.orders || store.orders.length === 0) {
+      store.orders = [
+        {
+          id: "ord-test-dummy-1",
+          orderNumber: "HM-TEST-0001",
+          customerFullName: "Test Müşteri",
+          customerEmail: "test@example.com",
+          customerPhone: "05321112233",
+          shippingAddress: { city: "İstanbul", district: "Kadıköy", fullAddress: "Test Cad." },
+          operationalStatus: "PENDING",
+          paymentStatus: "PAID",
+          subtotal: 1000,
+          discountAmount: 0,
+          shippingAmount: 0,
+          totalAmount: 1000,
+          totalKurus: 100000,
+          items: [
+            {
+              id: "item-1",
+              productId: store.products[0].id,
+              productName: store.products[0].title,
+              variantId: store.products[0].variants[0]?.id,
+              colorName: "Siyah",
+              sizeName: "1 Beden",
+              sku: store.products[0].variants[0]?.sku || "SKU-TEST-1",
+              unitPrice: 1000,
+              quantity: 1,
+              totalPrice: 1000,
+              costPriceSnapshot: 500,
+            },
+          ],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          stockDeducted: false,
+        },
+      ];
+      changed = true;
+    }
+    if (changed) {
+      saveStoreData(store);
     }
   });
 
@@ -238,7 +287,7 @@ describe("Admin Store Engine & Validation Constraints", () => {
   describe("Faz 4.6: Renk Bazında Beden, SKU ve Stok Yönetimi", () => {
     it("bir ürünün farklı renkleri için bağımsız bedenler ve stoklar tanımlanabilir", () => {
       const store = getStoreData();
-      const product = store.products[0];
+      const product = store.products[0] || PRODUCTS[0];
       expect(product).toBeDefined();
 
       const variantsByColor = product.variants.reduce((acc, v) => {

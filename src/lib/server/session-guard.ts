@@ -13,7 +13,11 @@ export async function getAuthenticatedAdmin(req?: Request): Promise<SessionPaylo
     const cookieHeader = req.headers.get("cookie") || "";
     const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${ADMIN_COOKIE_NAME}=([^;]+)`));
     if (match) {
-      cookieValue = match[1];
+      try {
+        cookieValue = decodeURIComponent(match[1]);
+      } catch {
+        cookieValue = match[1];
+      }
     }
   }
 
@@ -23,7 +27,11 @@ export async function getAuthenticatedAdmin(req?: Request): Promise<SessionPaylo
       const cookieStore = await cookies();
       const sessionCookie = cookieStore.get(ADMIN_COOKIE_NAME);
       if (sessionCookie) {
-        cookieValue = sessionCookie.value;
+        try {
+          cookieValue = decodeURIComponent(sessionCookie.value);
+        } catch {
+          cookieValue = sessionCookie.value;
+        }
       }
     } catch {
       // next/headers istek bağlamı dışında (örn. test ortamı) çağrılırsa güvenle null dön

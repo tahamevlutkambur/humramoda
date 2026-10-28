@@ -2,6 +2,9 @@ import React from "react";
 import { getStoreSettings, getAllStoreCampaigns } from "@/lib/server/store";
 import { SettingsManager } from "./SettingsManager";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata = {
   title: "Mağaza Ayarları ve Kampanyalar | Hümra Moda Yönetim Paneli",
 };

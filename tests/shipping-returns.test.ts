@@ -19,8 +19,11 @@
  * 15. Kargo ve sipariş durumları birbirinden ayrı kalır.
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
 import crypto from "crypto";
+import fs from "fs";
+import path from "path";
+import { PRODUCTS } from "../src/lib/catalog";
 import {
   createShipment,
   updateTrackingInfo,
@@ -49,8 +52,26 @@ describe("Faz 6: Kargo, Sipariş Takibi, İade Talepleri ve Bildirimler", () => 
   let unpaidOrder: StoreOrder;
   let cancelledOrder: StoreOrder;
 
+  const storeFilePath = path.join(process.cwd(), "data", "store.json");
+  let snapshot: string | null = null;
+
+  beforeAll(() => {
+    if (fs.existsSync(storeFilePath)) {
+      snapshot = fs.readFileSync(storeFilePath, "utf-8");
+    }
+  });
+
+  afterAll(() => {
+    if (snapshot && fs.existsSync(storeFilePath)) {
+      fs.writeFileSync(storeFilePath, snapshot, "utf-8");
+    }
+  });
+
   beforeEach(() => {
     const initStore = getStoreData();
+    if (!initStore.products || initStore.products.length === 0) {
+      initStore.products = JSON.parse(JSON.stringify(PRODUCTS));
+    }
     const v = initStore.products[0]?.variants[0];
     if (v && v.stockQuantity < 10) {
       v.stockQuantity = 50;

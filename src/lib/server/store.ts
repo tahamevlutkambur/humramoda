@@ -325,6 +325,7 @@ const STORE_FILE = path.join(DATA_DIR, "store.json");
 const TMP_STORE_FILE = path.join(os.tmpdir(), "humramoda_store.json");
 
 let inMemoryStore: AppStoreData | null = null;
+let lastStoreFileMtime = 0;
 
 const DEFAULT_HOMEPAGE_CONTENT: HomepageContent = {
   hero: {
@@ -515,16 +516,31 @@ const DEFAULT_ADMIN_USERS: AdminUser[] = [
  * Vercel / Serverless ortamında salt-okunur dosya sistemi hatalarını (EROFS) engeller.
  */
 export function getStoreData(): AppStoreData {
-  if (inMemoryStore) {
+  let fileMtime = 0;
+  let activeFile = "";
+  try {
+    if (fs.existsSync(STORE_FILE)) {
+      fileMtime = fs.statSync(STORE_FILE).mtimeMs;
+      activeFile = STORE_FILE;
+    } else if (fs.existsSync(TMP_STORE_FILE)) {
+      fileMtime = fs.statSync(TMP_STORE_FILE).mtimeMs;
+      activeFile = TMP_STORE_FILE;
+    }
+  } catch {
+    // Okuma hatası
+  }
+
+  if (inMemoryStore && fileMtime > 0 && Math.abs(fileMtime - lastStoreFileMtime) < 10) {
     return inMemoryStore;
   }
 
   let raw: string | null = null;
 
-  // 1. Proje dizinindeki store.json dosyasından okumayı dene
+  // 1. Tespit edilen aktif dosyadan oku
   try {
-    if (fs.existsSync(STORE_FILE)) {
-      raw = fs.readFileSync(STORE_FILE, "utf-8");
+    if (activeFile && fs.existsSync(activeFile)) {
+      raw = fs.readFileSync(activeFile, "utf-8");
+      lastStoreFileMtime = fileMtime;
     }
   } catch {
     // Okuma hatası
@@ -583,15 +599,15 @@ export function getStoreData(): AppStoreData {
         : DEFAULT_ADMIN_USERS;
 
     const data: AppStoreData = {
-      products: parsed.products || PRODUCTS,
-      categories: parsed.categories || CATEGORIES,
-      collections: parsed.collections || COLLECTIONS,
+      products: parsed.products !== undefined && Array.isArray(parsed.products) ? parsed.products : PRODUCTS,
+      categories: parsed.categories !== undefined && Array.isArray(parsed.categories) ? parsed.categories : CATEGORIES,
+      collections: parsed.collections !== undefined && Array.isArray(parsed.collections) ? parsed.collections : COLLECTIONS,
       featuredVideos: parsed.featuredVideos || FEATURED_VIDEOS,
       homepageContent: { ...DEFAULT_HOMEPAGE_CONTENT, ...(parsed.homepageContent || {}) },
       settings: { ...DEFAULT_SETTINGS, ...(parsed.settings || {}) },
       campaigns: parsed.campaigns || DEFAULT_CAMPAIGNS,
       adminUsers: loadedAdminUsers,
-      orders: parsed.orders || DEFAULT_ORDERS,
+      orders: parsed.orders !== undefined && Array.isArray(parsed.orders) ? parsed.orders : DEFAULT_ORDERS,
       shipments: parsed.shipments || [],
       returnRequests: parsed.returnRequests || [],
       notifications: parsed.notifications || [],
@@ -644,6 +660,11 @@ export function saveStoreData(data: AppStoreData): void {
         fs.writeFileSync(STORE_FILE, JSON.stringify(data, null, 2), "utf-8");
       }
     }
+    try {
+      lastStoreFileMtime = fs.statSync(STORE_FILE).mtimeMs;
+    } catch {
+      lastStoreFileMtime = Date.now();
+    }
     return;
   } catch {
     // Vercel serverless salt okunur dosya sistemi
@@ -652,8 +673,14 @@ export function saveStoreData(data: AppStoreData): void {
   // 2. Vercel / Lambda ortamı için /tmp dizinine yaz
   try {
     fs.writeFileSync(TMP_STORE_FILE, JSON.stringify(data, null, 2), "utf-8");
+    try {
+      lastStoreFileMtime = fs.statSync(TMP_STORE_FILE).mtimeMs;
+    } catch {
+      lastStoreFileMtime = Date.now();
+    }
   } catch (err) {
     console.warn("Could not persist to /tmp:", err);
+    lastStoreFileMtime = Date.now();
   }
 }
 
@@ -665,12 +692,28 @@ export function getAllStoreProducts(): ProductItem[] {
   return getStoreData().products;
 }
 
-export function getStoreProductById(id: string): ProductItem | undefined {
-  return getStoreData().products.find((p) => p.id === id);
+export function getStoreProductById(idOrSlug: string): ProductItem | undefined {
+  if (!idOrSlug) return undefined;
+  const store = getStoreData();
+  const trimmed = idOrSlug.trim();
+  const decoded = decodeURIComponent(trimmed);
+  const lower = trimmed.toLowerCase();
+  const decodedLower = decoded.toLowerCase();
+
+  return store.products.find(
+    (p) =>
+      p.id === trimmed ||
+      p.slug === trimmed ||
+      p.id === decoded ||
+      p.slug === decoded ||
+      p.id.toLowerCase() === lower ||
+      p.slug.toLowerCase() === lower ||
+      p.slug.toLowerCase() === decodedLower
+  );
 }
 
 export function getStoreProductBySlug(slug: string): ProductItem | undefined {
-  return getStoreData().products.find((p) => p.slug === slug);
+  return getStoreProductById(slug);
 }
 
 export interface CreateProductInput {
@@ -905,7 +948,21 @@ export function updateStoreProduct(
   input: Partial<CreateProductInput> & { isDraft?: boolean }
 ): { product?: ProductItem; error?: string } {
   const store = getStoreData();
-  const index = store.products.findIndex((p) => p.id === id);
+  const trimmed = id.trim();
+  const decoded = decodeURIComponent(trimmed);
+  const lower = trimmed.toLowerCase();
+  const decodedLower = decoded.toLowerCase();
+
+  const index = store.products.findIndex(
+    (p) =>
+      p.id === trimmed ||
+      p.slug === trimmed ||
+      p.id === decoded ||
+      p.slug === decoded ||
+      p.id.toLowerCase() === lower ||
+      p.slug.toLowerCase() === lower ||
+      p.slug.toLowerCase() === decodedLower
+  );
   if (index === -1) {
     return { error: "Güncellenecek ürün bulunamadı." };
   }
@@ -1064,10 +1121,24 @@ export function updateStoreProduct(
   return { product: current };
 }
 
-export function deleteStoreProduct(id: string): boolean {
+export function deleteStoreProduct(idOrSlug: string): boolean {
   const store = getStoreData();
+  const trimmed = idOrSlug.trim();
+  const decoded = decodeURIComponent(trimmed);
+  const lower = trimmed.toLowerCase();
+  const decodedLower = decoded.toLowerCase();
+
   const initialLen = store.products.length;
-  store.products = store.products.filter((p) => p.id !== id);
+  store.products = store.products.filter(
+    (p) =>
+      p.id !== trimmed &&
+      p.slug !== trimmed &&
+      p.id !== decoded &&
+      p.slug !== decoded &&
+      p.id.toLowerCase() !== lower &&
+      p.slug.toLowerCase() !== lower &&
+      p.slug.toLowerCase() !== decodedLower
+  );
   if (store.products.length !== initialLen) {
     saveStoreData(store);
     return true;
@@ -1088,22 +1159,35 @@ export function createStoreCategory(input: {
   slug?: string;
   description?: string;
   imageUrl?: string;
+  displayOrder?: number;
 }): { category?: CategoryItem; error?: string } {
   const store = getStoreData();
   if (!input.name || input.name.trim().length === 0) return { error: "Kategori adı zorunludur." };
 
-  const slug = input.slug?.trim() ? generateSlug(input.slug) : generateSlug(input.name);
-  if (store.categories.some((c) => c.slug === slug)) {
+  const nameTrimmed = input.name.trim();
+  let slug = input.slug?.trim() ? generateSlug(input.slug) : generateSlug(nameTrimmed);
+  if (!slug) {
+    slug = `kategori-${Date.now()}`;
+  }
+
+  // Kullanıcı özel slug belirtmediyse ve çakışma varsa otomatik numara ekle
+  if (!input.slug?.trim()) {
+    let counter = 1;
+    const baseSlug = slug;
+    while (store.categories.some((c) => c.slug === slug)) {
+      slug = `${baseSlug}-${counter++}`;
+    }
+  } else if (store.categories.some((c) => c.slug === slug)) {
     return { error: `"${slug}" kategori bağlantısı zaten mevcut.` };
   }
 
   const newCat: CategoryItem = {
     id: `cat-${Date.now()}`,
-    name: input.name.trim(),
+    name: nameTrimmed,
     slug,
     description: input.description?.trim() || "",
     imageUrl: input.imageUrl,
-    displayOrder: store.categories.length + 1,
+    displayOrder: input.displayOrder !== undefined ? Number(input.displayOrder) : store.categories.length + 1,
   };
 
   store.categories.push(newCat);
@@ -1116,13 +1200,25 @@ export function updateStoreCategory(
   input: Partial<{ name: string; slug: string; description: string; imageUrl: string; displayOrder: number }>
 ): { category?: CategoryItem; error?: string } {
   const store = getStoreData();
-  const cat = store.categories.find((c) => c.id === id);
+  const trimmed = id.trim();
+  const decoded = decodeURIComponent(trimmed);
+  const cat = store.categories.find(
+    (c) =>
+      c.id === trimmed ||
+      c.slug === trimmed ||
+      c.id === decoded ||
+      c.slug === decoded ||
+      c.slug.toLowerCase() === decoded.toLowerCase()
+  );
   if (!cat) return { error: "Kategori bulunamadı." };
+
+  const oldSlug = cat.slug;
+  const oldName = cat.name;
 
   if (input.name !== undefined) cat.name = input.name.trim();
   if (input.slug !== undefined) {
     const slug = generateSlug(input.slug);
-    if (store.categories.some((c) => c.id !== id && c.slug === slug)) {
+    if (store.categories.some((c) => c.id !== cat.id && c.slug === slug)) {
       return { error: `"${slug}" kategori bağlantısı başka bir kategoride kullanılıyor.` };
     }
     cat.slug = slug;
@@ -1131,15 +1227,68 @@ export function updateStoreCategory(
   if (input.imageUrl !== undefined) cat.imageUrl = input.imageUrl;
   if (input.displayOrder !== undefined) cat.displayOrder = Number(input.displayOrder);
 
+  // Kategori slug veya adı değiştiyse ürünleri de otomatik eşitle
+  if (oldSlug !== cat.slug || oldName !== cat.name) {
+    store.products.forEach((p) => {
+      if (p.categorySlug === oldSlug) {
+        p.categorySlug = cat.slug;
+        p.categoryName = cat.name;
+      }
+    });
+  }
+
   saveStoreData(store);
   return { category: cat };
 }
 
-export function deleteStoreCategory(id: string): boolean {
+export function deleteStoreCategory(idOrSlug: string, reassignToSlug?: string): boolean {
   const store = getStoreData();
-  const init = store.categories.length;
-  store.categories = store.categories.filter((c) => c.id !== id);
-  if (store.categories.length !== init) {
+  const trimmed = (idOrSlug || "").trim();
+  const decoded = decodeURIComponent(trimmed);
+  const lower = trimmed.toLowerCase();
+  const decodedLower = decoded.toLowerCase();
+
+  const target = store.categories.find(
+    (c) =>
+      c.id === trimmed ||
+      c.slug === trimmed ||
+      c.id === decoded ||
+      c.slug === decoded ||
+      c.slug.toLowerCase() === lower ||
+      c.slug.toLowerCase() === decodedLower ||
+      c.name.toLowerCase() === lower ||
+      c.name.toLowerCase() === decodedLower
+  );
+  if (!target) return false;
+
+  const decodedReassign = reassignToSlug ? decodeURIComponent(reassignToSlug).trim() : undefined;
+  const fallbackCat = decodedReassign
+    ? store.categories.find(
+        (c) =>
+          (c.slug === decodedReassign ||
+            c.id === decodedReassign ||
+            c.slug.toLowerCase() === decodedReassign.toLowerCase()) &&
+          c.id !== target.id
+      )
+    : store.categories.find((c) => c.id !== target.id);
+
+  if (fallbackCat) {
+    store.products.forEach((p) => {
+      if (
+        p.categorySlug === target.slug ||
+        p.categorySlug.toLowerCase() === target.slug.toLowerCase() ||
+        (p as any).categoryId === target.id
+      ) {
+        p.categorySlug = fallbackCat.slug;
+        p.categoryName = fallbackCat.name;
+        if ((p as any).categoryId) (p as any).categoryId = fallbackCat.id;
+      }
+    });
+  }
+
+  const initialLen = store.categories.length;
+  store.categories = store.categories.filter((c) => c.id !== target.id && c.slug !== target.slug);
+  if (store.categories.length !== initialLen) {
     saveStoreData(store);
     return true;
   }
@@ -1181,13 +1330,24 @@ export function updateStoreCollection(
   input: Partial<{ name: string; slug: string; description: string; displayOrder: number }>
 ): { collection?: CollectionItem; error?: string } {
   const store = getStoreData();
-  const col = store.collections.find((c) => c.id === id);
+  const trimmed = id.trim();
+  const decoded = decodeURIComponent(trimmed);
+  const col = store.collections.find(
+    (c) =>
+      c.id === trimmed ||
+      c.slug === trimmed ||
+      c.id === decoded ||
+      c.slug === decoded ||
+      c.slug.toLowerCase() === decoded.toLowerCase()
+  );
   if (!col) return { error: "Koleksiyon bulunamadı." };
+
+  const oldSlug = col.slug;
 
   if (input.name !== undefined) col.name = input.name.trim();
   if (input.slug !== undefined) {
     const slug = generateSlug(input.slug);
-    if (store.collections.some((c) => c.id !== id && c.slug === slug)) {
+    if (store.collections.some((c) => c.id !== col.id && c.slug === slug)) {
       return { error: `"${slug}" koleksiyon bağlantısı başka bir koleksiyonda kullanılıyor.` };
     }
     col.slug = slug;
@@ -1195,15 +1355,42 @@ export function updateStoreCollection(
   if (input.description !== undefined) col.description = input.description;
   if (input.displayOrder !== undefined) col.displayOrder = Number(input.displayOrder);
 
+  // Koleksiyon slug'ı değiştiyse ürünlerdeki koleksiyon referanslarını da güncelle
+  if (oldSlug !== col.slug) {
+    store.products.forEach((p) => {
+      if (p.collectionSlugs && p.collectionSlugs.includes(oldSlug)) {
+        p.collectionSlugs = p.collectionSlugs.map((s) => (s === oldSlug ? col.slug : s));
+      }
+    });
+  }
+
   saveStoreData(store);
   return { collection: col };
 }
 
-export function deleteStoreCollection(id: string): boolean {
+export function deleteStoreCollection(idOrSlug: string): boolean {
   const store = getStoreData();
+  const trimmed = idOrSlug.trim();
+  const decoded = decodeURIComponent(trimmed);
+  const target = store.collections.find(
+    (c) =>
+      c.id === trimmed ||
+      c.slug === trimmed ||
+      c.id === decoded ||
+      c.slug === decoded ||
+      c.slug.toLowerCase() === decoded.toLowerCase()
+  );
+  if (!target) return false;
+
   const initialLen = store.collections.length;
-  store.collections = store.collections.filter((c) => c.id !== id);
+  store.collections = store.collections.filter((c) => c.id !== target.id && c.slug !== target.slug);
   if (store.collections.length !== initialLen) {
+    // Ürünlerde bu koleksiyon varsa temizle
+    store.products.forEach((p) => {
+      if (p.collectionSlugs) {
+        p.collectionSlugs = p.collectionSlugs.filter((s) => s !== target.slug && s !== target.id);
+      }
+    });
     saveStoreData(store);
     return true;
   }
