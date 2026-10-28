@@ -5,6 +5,12 @@ import Link from "next/link";
 import { Container } from "../ui/Container";
 import { ProductCard } from "../product/ProductCard";
 import { ProductItem, CategoryItem } from "@/lib/catalog";
+import {
+  getClientStoreSnapshot,
+  fetchSharedStore,
+  subscribeStoreChanges,
+  ClientStoreSnapshot,
+} from "@/lib/client-store-sync";
 
 interface BreadcrumbItem {
   label: string;
@@ -30,58 +36,75 @@ export function CatalogView({
   currentCollectionSlug,
   breadcrumbs,
 }: CatalogViewProps) {
-  const [products, setProducts] = useState<ProductItem[]>(initialProducts);
-  const [categories, setCategories] = useState<CategoryItem[]>(initialCategories);
+  const filterSnapshotProducts = React.useCallback(
+    (allProducts: ProductItem[]) => {
+      let list: ProductItem[] = allProducts;
+      if (currentCategorySlug) {
+        const catSlug = currentCategorySlug.toLowerCase();
+        list = list.filter((p) => p.categorySlug.toLowerCase() === catSlug);
+      }
+      if (currentCollectionSlug) {
+        const colSlug = currentCollectionSlug.toLowerCase();
+        const tagged = list.filter((p) =>
+          p.collectionSlugs?.some((s) => s.toLowerCase() === colSlug)
+        );
+        list = tagged.length > 0 || colSlug !== "cok-satanlar" ? tagged : list;
+      }
+      return list;
+    },
+    [currentCategorySlug, currentCollectionSlug]
+  );
+
+  const [products, setProducts] = useState<ProductItem[]>(() => {
+    const snap = getClientStoreSnapshot();
+    if (snap && snap.products.length > 0) {
+      return filterSnapshotProducts(snap.products);
+    }
+    return initialProducts;
+  });
+  const [categories, setCategories] = useState<CategoryItem[]>(() => {
+    const snap = getClientStoreSnapshot();
+    return snap && snap.categories.length > 0 ? snap.categories : initialCategories;
+  });
   const [title, setTitle] = useState<string>(initialTitle);
   const [description, setDescription] = useState<string | undefined>(initialDescription);
   const [sortOption, setSortOption] = useState<"newest" | "price-asc" | "price-desc">("newest");
   const [selectedColorSlug, setSelectedColorSlug] = useState<string | null>(null);
 
   useEffect(() => {
-    let active = true;
-    fetch("/api/admin/products?public=1", {
-      cache: "no-store",
-      headers: { "Cache-Control": "no-cache" },
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!active || !data) return;
-        if (Array.isArray(data.categories) && data.categories.length > 0) {
-          setCategories(data.categories);
-          if (currentCategorySlug) {
-            const matchedCat = data.categories.find(
-              (c: CategoryItem) =>
-                c.slug.toLowerCase() === currentCategorySlug.toLowerCase() ||
-                c.id.toLowerCase() === currentCategorySlug.toLowerCase()
-            );
-            if (matchedCat) {
-              setTitle(matchedCat.name);
-              setDescription(matchedCat.description);
-            }
+    const applySnapshot = (data: ClientStoreSnapshot) => {
+      if (Array.isArray(data.categories) && data.categories.length > 0) {
+        setCategories(data.categories);
+        if (currentCategorySlug) {
+          const matchedCat = data.categories.find(
+            (c: CategoryItem) =>
+              c.slug.toLowerCase() === currentCategorySlug.toLowerCase() ||
+              c.id.toLowerCase() === currentCategorySlug.toLowerCase()
+          );
+          if (matchedCat) {
+            setTitle(matchedCat.name);
+            setDescription(matchedCat.description);
           }
         }
-        if (Array.isArray(data.products)) {
-          let list: ProductItem[] = data.products;
-          if (currentCategorySlug) {
-            const catSlug = currentCategorySlug.toLowerCase();
-            list = list.filter((p) => p.categorySlug.toLowerCase() === catSlug);
-          }
-          if (currentCollectionSlug) {
-            const colSlug = currentCollectionSlug.toLowerCase();
-            const tagged = list.filter((p) =>
-              p.collectionSlugs?.some((s) => s.toLowerCase() === colSlug)
-            );
-            list = tagged.length > 0 || colSlug !== "cok-satanlar" ? tagged : list;
-          }
-          setProducts(list);
-        }
-      })
-      .catch(() => {});
-
-    return () => {
-      active = false;
+      }
+      if (Array.isArray(data.products)) {
+        setProducts(filterSnapshotProducts(data.products));
+      }
     };
-  }, [currentCategorySlug, currentCollectionSlug]);
+
+    const snap = getClientStoreSnapshot();
+    if (snap) {
+      applySnapshot(snap);
+    }
+
+    const unsubscribe = subscribeStoreChanges(applySnapshot);
+
+    fetchSharedStore().then((latest) => {
+      applySnapshot(latest);
+    });
+
+    return unsubscribe;
+  }, [currentCategorySlug, currentCollectionSlug, filterSnapshotProducts]);
 
   // Mevcut ürünlerdeki tüm benzersiz renkleri çıkar
   const availableColors = useMemo(() => {

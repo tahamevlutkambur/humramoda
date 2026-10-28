@@ -6,6 +6,7 @@ import {
 } from "@/lib/server/store";
 
 let isDbAvailable: boolean | null = null;
+let lastFailureAt = 0;
 let tableReady: Promise<void> | undefined;
 
 function isRemoteDatabaseConfigured(): boolean {
@@ -23,21 +24,25 @@ function isRemoteDatabaseConfigured(): boolean {
 
 async function ensureStoreTable(): Promise<boolean> {
   if (!isRemoteDatabaseConfigured()) return false;
-  if (isDbAvailable === false) return false;
+  if (isDbAvailable === false && Date.now() - lastFailureAt < 15_000) {
+    return false;
+  }
 
   try {
     let checkSuccess = true;
-    tableReady ??= prisma.$executeRaw`
-      CREATE TABLE IF NOT EXISTS "HumraStoreSnapshot" (
-        "id" TEXT PRIMARY KEY,
-        "data" JSONB NOT NULL,
-        "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
-      )
-    `
+    tableReady ??= prisma
+      .$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "HumraStoreSnapshot" (
+          "id" TEXT PRIMARY KEY,
+          "data" JSONB NOT NULL,
+          "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `)
       .then(() => undefined)
       .catch((error) => {
         tableReady = undefined;
         checkSuccess = false;
+        lastFailureAt = Date.now();
         console.warn("Database snapshot table check failed, falling back to local store:", error);
       });
 
@@ -50,6 +55,7 @@ async function ensureStoreTable(): Promise<boolean> {
     return true;
   } catch (err) {
     isDbAvailable = false;
+    lastFailureAt = Date.now();
     console.warn("Database connection failed, falling back to local store:", err);
     return false;
   }
@@ -63,21 +69,32 @@ export async function getPersistentStoreData(): Promise<AppStoreData> {
       return getStoreData();
     }
 
-    const rows = await prisma.$queryRaw<Array<{ data: AppStoreData }>>`
-      SELECT "data" FROM "HumraStoreSnapshot" WHERE "id" = 'main' LIMIT 1
-    `;
+    const rows = await prisma.$queryRawUnsafe<Array<{ data: AppStoreData }>>(
+      `SELECT "data" FROM "HumraStoreSnapshot" WHERE "id" = 'main' LIMIT 1`
+    );
+
+    const localData = getStoreData();
 
     if (rows && rows[0]?.data) {
-      usePersistentStoreData(rows[0].data);
-      return rows[0].data;
+      const dbData = rows[0].data;
+      const dbTime = dbData.updatedAt || 0;
+      const localTime = localData.updatedAt || 0;
+
+      if (dbTime >= localTime) {
+        usePersistentStoreData(dbData);
+        return dbData;
+      } else {
+        await savePersistentStoreData(localData);
+        return localData;
+      }
     }
 
-    const initialData = getStoreData();
-    await savePersistentStoreData(initialData);
-    return initialData;
+    await savePersistentStoreData(localData);
+    return localData;
   } catch (error) {
     console.warn("getPersistentStoreData error, fallback to local store:", error);
     isDbAvailable = false;
+    lastFailureAt = Date.now();
     return getStoreData();
   }
 }
@@ -91,12 +108,13 @@ export async function savePersistentStoreData(data: AppStoreData): Promise<void>
     }
 
     const serialized = JSON.stringify(data);
-    await prisma.$executeRaw`
-      INSERT INTO "HumraStoreSnapshot" ("id", "data", "updatedAt")
-      VALUES ('main', ${serialized}::jsonb, NOW())
-      ON CONFLICT ("id") DO UPDATE
-      SET "data" = EXCLUDED."data", "updatedAt" = NOW()
-    `;
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO "HumraStoreSnapshot" ("id", "data", "updatedAt")
+       VALUES ('main', $1::jsonb, NOW())
+       ON CONFLICT ("id") DO UPDATE
+       SET "data" = EXCLUDED."data", "updatedAt" = NOW()`,
+      serialized
+    );
     usePersistentStoreData(data);
   } catch (error) {
     console.warn("savePersistentStoreData error, data kept in local store:", error);

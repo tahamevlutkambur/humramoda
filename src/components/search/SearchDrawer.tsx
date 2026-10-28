@@ -3,8 +3,13 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { getProducts } from "@/lib/catalog";
+import { ProductItem, PRODUCTS } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/formatters";
+import {
+  getClientStoreSnapshot,
+  fetchSharedStore,
+  subscribeStoreChanges,
+} from "@/lib/client-store-sync";
 
 interface SearchDrawerProps {
   isOpen: boolean;
@@ -13,7 +18,27 @@ interface SearchDrawerProps {
 
 export function SearchDrawer({ isOpen, onClose }: SearchDrawerProps) {
   const [query, setQuery] = useState("");
+  const [products, setProducts] = useState<ProductItem[]>(() => {
+    const snap = getClientStoreSnapshot();
+    return snap ? snap.products : PRODUCTS;
+  });
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const unsubscribe = subscribeStoreChanges((snap) => {
+      if (Array.isArray(snap.products)) {
+        setProducts(snap.products);
+      }
+    });
+    if (isOpen) {
+      fetchSharedStore().then((snap) => {
+        if (Array.isArray(snap.products)) {
+          setProducts(snap.products);
+        }
+      });
+    }
+    return unsubscribe;
+  }, [isOpen]);
 
   const handleClose = useCallback(() => {
     setQuery("");
@@ -33,9 +58,16 @@ export function SearchDrawer({ isOpen, onClose }: SearchDrawerProps) {
   }, [isOpen]);
 
   const results = useMemo(() => {
-    if (!query.trim()) return [];
-    return getProducts({ query });
-  }, [query]);
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    return products.filter(
+      (p) =>
+        p.title.toLowerCase().includes(q) ||
+        p.description?.toLowerCase().includes(q) ||
+        p.categoryName?.toLowerCase().includes(q) ||
+        p.colors?.some((c) => c.name.toLowerCase().includes(q))
+    );
+  }, [query, products]);
 
   // ESC ile kapatma
   useEffect(() => {

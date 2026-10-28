@@ -20,9 +20,47 @@ export function ProductBuyBox({
   selectedColor,
   onSelectColor,
 }: ProductBuyBoxProps) {
-  const [selectedSize, setSelectedSize] = useState<ProductSizeItem | null>(null);
+  const getColorVariants = React.useCallback(
+    (colorId: string) => {
+      const exact = product.variants.filter((v) => v.colorId === colorId && v.isActive !== false);
+      if (exact.length > 0) return exact;
+      return product.variants.filter((v) => v.isActive !== false);
+    },
+    [product.variants]
+  );
+
+  const getDefaultSizeForColor = React.useCallback(
+    (colorId: string): ProductSizeItem | null => {
+      const cVars = getColorVariants(colorId);
+      const inStockVar = cVars.find((v) => v.stockQuantity > 0) || cVars[0];
+      if (!inStockVar) return product.sizes?.[0] || null;
+      return (
+        product.sizes?.find((s) => s.id === inStockVar.sizeId) || {
+          id: inStockVar.sizeId,
+          name: inStockVar.sizeId,
+          slug: inStockVar.sizeId,
+          displayOrder: 1,
+        }
+      );
+    },
+    [getColorVariants, product.sizes]
+  );
+
+  const [selectedSize, setSelectedSize] = useState<ProductSizeItem | null>(() =>
+    getDefaultSizeForColor(selectedColor.id)
+  );
   const [quantity, setQuantity] = useState(1);
   const [openAccordion, setOpenAccordion] = useState<string | null>("fabric");
+
+  React.useEffect(() => {
+    setSelectedSize((prev) => {
+      const cVars = getColorVariants(selectedColor.id);
+      if (prev && cVars.some((v) => v.sizeId === prev.id && v.stockQuantity > 0)) {
+        return prev;
+      }
+      return getDefaultSizeForColor(selectedColor.id);
+    });
+  }, [selectedColor.id, product.id, getColorVariants, getDefaultSizeForColor]);
 
   const { addItem } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -30,9 +68,8 @@ export function ProductBuyBox({
 
   // Seçili renk ve bedenin stok durumunu bul
   const getVariantForSize = (sizeId: string) => {
-    return product.variants.find(
-      (v) => v.colorId === selectedColor.id && v.sizeId === sizeId
-    );
+    const cVars = getColorVariants(selectedColor.id);
+    return cVars.find((v) => v.sizeId === sizeId) || product.variants.find((v) => v.sizeId === sizeId);
   };
 
   const selectedVariant = selectedSize ? getVariantForSize(selectedSize.id) : null;
@@ -252,9 +289,7 @@ export function ProductBuyBox({
 
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
           {(() => {
-            const colorVariants = product.variants.filter(
-              (v) => v.colorId === selectedColor.id && v.isActive
-            );
+            const colorVariants = getColorVariants(selectedColor.id);
 
             if (colorVariants.length === 0) {
               return (

@@ -5,36 +5,46 @@ import Link from "next/link";
 import Image from "next/image";
 import { Container } from "../ui/Container";
 import { getAllCategories, CategoryItem } from "@/lib/catalog";
+import {
+  getClientStoreSnapshot,
+  fetchSharedStore,
+  subscribeStoreChanges,
+} from "@/lib/client-store-sync";
 
 interface CategoryTilesProps {
   initialCategories?: CategoryItem[];
 }
 
 export function CategoryTiles({ initialCategories }: CategoryTilesProps) {
-  const [categories, setCategories] = useState<CategoryItem[]>(() =>
-    initialCategories && initialCategories.length > 0 ? initialCategories : getAllCategories()
-  );
+  const [categories, setCategories] = useState<CategoryItem[]>(() => {
+    const snap = getClientStoreSnapshot();
+    if (snap && snap.categories.length > 0) {
+      return [...snap.categories].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+    }
+    return initialCategories && initialCategories.length > 0
+      ? initialCategories
+      : getAllCategories();
+  });
 
   useEffect(() => {
-    let active = true;
-    fetch("/api/admin/products?public=1", {
-      cache: "no-store",
-      headers: { "Cache-Control": "no-cache" },
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!active || !data) return;
-        if (Array.isArray(data.categories) && data.categories.length > 0) {
-          const sorted = [...data.categories].sort(
-            (a: CategoryItem, b: CategoryItem) => (a.displayOrder || 0) - (b.displayOrder || 0)
-          );
-          setCategories(sorted);
-        }
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
+    const applyCategories = (cats?: CategoryItem[]) => {
+      if (Array.isArray(cats) && cats.length > 0) {
+        const sorted = [...cats].sort(
+          (a: CategoryItem, b: CategoryItem) => (a.displayOrder || 0) - (b.displayOrder || 0)
+        );
+        setCategories(sorted);
+      }
     };
+
+    const unsubscribe = subscribeStoreChanges((snap) => {
+      applyCategories(snap.categories);
+    });
+
+    fetchSharedStore().then((snap) => {
+      applyCategories(snap.categories);
+    });
+
+    return unsubscribe;
   }, []);
 
   return (

@@ -3,8 +3,13 @@
 import React, { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { CategoryItem, ProductItem } from "@/lib/catalog";
+import {
+  getClientStoreSnapshot,
+  saveClientStoreSnapshot,
+  fetchSharedStore,
+  subscribeStoreChanges,
+} from "@/lib/client-store-sync";
 
 interface CategoryManagerProps {
   initialCategories: CategoryItem[];
@@ -15,32 +20,36 @@ export function CategoryManager({
   initialCategories,
   products: initialProducts,
 }: CategoryManagerProps) {
-  const router = useRouter();
-  const [categories, setCategories] = useState<CategoryItem[]>(initialCategories);
-  const [products, setProducts] = useState<ProductItem[]>(initialProducts);
-
-  const fetchLatestStoreCategories = React.useCallback(async () => {
-    try {
-      const res = await fetch("/api/admin/products?public=1", {
-        cache: "no-store",
-        headers: { "Cache-Control": "no-cache" },
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      if (Array.isArray(data.categories)) {
-        setCategories(data.categories);
-      }
-      if (Array.isArray(data.products)) {
-        setProducts(data.products);
-      }
-    } catch (err) {
-      console.error("Categories sync error:", err);
-    }
-  }, []);
+  const [categories, setCategories] = useState<CategoryItem[]>(() => {
+    const snap = getClientStoreSnapshot();
+    return snap && snap.categories.length > 0 ? snap.categories : initialCategories;
+  });
+  const [products, setProducts] = useState<ProductItem[]>(() => {
+    const snap = getClientStoreSnapshot();
+    return snap ? snap.products : initialProducts;
+  });
 
   React.useEffect(() => {
-    fetchLatestStoreCategories();
-  }, [fetchLatestStoreCategories]);
+    const unsubscribe = subscribeStoreChanges((snap) => {
+      if (Array.isArray(snap.categories) && snap.categories.length > 0) {
+        setCategories(snap.categories);
+      }
+      if (Array.isArray(snap.products)) {
+        setProducts(snap.products);
+      }
+    });
+
+    fetchSharedStore().then((snap) => {
+      if (Array.isArray(snap.categories) && snap.categories.length > 0) {
+        setCategories(snap.categories);
+      }
+      if (Array.isArray(snap.products)) {
+        setProducts(snap.products);
+      }
+    });
+
+    return unsubscribe;
+  }, []);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -122,8 +131,16 @@ export function CategoryManager({
     setSuccessMsg("");
 
     try {
+      const currentSnapshot = getClientStoreSnapshot() || {
+        updatedAt: Date.now(),
+        categories,
+        products,
+        collections: [],
+      };
+
       const payload = {
         _entity: "category",
+        _snapshot: currentSnapshot,
         name: formName,
         slug: formSlug || undefined,
         description: formDescription,
@@ -132,7 +149,6 @@ export function CategoryManager({
       };
 
       if (editingId) {
-        // Update via unified store endpoint
         const res = await fetch("/api/admin/products", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -142,25 +158,26 @@ export function CategoryManager({
         if (!res.ok) {
           throw new Error(data.error || "Güncelleme başarısız.");
         }
-        // Best-effort sync to secondary categories endpoint
-        fetch(`/api/admin/categories/${encodeURIComponent(editingId)}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }).catch(() => {});
 
-        if (Array.isArray(data.categories)) {
-          setCategories(data.categories);
-          resetForm(data.categories.length);
-        } else {
-          setCategories((prev) =>
-            prev.map((c) => (c.id === editingId ? data.category : c))
-          );
-          resetForm();
-        }
+        const nextCategories: CategoryItem[] = Array.isArray(data.categories)
+          ? data.categories
+          : categories.map((c) => (c.id === editingId ? data.category : c));
+        const nextProducts: ProductItem[] = Array.isArray(data.products)
+          ? data.products
+          : products;
+
+        setCategories(nextCategories);
+        setProducts(nextProducts);
+        saveClientStoreSnapshot({
+          updatedAt: data.updatedAt,
+          categories: nextCategories,
+          products: nextProducts,
+          collections: data.collections,
+          bumpVersion: true,
+        });
+        resetForm(nextCategories.length);
         setSuccessMsg(`"${data.category.name}" kategorisi başarıyla güncellendi.`);
       } else {
-        // Create via unified store endpoint
         const res = await fetch("/api/admin/products", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -170,24 +187,26 @@ export function CategoryManager({
         if (!res.ok) {
           throw new Error(data.error || "Kategori oluşturulamadı.");
         }
-        // Best-effort sync to secondary categories endpoint
-        fetch("/api/admin/categories", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }).catch(() => {});
 
-        if (Array.isArray(data.categories)) {
-          setCategories(data.categories);
-          resetForm(data.categories.length);
-        } else {
-          setCategories((prev) => [...prev, data.category]);
-          resetForm(categories.length + 1);
-        }
+        const nextCategories: CategoryItem[] = Array.isArray(data.categories)
+          ? data.categories
+          : [...categories, data.category];
+        const nextProducts: ProductItem[] = Array.isArray(data.products)
+          ? data.products
+          : products;
+
+        setCategories(nextCategories);
+        setProducts(nextProducts);
+        saveClientStoreSnapshot({
+          updatedAt: data.updatedAt,
+          categories: nextCategories,
+          products: nextProducts,
+          collections: data.collections,
+          bumpVersion: true,
+        });
+        resetForm(nextCategories.length);
         setSuccessMsg(`"${data.category.name}" kategorisi başarıyla eklendi.`);
       }
-
-      router.refresh();
     } catch (err: unknown) {
       if (err instanceof Error) {
         setErrorMsg(err.message);
@@ -232,38 +251,53 @@ export function CategoryManager({
     try {
       const targetId = cat.id || cat.slug;
       const reassignQuery = reassignTo ? `&reassignTo=${encodeURIComponent(reassignTo)}` : "";
+      const currentSnapshot = getClientStoreSnapshot() || {
+        updatedAt: Date.now(),
+        categories,
+        products,
+        collections: [],
+      };
       const res = await fetch(
         `/api/admin/products?entity=category&id=${encodeURIComponent(targetId)}${reassignQuery}`,
         {
           method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            _entity: "category",
+            id: targetId,
+            reassignTo,
+            _snapshot: currentSnapshot,
+          }),
         }
       );
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || "Silme işlemi başarısız.");
       }
-      // Best-effort sync to secondary categories endpoint
-      const legacyQuery = reassignTo ? `?reassignTo=${encodeURIComponent(reassignTo)}` : "";
-      fetch(`/api/admin/categories/${encodeURIComponent(targetId)}${legacyQuery}`, {
-        method: "DELETE",
-      }).catch(() => {});
 
-      if (Array.isArray(data.categories)) {
-        setCategories(data.categories);
-      } else {
-        setCategories((prev) => prev.filter((c) => c.id !== cat.id && c.slug !== cat.slug));
-      }
-      if (reassignTo) {
-        setProducts((prev) =>
-          prev.map((p) =>
+      const nextCategories: CategoryItem[] = Array.isArray(data.categories)
+        ? data.categories
+        : categories.filter((c) => c.id !== cat.id && c.slug !== cat.slug);
+      const nextProducts: ProductItem[] = Array.isArray(data.products)
+        ? data.products
+        : reassignTo
+        ? products.map((p) =>
             p.categorySlug === cat.slug || (p as { categoryId?: string }).categoryId === cat.id
               ? { ...p, categorySlug: reassignTo! }
               : p
           )
-        );
-      }
+        : products;
+
+      setCategories(nextCategories);
+      setProducts(nextProducts);
+      saveClientStoreSnapshot({
+        updatedAt: data.updatedAt,
+        categories: nextCategories,
+        products: nextProducts,
+        collections: data.collections,
+        bumpVersion: true,
+      });
       setSuccessMsg(`"${cat.name}" kategorisi başarıyla silindi.`);
-      router.refresh();
     } catch (err: unknown) {
       if (err instanceof Error) {
         setErrorMsg(err.message);

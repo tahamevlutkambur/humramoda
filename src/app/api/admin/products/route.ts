@@ -11,6 +11,7 @@ import {
   updateStoreCategory,
   deleteStoreCategory,
   getStoreData,
+  syncStoreSnapshot,
 } from "@/lib/server/store";
 import { logAdminAudit } from "@/lib/server/logger";
 import { revalidatePath } from "next/cache";
@@ -68,6 +69,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json(
       {
+        updatedAt: store.updatedAt || 0,
         products,
         categories,
         collections: store.collections,
@@ -82,6 +84,7 @@ export async function GET(req: Request) {
     const store = getStoreData();
     return NextResponse.json(
       {
+        updatedAt: store.updatedAt || 0,
         products: getAllStoreProducts(),
         categories: getAllStoreCategories(),
         collections: store.collections,
@@ -94,21 +97,48 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const session = await getAuthenticatedAdmin(req);
-  if (!session) {
-    return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
-  }
-
   try {
     await getPersistentStoreData().catch(() => {});
     const body = await req.json();
+
+    // Cold-instance snapshot rehydration
+    if (body?._entity === "sync_snapshot") {
+      const session = await getAuthenticatedAdmin(req);
+      const currentStore = getStoreData();
+      // Allow authenticated admins anytime, or cold uninitialized instances (updatedAt === 0)
+      if (session || (currentStore.updatedAt || 0) === 0) {
+        const synced = syncStoreSnapshot(body);
+        await savePersistentStoreData(synced).catch(() => {});
+      }
+      const latest = getStoreData();
+      return NextResponse.json(
+        {
+          success: true,
+          updatedAt: latest.updatedAt || 0,
+          products: getAllStoreProducts(),
+          categories: getAllStoreCategories(),
+          collections: latest.collections,
+        },
+        { headers: NO_STORE_HEADERS }
+      );
+    }
+
+    const session = await getAuthenticatedAdmin(req);
+    if (!session) {
+      return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
+    }
+
+    if (body?._snapshot && typeof body._snapshot === "object") {
+      syncStoreSnapshot(body._snapshot);
+    }
 
     if (body?._entity === "category") {
       const { category, error } = createStoreCategory(body);
       if (error || !category) {
         return NextResponse.json({ error: error || "Kategori oluşturulamadı." }, { status: 400 });
       }
-      await savePersistentStoreData(getStoreData()).catch(() => {});
+      const updatedStore = getStoreData();
+      await savePersistentStoreData(updatedStore).catch(() => {});
 
       logAdminAudit({
         adminId: session.userId,
@@ -124,8 +154,11 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: true,
+          updatedAt: updatedStore.updatedAt || Date.now(),
           category,
           categories: getAllStoreCategories(),
+          products: getAllStoreProducts(),
+          collections: updatedStore.collections,
         },
         { status: 201, headers: NO_STORE_HEADERS }
       );
@@ -136,7 +169,8 @@ export async function POST(req: Request) {
     if (error || !product) {
       return NextResponse.json({ error: error || "Ürün oluşturulamadı." }, { status: 400 });
     }
-    await savePersistentStoreData(getStoreData()).catch(() => {});
+    const updatedStore = getStoreData();
+    await savePersistentStoreData(updatedStore).catch(() => {});
 
     logAdminAudit({
       adminId: session.userId,
@@ -153,8 +187,11 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: true,
+        updatedAt: updatedStore.updatedAt || Date.now(),
         product,
         products: getAllStoreProducts(),
+        categories: getAllStoreCategories(),
+        collections: updatedStore.collections,
       },
       { status: 201, headers: NO_STORE_HEADERS }
     );
@@ -174,6 +211,11 @@ export async function PUT(req: Request) {
     await getPersistentStoreData().catch(() => {});
     const url = new URL(req.url);
     const body = await req.json();
+
+    if (body?._snapshot && typeof body._snapshot === "object") {
+      syncStoreSnapshot(body._snapshot);
+    }
+
     const targetId = String(body?.id || url.searchParams.get("id") || "").trim();
 
     if (!targetId) {
@@ -185,7 +227,8 @@ export async function PUT(req: Request) {
       if (error || !category) {
         return NextResponse.json({ error: error || "Kategori güncellenemedi." }, { status: 400 });
       }
-      await savePersistentStoreData(getStoreData()).catch(() => {});
+      const updatedStore = getStoreData();
+      await savePersistentStoreData(updatedStore).catch(() => {});
 
       logAdminAudit({
         adminId: session.userId,
@@ -201,8 +244,11 @@ export async function PUT(req: Request) {
       return NextResponse.json(
         {
           success: true,
+          updatedAt: updatedStore.updatedAt || Date.now(),
           category,
           categories: getAllStoreCategories(),
+          products: getAllStoreProducts(),
+          collections: updatedStore.collections,
         },
         { headers: NO_STORE_HEADERS }
       );
@@ -212,7 +258,8 @@ export async function PUT(req: Request) {
     if (error || !product) {
       return NextResponse.json({ error: error || "Ürün güncellenemedi." }, { status: 400 });
     }
-    await savePersistentStoreData(getStoreData()).catch(() => {});
+    const updatedStore = getStoreData();
+    await savePersistentStoreData(updatedStore).catch(() => {});
 
     logAdminAudit({
       adminId: session.userId,
@@ -228,8 +275,11 @@ export async function PUT(req: Request) {
     return NextResponse.json(
       {
         success: true,
+        updatedAt: updatedStore.updatedAt || Date.now(),
         product,
         products: getAllStoreProducts(),
+        categories: getAllStoreCategories(),
+        collections: updatedStore.collections,
       },
       { headers: NO_STORE_HEADERS }
     );
@@ -252,9 +302,12 @@ export async function DELETE(req: Request) {
     let entity = url.searchParams.get("entity") || "product";
     let reassignTo = url.searchParams.get("reassignTo") || undefined;
 
-    if (!targetId && req.headers.get("content-type")?.includes("application/json")) {
+    if (req.headers.get("content-type")?.includes("application/json")) {
       const body = await req.json().catch(() => null);
-      if (body?.id) targetId = String(body.id);
+      if (body?._snapshot && typeof body._snapshot === "object") {
+        syncStoreSnapshot(body._snapshot);
+      }
+      if (!targetId && body?.id) targetId = String(body.id);
       if (body?._entity) entity = String(body._entity);
       if (body?.reassignTo) reassignTo = String(body.reassignTo);
     }
@@ -269,7 +322,8 @@ export async function DELETE(req: Request) {
       if (!deleted) {
         return NextResponse.json({ error: "Kategori bulunamadı veya silinemedi." }, { status: 404 });
       }
-      await savePersistentStoreData(getStoreData()).catch(() => {});
+      const updatedStore = getStoreData();
+      await savePersistentStoreData(updatedStore).catch(() => {});
 
       logAdminAudit({
         adminId: session.userId,
@@ -285,7 +339,10 @@ export async function DELETE(req: Request) {
       return NextResponse.json(
         {
           success: true,
+          updatedAt: updatedStore.updatedAt || Date.now(),
           categories: getAllStoreCategories(),
+          products: getAllStoreProducts(),
+          collections: updatedStore.collections,
         },
         { headers: NO_STORE_HEADERS }
       );
@@ -295,7 +352,8 @@ export async function DELETE(req: Request) {
     if (!deleted) {
       return NextResponse.json({ error: "Silinecek ürün bulunamadı." }, { status: 404 });
     }
-    await savePersistentStoreData(getStoreData()).catch(() => {});
+    const updatedStore = getStoreData();
+    await savePersistentStoreData(updatedStore).catch(() => {});
 
     logAdminAudit({
       adminId: session.userId,
@@ -311,7 +369,10 @@ export async function DELETE(req: Request) {
     return NextResponse.json(
       {
         success: true,
+        updatedAt: updatedStore.updatedAt || Date.now(),
         products: getAllStoreProducts(),
+        categories: getAllStoreCategories(),
+        collections: updatedStore.collections,
       },
       { headers: NO_STORE_HEADERS }
     );

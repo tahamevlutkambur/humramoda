@@ -306,6 +306,7 @@ export interface StoreOrder {
 }
 
 export interface AppStoreData {
+  updatedAt?: number;
   products: ProductItem[];
   categories: CategoryItem[];
   collections: CollectionItem[];
@@ -636,7 +637,13 @@ export function getStoreData(): AppStoreData {
         ? parsed.adminUsers
         : DEFAULT_ADMIN_USERS;
 
+    const isColdVercelBundle = Boolean(process.env.VERCEL && activeFile === STORE_FILE);
     const data: AppStoreData = {
+      updatedAt: isColdVercelBundle
+        ? 0
+        : typeof parsed.updatedAt === "number"
+        ? parsed.updatedAt
+        : 0,
       products: parsed.products !== undefined && Array.isArray(parsed.products) ? parsed.products : PRODUCTS,
       categories: parsed.categories !== undefined && Array.isArray(parsed.categories) ? parsed.categories : CATEGORIES,
       collections: parsed.collections !== undefined && Array.isArray(parsed.collections) ? parsed.collections : COLLECTIONS,
@@ -682,6 +689,7 @@ export function getStoreData(): AppStoreData {
  * Vercel / Serverless salt-okunur dosya sisteminde hata fırlatmaz.
  */
 export function saveStoreData(data: AppStoreData): void {
+  data.updatedAt = Math.max(Date.now(), (data.updatedAt || 0) + 1);
   storeState.inMemoryStore = data;
   storeState.persistentStoreOverride = data;
 
@@ -735,6 +743,37 @@ export function usePersistentStoreData(data: AppStoreData): void {
   } catch {
     // ignore
   }
+}
+
+/**
+ * Cold serverless instance rehydration:
+ * If a newly spun-up Vercel Lambda container has an older or uninitialized store (updatedAt: 0)
+ * and receives a newer verified client/admin snapshot, hydrate the container's store.
+ */
+export function syncStoreSnapshot(snapshot: {
+  updatedAt?: number;
+  products?: ProductItem[];
+  categories?: CategoryItem[];
+  collections?: CollectionItem[];
+}): AppStoreData {
+  const store = getStoreData();
+  const incomingTime = typeof snapshot.updatedAt === "number" ? snapshot.updatedAt : 0;
+  const currentTime = store.updatedAt || 0;
+
+  if (incomingTime > currentTime) {
+    if (Array.isArray(snapshot.products)) {
+      store.products = snapshot.products;
+    }
+    if (Array.isArray(snapshot.categories) && snapshot.categories.length > 0) {
+      store.categories = snapshot.categories;
+    }
+    if (Array.isArray(snapshot.collections) && snapshot.collections.length > 0) {
+      store.collections = snapshot.collections;
+    }
+    store.updatedAt = incomingTime;
+    usePersistentStoreData(store);
+  }
+  return store;
 }
 
 // -------------------------------------------------------------

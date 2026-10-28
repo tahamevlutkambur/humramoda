@@ -5,6 +5,12 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ProductItem, CategoryItem, CollectionItem } from "@/lib/catalog";
+import {
+  getClientStoreSnapshot,
+  saveClientStoreSnapshot,
+  fetchSharedStore,
+  subscribeStoreChanges,
+} from "@/lib/client-store-sync";
 
 interface ProductEditorProps {
   productId?: string;
@@ -43,14 +49,37 @@ interface EditableMedia {
 
 export function ProductEditor({
   productId,
-  initialProduct,
+  initialProduct: propInitialProduct,
   categories: initialCategories,
   collections: initialCollections,
   isNew = false,
 }: ProductEditorProps) {
   const router = useRouter();
-  const [categories, setCategories] = useState<CategoryItem[]>(initialCategories);
-  const [collections, setCollections] = useState<CollectionItem[]>(initialCollections);
+  const initialSnap = getClientStoreSnapshot();
+  const initialProduct = React.useMemo(() => {
+    if (propInitialProduct) return propInitialProduct;
+    if (isNew || !initialSnap) return undefined;
+    const lookup = (productId || "").trim().toLowerCase();
+    if (!lookup) return undefined;
+    return initialSnap.products.find(
+      (p) =>
+        p.id === productId ||
+        p.slug === productId ||
+        p.id.toLowerCase() === lookup ||
+        p.slug.toLowerCase() === lookup
+    );
+  }, [propInitialProduct, isNew, initialSnap, productId]);
+
+  const [categories, setCategories] = useState<CategoryItem[]>(() =>
+    initialSnap && initialSnap.categories.length > 0
+      ? initialSnap.categories
+      : initialCategories
+  );
+  const [collections, setCollections] = useState<CollectionItem[]>(() =>
+    initialSnap && initialSnap.collections.length > 0
+      ? initialSnap.collections
+      : initialCollections
+  );
   const [resolvedId, setResolvedId] = useState<string>(initialProduct?.id || productId || "");
   const [isFetchingProduct, setIsFetchingProduct] = useState<boolean>(!isNew && !initialProduct);
 
@@ -201,50 +230,54 @@ export function ProductEditor({
 
   React.useEffect(() => {
     let active = true;
-    const targetLookup = productId || initialProduct?.id || "";
-    const query = targetLookup
-      ? `/api/admin/products?public=1&id=${encodeURIComponent(targetLookup)}`
-      : "/api/admin/products?public=1";
+    const targetLookup = (productId || initialProduct?.id || "").trim();
 
-    fetch(query, {
-      cache: "no-store",
-      headers: { "Cache-Control": "no-cache" },
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!active || !data) return;
-        if (Array.isArray(data.categories) && data.categories.length > 0) {
-          setCategories(data.categories);
-          if (isNew && !initialProduct?.categorySlug) {
-            setCategorySlug((prev) =>
-              data.categories.some((c: CategoryItem) => c.slug === prev)
-                ? prev
-                : data.categories[0].slug
-            );
-          }
+    const applySnapshot = (data: {
+      products?: ProductItem[];
+      categories?: CategoryItem[];
+      collections?: CollectionItem[];
+      product?: ProductItem | null;
+    }) => {
+      if (!active || !data) return;
+      if (Array.isArray(data.categories) && data.categories.length > 0) {
+        setCategories(data.categories);
+        if (isNew && !initialProduct?.categorySlug) {
+          setCategorySlug((prev) =>
+            data.categories!.some((c: CategoryItem) => c.slug === prev)
+              ? prev
+              : data.categories![0].slug
+          );
         }
-        if (Array.isArray(data.collections) && data.collections.length > 0) {
-          setCollections(data.collections);
+      }
+      if (Array.isArray(data.collections) && data.collections.length > 0) {
+        setCollections(data.collections);
+      }
+      if (!isNew && targetLookup) {
+        const lower = targetLookup.toLowerCase();
+        const matchedProduct: ProductItem | undefined =
+          data.product ||
+          (Array.isArray(data.products)
+            ? data.products.find(
+                (p: ProductItem) =>
+                  p.id === targetLookup ||
+                  p.slug === targetLookup ||
+                  p.id.toLowerCase() === lower ||
+                  p.slug.toLowerCase() === lower
+              )
+            : undefined);
+        if (matchedProduct) {
+          hydrateFromProduct(matchedProduct);
         }
-        if (!isNew) {
-          const matchedProduct: ProductItem | undefined =
-            data.product ||
-            (Array.isArray(data.products)
-              ? data.products.find(
-                  (p: ProductItem) =>
-                    p.id === targetLookup ||
-                    p.slug === targetLookup ||
-                    p.id.toLowerCase() === targetLookup.toLowerCase() ||
-                    p.slug.toLowerCase() === targetLookup.toLowerCase()
-                )
-              : undefined);
-          if (matchedProduct) {
-            hydrateFromProduct(matchedProduct);
-          }
-        }
-      })
-      .catch((err) => {
-        console.error("ProductEditor sync error:", err);
+      }
+    };
+
+    const unsubscribe = subscribeStoreChanges((snap) => {
+      applySnapshot(snap);
+    });
+
+    fetchSharedStore()
+      .then((snap) => {
+        applySnapshot(snap);
       })
       .finally(() => {
         if (active) setIsFetchingProduct(false);
@@ -252,6 +285,7 @@ export function ProductEditor({
 
     return () => {
       active = false;
+      unsubscribe();
     };
   }, [isNew, productId, initialProduct?.id, initialProduct?.categorySlug, hydrateFromProduct]);
 
@@ -483,9 +517,16 @@ export function ProductEditor({
         : [{ name: "Standart", displayOrder: 1 }];
 
       const targetUpdateId = resolvedId || productId || initialProduct?.id || "";
+      const currentSnapshot = getClientStoreSnapshot() || {
+        updatedAt: Date.now(),
+        categories,
+        collections,
+        products: initialProduct ? [initialProduct] : [],
+      };
 
       const payload = {
         ...(isNew ? {} : { id: targetUpdateId }),
+        _snapshot: currentSnapshot,
         title: title.trim(),
         slug: slug.trim() || undefined,
         description,
@@ -517,19 +558,26 @@ export function ProductEditor({
         throw new Error(data.error || "Ürün kaydedilemedi.");
       }
 
-      if (!isNew && targetUpdateId) {
-        fetch(`/api/admin/products/${encodeURIComponent(targetUpdateId)}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }).catch(() => {});
-      }
+      saveClientStoreSnapshot({
+        updatedAt: data.updatedAt,
+        products: Array.isArray(data.products)
+          ? data.products
+          : data.product
+          ? isNew
+            ? [data.product, ...(currentSnapshot.products || [])]
+            : (currentSnapshot.products || []).map((p) =>
+                p.id === data.product.id ? data.product : p
+              )
+          : currentSnapshot.products,
+        categories: Array.isArray(data.categories) ? data.categories : categories,
+        collections: Array.isArray(data.collections) ? data.collections : collections,
+        bumpVersion: true,
+      });
 
       setSuccessMessage("Ürün başarıyla kaydedildi! Yönlendiriliyorsunuz...");
       setTimeout(() => {
         router.push("/admin/urunler");
-        router.refresh();
-      }, 800);
+      }, 600);
     } catch (err: unknown) {
       setErrorMessage(err instanceof Error ? err.message : "Kaydetme sırasında bir hata oluştu.");
       setIsSaving(false);

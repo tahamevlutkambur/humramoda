@@ -1,19 +1,42 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { ProductCard } from "@/components/product/ProductCard";
 import { useFavorites } from "@/context/FavoritesContext";
-import { PRODUCTS } from "@/lib/catalog";
+import { PRODUCTS, ProductItem } from "@/lib/catalog";
+import {
+  getClientStoreSnapshot,
+  fetchSharedStore,
+  subscribeStoreChanges,
+} from "@/lib/client-store-sync";
 
 export default function FavoritesPage() {
   const { favorites, clearFavorites, totalCount } = useFavorites();
+  const [products, setProducts] = useState<ProductItem[]>(() => {
+    const snap = getClientStoreSnapshot();
+    return snap ? snap.products : PRODUCTS;
+  });
+
+  useEffect(() => {
+    const unsubscribe = subscribeStoreChanges((snap) => {
+      if (Array.isArray(snap.products)) {
+        setProducts(snap.products);
+      }
+    });
+    fetchSharedStore().then((snap) => {
+      if (Array.isArray(snap.products)) {
+        setProducts(snap.products);
+      }
+    });
+    return unsubscribe;
+  }, []);
 
   const favoriteProducts = useMemo(() => {
-    return PRODUCTS.filter((p) => favorites.includes(p.id));
-  }, [favorites]);
+    return products.filter((p) => favorites.includes(p.id));
+  }, [favorites, products]);
 
   return (
     <div style={{ padding: "var(--hm-space-8) 0 var(--hm-space-20)" }}>

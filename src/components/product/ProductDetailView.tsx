@@ -7,6 +7,11 @@ import { ProductGallery } from "./ProductGallery";
 import { ProductBuyBox } from "./ProductBuyBox";
 import { ProductCard } from "./ProductCard";
 import { Container } from "../ui/Container";
+import {
+  getClientStoreSnapshot,
+  fetchSharedStore,
+  subscribeStoreChanges,
+} from "@/lib/client-store-sync";
 
 interface ProductDetailViewProps {
   product?: ProductItem | null;
@@ -30,9 +35,33 @@ export function ProductDetailView({
   const searchParams = useSearchParams();
   const initialRenkSlug = searchParams.get("renk");
 
-  const [product, setProduct] = useState<ProductItem | null>(initialProduct || null);
+  const findInProducts = useCallback(
+    (list: ProductItem[], lookupKey: string): ProductItem | undefined => {
+      if (!lookupKey) return undefined;
+      const decoded = decodeURIComponent(lookupKey).trim();
+      const lower = decoded.toLowerCase();
+      return list.find(
+        (p) =>
+          p.slug === decoded ||
+          p.id === decoded ||
+          p.slug.toLowerCase() === lower ||
+          p.id.toLowerCase() === lower
+      );
+    },
+    []
+  );
+
+  const [product, setProduct] = useState<ProductItem | null>(() => {
+    if (initialProduct) return initialProduct;
+    const snap = getClientStoreSnapshot();
+    const lookup = slug || "";
+    if (snap && lookup) {
+      return findInProducts(snap.products, lookup) || null;
+    }
+    return null;
+  });
   const [relatedProducts, setRelatedProducts] = useState<ProductItem[]>(initialRelatedProducts);
-  const [isLoading, setIsLoading] = useState<boolean>(!initialProduct);
+  const [isLoading, setIsLoading] = useState<boolean>(() => !product);
 
   const getInitialColor = useCallback(
     (prod?: ProductItem | null): ProductColorItem => {
@@ -49,54 +78,44 @@ export function ProductDetailView({
   );
 
   const [selectedColor, setSelectedColor] = useState<ProductColorItem>(() =>
-    getInitialColor(initialProduct)
+    getInitialColor(product)
   );
 
   useEffect(() => {
     let active = true;
     const lookup = slug || initialProduct?.slug || initialProduct?.id || "";
-    const url = lookup
-      ? `/api/admin/products?public=1&id=${encodeURIComponent(lookup)}`
-      : "/api/admin/products?public=1";
 
-    fetch(url, {
-      cache: "no-store",
-      headers: { "Cache-Control": "no-cache" },
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!active || !data) return;
-        const matched: ProductItem | undefined =
-          data.product ||
-          (Array.isArray(data.products)
-            ? data.products.find(
-                (p: ProductItem) =>
-                  p.slug === lookup ||
-                  p.id === lookup ||
-                  p.slug.toLowerCase() === lookup.toLowerCase() ||
-                  p.id.toLowerCase() === lookup.toLowerCase()
-              )
-            : undefined);
-        if (matched) {
-          setProduct(matched);
-          setSelectedColor(getInitialColor(matched));
-          if (Array.isArray(data.products)) {
-            const rel = data.products
-              .filter((p: ProductItem) => p.id !== matched.id)
-              .slice(0, 4);
-            setRelatedProducts(rel);
-          }
-        }
+    const applyStore = (productsList: ProductItem[]) => {
+      if (!active || !Array.isArray(productsList)) return;
+      const matched = findInProducts(productsList, lookup);
+      if (matched) {
+        setProduct(matched);
+        setSelectedColor((prev) => {
+          const valid = matched.colors?.find((c) => c.id === prev.id || c.slug === prev.slug);
+          return valid || getInitialColor(matched);
+        });
+        const rel = productsList.filter((p) => p.id !== matched.id).slice(0, 4);
+        setRelatedProducts(rel);
+      }
+    };
+
+    const unsubscribe = subscribeStoreChanges((snap) => {
+      applyStore(snap.products);
+    });
+
+    fetchSharedStore()
+      .then((snap) => {
+        applyStore(snap.products);
       })
-      .catch(() => {})
       .finally(() => {
         if (active) setIsLoading(false);
       });
 
     return () => {
       active = false;
+      unsubscribe();
     };
-  }, [slug, initialProduct?.slug, initialProduct?.id, getInitialColor]);
+  }, [slug, initialProduct?.slug, initialProduct?.id, findInProducts, getInitialColor]);
 
   // Tarayıcı geçmişi (back/forward) ile query param değişirse rengi güncelle
   useEffect(() => {

@@ -3,6 +3,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { ProductItem } from "@/lib/catalog";
 import { ProductCard } from "@/components/product/ProductCard";
+import {
+  getClientStoreSnapshot,
+  fetchSharedStore,
+  subscribeStoreChanges,
+} from "@/lib/client-store-sync";
 
 interface HomeProductGridProps {
   initialProducts: ProductItem[];
@@ -10,26 +15,25 @@ interface HomeProductGridProps {
 }
 
 export function HomeProductGrid({ initialProducts, mode }: HomeProductGridProps) {
-  const [products, setProducts] = useState<ProductItem[]>(initialProducts);
+  const [products, setProducts] = useState<ProductItem[]>(() => {
+    const snap = getClientStoreSnapshot();
+    return snap && snap.products.length > 0 ? snap.products : initialProducts;
+  });
 
   useEffect(() => {
-    let active = true;
-    fetch("/api/admin/products?public=1", {
-      cache: "no-store",
-      headers: { "Cache-Control": "no-cache" },
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!active || !data) return;
-        if (Array.isArray(data.products)) {
-          setProducts(data.products);
-        }
-      })
-      .catch(() => {});
+    const unsubscribe = subscribeStoreChanges((snap) => {
+      if (Array.isArray(snap.products)) {
+        setProducts(snap.products);
+      }
+    });
 
-    return () => {
-      active = false;
-    };
+    fetchSharedStore().then((snap) => {
+      if (Array.isArray(snap.products)) {
+        setProducts(snap.products);
+      }
+    });
+
+    return unsubscribe;
   }, []);
 
   const displayedProducts = useMemo(() => {
@@ -83,3 +87,4 @@ export function HomeProductGrid({ initialProducts, mode }: HomeProductGridProps)
     </div>
   );
 }
+

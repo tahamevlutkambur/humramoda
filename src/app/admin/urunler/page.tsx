@@ -5,34 +5,46 @@ import Link from "next/link";
 import Image from "next/image";
 import { ProductItem } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/formatters";
+import {
+  getClientStoreSnapshot,
+  saveClientStoreSnapshot,
+  fetchSharedStore,
+  subscribeStoreChanges,
+} from "@/lib/client-store-sync";
 
 export default function AdminProductsPage() {
-  const [products, setProducts] = useState<ProductItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [products, setProducts] = useState<ProductItem[]>(() => {
+    const snap = getClientStoreSnapshot();
+    return snap ? snap.products : [];
+  });
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    const snap = getClientStoreSnapshot();
+    return !snap;
+  });
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const fetchProducts = async () => {
-    try {
-      const res = await fetch("/api/admin/products", {
-        cache: "no-store",
-        headers: { "Cache-Control": "no-cache" },
-      });
-      const data = await res.json();
-      if (res.ok && data.products) {
-        setProducts(data.products);
-      }
-    } catch (err) {
-      console.error("Products fetch error:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchProducts();
+    const unsubscribe = subscribeStoreChanges((snap) => {
+      if (Array.isArray(snap.products)) {
+        setProducts(snap.products);
+        setIsLoading(false);
+      }
+    });
+
+    fetchSharedStore()
+      .then((snap) => {
+        if (Array.isArray(snap.products)) {
+          setProducts(snap.products);
+        }
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+
+    return unsubscribe;
   }, []);
 
   const handleDelete = async (id: string) => {
@@ -44,14 +56,35 @@ export default function AdminProductsPage() {
     setIsDeleting(true);
 
     try {
-      const res = await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      const currentSnapshot = getClientStoreSnapshot() || {
+        updatedAt: Date.now(),
+        products,
+        categories: [],
+        collections: [],
+      };
+      const res = await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          _entity: "product",
+          id,
+          _snapshot: currentSnapshot,
+        }),
+      });
       if (res.ok) {
         const data = await res.json().catch(() => null);
-        if (data && Array.isArray(data.products)) {
-          setProducts(data.products);
-        } else {
-          setProducts((prev) => prev.filter((p) => p.id !== id && p.slug !== id));
-        }
+        const nextProducts: ProductItem[] =
+          data && Array.isArray(data.products)
+            ? data.products
+            : products.filter((p) => p.id !== id && p.slug !== id);
+        setProducts(nextProducts);
+        saveClientStoreSnapshot({
+          updatedAt: data?.updatedAt,
+          products: nextProducts,
+          categories: data?.categories,
+          collections: data?.collections,
+          bumpVersion: true,
+        });
       } else {
         alert("Ürün silinemedi.");
       }

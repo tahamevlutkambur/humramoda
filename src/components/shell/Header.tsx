@@ -9,6 +9,11 @@ import { SearchDrawer } from "../search/SearchDrawer";
 import { MobileNav } from "./MobileNav";
 import { getAllCategories, CategoryItem } from "@/lib/catalog";
 import { usePathname } from "next/navigation";
+import {
+  getClientStoreSnapshot,
+  fetchSharedStore,
+  subscribeStoreChanges,
+} from "@/lib/client-store-sync";
 
 export interface HeaderProps {
   categories?: CategoryItem[];
@@ -20,28 +25,29 @@ export function Header({ categories: propCategories }: HeaderProps = {}) {
   const { totalCount: favCount } = useFavorites();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [categories, setCategories] = useState<CategoryItem[]>(() =>
-    propCategories && propCategories.length > 0 ? propCategories : getAllCategories()
-  );
+  const [categories, setCategories] = useState<CategoryItem[]>(() => {
+    const snap = getClientStoreSnapshot();
+    if (snap && snap.categories.length > 0) {
+      return snap.categories;
+    }
+    return propCategories && propCategories.length > 0 ? propCategories : getAllCategories();
+  });
 
   React.useEffect(() => {
     if (pathname?.startsWith("/admin")) return;
-    let active = true;
-    fetch("/api/admin/products?public=1", {
-      cache: "no-store",
-      headers: { "Cache-Control": "no-cache" },
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!active || !data) return;
-        if (Array.isArray(data.categories) && data.categories.length > 0) {
-          setCategories(data.categories);
-        }
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
-    };
+    const unsubscribe = subscribeStoreChanges((snap) => {
+      if (Array.isArray(snap.categories) && snap.categories.length > 0) {
+        setCategories(snap.categories);
+      }
+    });
+
+    fetchSharedStore().then((snap) => {
+      if (Array.isArray(snap.categories) && snap.categories.length > 0) {
+        setCategories(snap.categories);
+      }
+    });
+
+    return unsubscribe;
   }, [pathname]);
 
   if (pathname?.startsWith("/admin")) {
