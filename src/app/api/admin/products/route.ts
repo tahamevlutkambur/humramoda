@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
-import { getAllStoreProducts, createStoreProduct } from "@/lib/server/store";
+import { getAllStoreProducts, createStoreProduct, getStoreData } from "@/lib/server/store";
 
 import { logAdminAudit } from "@/lib/server/logger";
 import { revalidatePath } from "next/cache";
+import { getPersistentStoreData, savePersistentStoreData } from "@/lib/server/persistent-store";
 
 export async function GET(req: Request) {
   const session = await getAuthenticatedAdmin(req);
@@ -11,8 +12,14 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
   }
 
-  const products = getAllStoreProducts();
-  return NextResponse.json({ products });
+  try {
+    await getPersistentStoreData();
+    const products = getAllStoreProducts();
+    return NextResponse.json({ products });
+  } catch (err) {
+    console.error("Load products error:", err);
+    return NextResponse.json({ error: "Ürünler veritabanından yüklenemedi." }, { status: 503 });
+  }
 }
 
 export async function POST(req: Request) {
@@ -22,12 +29,14 @@ export async function POST(req: Request) {
   }
 
   try {
+    await getPersistentStoreData();
     const body = await req.json();
     const { product, error } = createStoreProduct(body);
 
     if (error || !product) {
       return NextResponse.json({ error: error || "Ürün oluşturulamadı." }, { status: 400 });
     }
+    await savePersistentStoreData(getStoreData());
 
     logAdminAudit({
       adminId: session.userId,

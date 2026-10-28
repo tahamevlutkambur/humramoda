@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
-import { getAllStoreCategories, createStoreCategory } from "@/lib/server/store";
+import { getAllStoreCategories, createStoreCategory, getStoreData } from "@/lib/server/store";
 import { logAdminAudit } from "@/lib/server/logger";
 import { revalidatePath } from "next/cache";
+import { getPersistentStoreData, savePersistentStoreData } from "@/lib/server/persistent-store";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -13,8 +14,14 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
   }
 
-  const categories = getAllStoreCategories();
-  return NextResponse.json({ categories });
+  try {
+    await getPersistentStoreData();
+    const categories = getAllStoreCategories();
+    return NextResponse.json({ categories });
+  } catch (err) {
+    console.error("Load categories error:", err);
+    return NextResponse.json({ error: "Kategoriler veritabanından yüklenemedi." }, { status: 503 });
+  }
 }
 
 export async function POST(req: Request) {
@@ -24,12 +31,15 @@ export async function POST(req: Request) {
   }
 
   try {
+    await getPersistentStoreData();
     const body = await req.json();
     const { category, error } = createStoreCategory(body);
 
     if (error || !category) {
       return NextResponse.json({ error: error || "Kategori oluşturulamadı." }, { status: 400 });
     }
+
+    await savePersistentStoreData(getStoreData());
 
     logAdminAudit({
       adminId: session.userId,

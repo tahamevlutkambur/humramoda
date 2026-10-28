@@ -9,6 +9,7 @@ import {
 import { ProductItem } from "@/lib/catalog";
 import { logAdminAudit } from "@/lib/server/logger";
 import { revalidatePath } from "next/cache";
+import { getPersistentStoreData, savePersistentStoreData } from "@/lib/server/persistent-store";
 
 interface RouteParams {
   params: Promise<{
@@ -22,6 +23,8 @@ export async function GET(req: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
   }
 
+  try {
+  await getPersistentStoreData();
   const resolvedParams = await Promise.resolve(params);
   const id = resolvedParams.id;
   const decoded = decodeURIComponent(id || "").trim();
@@ -43,6 +46,10 @@ export async function GET(req: Request, { params }: RouteParams) {
   }
 
   return NextResponse.json({ product });
+  } catch (err) {
+    console.error("Load product error:", err);
+    return NextResponse.json({ error: "Ürün veritabanından yüklenemedi." }, { status: 503 });
+  }
 }
 
 export async function PUT(req: Request, { params }: RouteParams) {
@@ -52,6 +59,7 @@ export async function PUT(req: Request, { params }: RouteParams) {
   }
 
   try {
+    await getPersistentStoreData();
     const resolvedParams = await Promise.resolve(params);
     const id = resolvedParams.id;
     const body = await req.json();
@@ -60,6 +68,7 @@ export async function PUT(req: Request, { params }: RouteParams) {
     if (error || !product) {
       return NextResponse.json({ error: error || "Ürün güncellenemedi." }, { status: 400 });
     }
+    await savePersistentStoreData(getStoreData());
 
     logAdminAudit({
       adminId: session.userId,
@@ -95,12 +104,15 @@ export async function DELETE(req: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
   }
 
+  try {
+  await getPersistentStoreData();
   const resolvedParams = await Promise.resolve(params);
   const id = resolvedParams.id;
   const deleted = deleteStoreProduct(id);
   if (!deleted) {
     return NextResponse.json({ error: "Silinecek ürün bulunamadı." }, { status: 404 });
   }
+  await savePersistentStoreData(getStoreData());
 
   logAdminAudit({
     adminId: session.userId,
@@ -121,4 +133,8 @@ export async function DELETE(req: Request, { params }: RouteParams) {
   }
 
   return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("Delete product error:", err);
+    return NextResponse.json({ error: "Ürün silinirken veritabanı hatası oluştu." }, { status: 503 });
+  }
 }

@@ -325,6 +325,7 @@ const STORE_FILE = path.join(DATA_DIR, "store.json");
 const TMP_STORE_FILE = path.join(os.tmpdir(), "humramoda_store.json");
 
 let inMemoryStore: AppStoreData | null = null;
+let persistentStoreOverride: AppStoreData | null = null;
 let lastStoreFileMtime = 0;
 
 const DEFAULT_HOMEPAGE_CONTENT: HomepageContent = {
@@ -516,6 +517,7 @@ const DEFAULT_ADMIN_USERS: AdminUser[] = [
  * Vercel / Serverless ortamında salt-okunur dosya sistemi hatalarını (EROFS) engeller.
  */
 export function getStoreData(): AppStoreData {
+  if (persistentStoreOverride) return persistentStoreOverride;
   let fileMtime = 0;
   let activeFile = "";
   try {
@@ -654,6 +656,7 @@ export function getStoreData(): AppStoreData {
  */
 export function saveStoreData(data: AppStoreData): void {
   inMemoryStore = data;
+  if (persistentStoreOverride) persistentStoreOverride = data;
 
   // 1. Vercel / Lambda ortamı için /tmp dizinine MUTLAKA yaz
   try {
@@ -693,6 +696,12 @@ export function saveStoreData(data: AppStoreData): void {
   } catch {
     // Vercel serverless salt okunur dosya sistemi - normal
   }
+}
+
+/** Hydrate the current request's store from the durable database snapshot. */
+export function usePersistentStoreData(data: AppStoreData): void {
+  inMemoryStore = data;
+  persistentStoreOverride = data;
 }
 
 // -------------------------------------------------------------

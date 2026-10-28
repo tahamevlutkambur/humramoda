@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
-import { updateStoreCategory, deleteStoreCategory } from "@/lib/server/store";
+import { getStoreData, updateStoreCategory, deleteStoreCategory } from "@/lib/server/store";
 import { logAdminAudit } from "@/lib/server/logger";
 import { revalidatePath } from "next/cache";
+import { getPersistentStoreData, savePersistentStoreData } from "@/lib/server/persistent-store";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -20,6 +21,7 @@ export async function PUT(req: Request, { params }: RouteParams) {
   }
 
   try {
+    await getPersistentStoreData();
     const resolvedParams = await Promise.resolve(params);
     const id = resolvedParams.id;
     const body = await req.json();
@@ -28,6 +30,7 @@ export async function PUT(req: Request, { params }: RouteParams) {
     if (error || !category) {
       return NextResponse.json({ error: error || "Kategori güncellenemedi." }, { status: 400 });
     }
+    await savePersistentStoreData(getStoreData());
 
     logAdminAudit({
       adminId: session.userId,
@@ -61,6 +64,7 @@ export async function DELETE(req: Request, { params }: RouteParams) {
   }
 
   try {
+    await getPersistentStoreData();
     const resolvedParams = await Promise.resolve(params);
     const id = resolvedParams.id;
     let reassignTo: string | undefined;
@@ -80,6 +84,7 @@ export async function DELETE(req: Request, { params }: RouteParams) {
     if (!deleted) {
       return NextResponse.json({ error: "Kategori bulunamadı veya silinemedi." }, { status: 404 });
     }
+    await savePersistentStoreData(getStoreData());
 
     logAdminAudit({
       adminId: session.userId,

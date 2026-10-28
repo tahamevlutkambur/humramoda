@@ -7,6 +7,7 @@ import { AnnouncementBar } from "@/components/shell/AnnouncementBar";
 import { CookieConsent } from "@/components/ui/CookieConsent";
 import { StoreProviders } from "@/components/providers/StoreProviders";
 import { getStoreData } from "@/lib/server/store";
+import { getPersistentStoreData } from "@/lib/server/persistent-store";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin", "latin-ext"],
@@ -21,6 +22,9 @@ const playfairDisplay = Playfair_Display({
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://humrabutik.com";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -49,12 +53,18 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const store = getStoreData();
+  let store;
+  try {
+    store = await getPersistentStoreData();
+  } catch (error) {
+    console.error("Persistent store load failed; using local fallback:", error);
+    store = getStoreData();
+  }
   const announcement = store.homepageContent.announcement;
   const freeShippingThreshold = store.settings.freeShippingThreshold;
 
