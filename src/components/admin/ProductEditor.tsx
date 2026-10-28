@@ -8,12 +8,14 @@ import { ProductItem, CategoryItem, CollectionItem } from "@/lib/catalog";
 import {
   getClientStoreSnapshot,
   saveClientStoreSnapshot,
+  saveToIndexedDB,
   fetchSharedStore,
   subscribeStoreChanges,
   compressImageBeforeUpload,
   safeParseJsonResponse,
   getCompactSnapshotForRequest,
   optimizeDataUrlIfLarge,
+  syncSnapshotToServerInChunks,
 } from "@/lib/client-store-sync";
 
 interface ProductEditorProps {
@@ -61,18 +63,35 @@ export function ProductEditor({
   const router = useRouter();
   const initialSnap = getClientStoreSnapshot();
   const initialProduct = React.useMemo(() => {
-    if (propInitialProduct) return propInitialProduct;
-    if (isNew || !initialSnap) return undefined;
-    const lookup = (productId || "").trim().toLowerCase();
-    if (!lookup) return undefined;
-    return initialSnap.products.find(
-      (p) =>
-        p.id === productId ||
-        p.slug === productId ||
-        p.id.toLowerCase() === lookup ||
-        p.slug.toLowerCase() === lookup
-    );
+    if (isNew) return undefined;
+    const lookup = (productId || propInitialProduct?.id || propInitialProduct?.slug || "")
+      .trim()
+      .toLowerCase();
+    const snapMatch =
+      lookup && initialSnap
+        ? initialSnap.products.find(
+            (p) =>
+              p.id === productId ||
+              p.slug === productId ||
+              p.id.toLowerCase() === lookup ||
+              p.slug.toLowerCase() === lookup
+          )
+        : undefined;
+
+    if (snapMatch && propInitialProduct) {
+      if (snapMatch.media && snapMatch.media.length > 0) {
+        return snapMatch;
+      }
+      if (propInitialProduct.media && propInitialProduct.media.length > 0) {
+        return { ...snapMatch, media: propInitialProduct.media };
+      }
+      return snapMatch;
+    }
+    return snapMatch || propInitialProduct;
   }, [propInitialProduct, isNew, initialSnap, productId]);
+
+  const hasUserModifiedFormRef = useRef(false);
+  const hasUserModifiedMediaRef = useRef(false);
 
   const [categories, setCategories] = useState<CategoryItem[]>(() =>
     initialSnap && initialSnap.categories.length > 0
@@ -149,71 +168,90 @@ export function ProductEditor({
   });
 
   // 4. Medyalar
-  const [media, setMedia] = useState<EditableMedia[]>(
-    initialProduct?.media?.map((m) => {
-      const c = initialProduct.colors?.find((col) => col.id === m.colorId);
-      return {
-        id: m.id,
-        colorName: c?.name || (m as { colorName?: string }).colorName,
-        type: m.type,
-        url: m.url,
-        thumbnailUrl: m.thumbnailUrl || m.url,
-        altText: m.altText || "",
-        isThumbnail: m.isThumbnail,
-        displayOrder: m.displayOrder,
-      };
-    }) || []
-  );
+  const [media, setMedia] = useState<EditableMedia[]>(() => {
+    if (initialProduct?.media && initialProduct.media.length > 0) {
+      return initialProduct.media.map((m) => {
+        const c = initialProduct.colors?.find((col) => col.id === m.colorId);
+        return {
+          id: m.id,
+          colorName: c?.name || (m as { colorName?: string }).colorName,
+          type: m.type,
+          url: m.url,
+          thumbnailUrl: m.thumbnailUrl || m.url,
+          altText: m.altText || "",
+          isThumbnail: m.isThumbnail,
+          displayOrder: m.displayOrder,
+        };
+      });
+    }
+    if (isNew && typeof window !== "undefined") {
+      try {
+        const savedDraft = window.sessionStorage.getItem("humra_new_product_media_draft");
+        if (savedDraft) {
+          const parsed = JSON.parse(savedDraft);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+    return [];
+  });
 
   const hydrateFromProduct = React.useCallback((prod: ProductItem) => {
     setResolvedId(prod.id);
-    setTitle(prod.title || "");
-    setSlug(prod.slug || "");
-    if (prod.categorySlug) setCategorySlug(prod.categorySlug);
-    setSelectedCollections(
-      prod.collectionSlugs && prod.collectionSlugs.length > 0
-        ? prod.collectionSlugs
-        : ["yeni-sezon"]
-    );
-    setBasePrice(String(prod.basePrice));
-    setDiscountPrice(prod.discountPrice ? String(prod.discountPrice) : "");
-    setBadge(prod.badge || "");
-    setDescription(prod.description || "");
-    setFabricDetails(prod.fabricDetails || "");
-    setModelDimensions(prod.modelDimensions || "");
-
-    const loadedColors =
-      prod.colors && prod.colors.length > 0
-        ? prod.colors.map((c) => ({
-            id: c.id,
-            name: c.name,
-            slug: c.slug,
-            colorCode: c.colorCode,
-          }))
-        : [{ name: "Siyah", slug: "siyah", colorCode: "#141414" }];
-    setColors(loadedColors);
-
-    const fallbackColor = loadedColors[0]?.name || "Siyah";
-    const fallbackSize = prod.sizes?.[0]?.name || "Standart";
-
-    if (prod.variants && prod.variants.length > 0) {
-      setVariants(
-        prod.variants.map((v) => {
-          const c = prod.colors?.find((col) => col.id === v.colorId);
-          const s = prod.sizes?.find((siz) => siz.id === v.sizeId);
-          return {
-            id: v.id,
-            colorName: c?.name || (v as { colorName?: string }).colorName || fallbackColor,
-            sizeName: s?.name || (v as { sizeName?: string }).sizeName || fallbackSize,
-            sku: v.sku,
-            stockQuantity: v.stockQuantity ?? 10,
-            costPrice: v.costPrice,
-          };
-        })
+    if (!hasUserModifiedFormRef.current) {
+      setTitle(prod.title || "");
+      setSlug(prod.slug || "");
+      if (prod.categorySlug) setCategorySlug(prod.categorySlug);
+      setSelectedCollections(
+        prod.collectionSlugs && prod.collectionSlugs.length > 0
+          ? prod.collectionSlugs
+          : ["yeni-sezon"]
       );
+      setBasePrice(String(prod.basePrice));
+      setDiscountPrice(prod.discountPrice ? String(prod.discountPrice) : "");
+      setBadge(prod.badge || "");
+      setDescription(prod.description || "");
+      setFabricDetails(prod.fabricDetails || "");
+      setModelDimensions(prod.modelDimensions || "");
+
+      const loadedColors =
+        prod.colors && prod.colors.length > 0
+          ? prod.colors.map((c) => ({
+              id: c.id,
+              name: c.name,
+              slug: c.slug,
+              colorCode: c.colorCode,
+            }))
+          : [{ name: "Siyah", slug: "siyah", colorCode: "#141414" }];
+      setColors(loadedColors);
+
+      const fallbackColor = loadedColors[0]?.name || "Siyah";
+      const fallbackSize = prod.sizes?.[0]?.name || "Standart";
+
+      if (prod.variants && prod.variants.length > 0) {
+        setVariants(
+          prod.variants.map((v) => {
+            const c = prod.colors?.find((col) => col.id === v.colorId);
+            const s = prod.sizes?.find((siz) => siz.id === v.sizeId);
+            return {
+              id: v.id,
+              colorName: c?.name || (v as { colorName?: string }).colorName || fallbackColor,
+              sizeName: s?.name || (v as { sizeName?: string }).sizeName || fallbackSize,
+              sku: v.sku,
+              stockQuantity: v.stockQuantity ?? 10,
+              costPrice: v.costPrice,
+            };
+          })
+        );
+      }
     }
 
-    if (prod.media) {
+    // Never overwrite existing media with an empty array, and don't overwrite if user already modified media in this session
+    if (!hasUserModifiedMediaRef.current && Array.isArray(prod.media) && prod.media.length > 0) {
       setMedia(
         prod.media.map((m) => {
           const c = prod.colors?.find((col) => col.id === m.colorId);
@@ -301,8 +339,106 @@ export function ProductEditor({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const persistMediaImmediately = React.useCallback(
+    (nextMedia: EditableMedia[], activeColorsList: EditableColor[] = colors) => {
+      hasUserModifiedMediaRef.current = true;
+
+      if (isNew) {
+        if (typeof window !== "undefined") {
+          try {
+            window.sessionStorage.setItem(
+              "humra_new_product_media_draft",
+              JSON.stringify(nextMedia)
+            );
+          } catch {
+            // ignore quota
+          }
+        }
+        return;
+      }
+
+      const targetId = (resolvedId || productId || initialProduct?.id || "").trim();
+      if (!targetId) return;
+
+      const snap = getClientStoreSnapshot();
+      const targetLower = targetId.toLowerCase();
+      const currentProducts = snap?.products || (initialProduct ? [initialProduct] : []);
+
+      const updatedProducts = currentProducts.map((p) => {
+        if (
+          p.id === targetId ||
+          p.slug === targetId ||
+          p.id.toLowerCase() === targetLower ||
+          p.slug.toLowerCase() === targetLower
+        ) {
+          const mappedColors =
+            activeColorsList && activeColorsList.length > 0
+              ? activeColorsList.map((c, idx) => ({
+                  id: c.id || `col-${p.id}-${idx}`,
+                  name: c.name,
+                  slug: c.slug || c.name.toLowerCase().replace(/\s+/g, "-"),
+                  colorCode: c.colorCode || "#141414",
+                  displayOrder: idx + 1,
+                }))
+              : p.colors;
+
+          const mappedMedia = nextMedia.map((m, idx) => {
+            const matchedCol = mappedColors?.find(
+              (col) => col.name.trim().toLowerCase() === (m.colorName || "").trim().toLowerCase()
+            );
+            return {
+              id: m.id || `med-${p.id}-${idx}`,
+              colorId: matchedCol?.id,
+              type: m.type || ("IMAGE" as const),
+              url: m.url,
+              thumbnailUrl: m.url?.startsWith("data:") ? "" : m.thumbnailUrl || m.url,
+              altText: m.altText || `${p.title} görseli`,
+              isThumbnail: Boolean(m.isThumbnail || idx === 0),
+              displayOrder: idx + 1,
+            };
+          });
+
+          return {
+            ...p,
+            colors: mappedColors,
+            media: mappedMedia,
+          };
+        }
+        return p;
+      });
+
+      const saved = saveClientStoreSnapshot({
+        editedProductId: targetId,
+        explicitEmptyMediaProductId: nextMedia.length === 0 ? targetId : undefined,
+        products: updatedProducts,
+        categories,
+        collections,
+        bumpVersion: true,
+      });
+
+      // Immediately sync the updated media to the server in the background so refreshing never loses it
+      const cleanMediaPayload = nextMedia.map((m, i) => ({
+        ...m,
+        thumbnailUrl: m.url?.startsWith("data:") ? "" : m.thumbnailUrl || m.url,
+        displayOrder: i + 1,
+      }));
+      fetch("/api/admin/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          _entity: "sync_product_media",
+          id: targetId,
+          updatedAt: saved.updatedAt,
+          media: cleanMediaPayload,
+        }),
+      }).catch(() => {});
+    },
+    [isNew, resolvedId, productId, initialProduct, colors, categories, collections]
+  );
+
   // Renk Ekle
   const handleAddColor = () => {
+    hasUserModifiedFormRef.current = true;
     const newName = `Yeni Renk ${colors.length + 1}`;
     const updated = [...colors, { name: newName, colorCode: "#C8B89C" }];
     setColors(updated);
@@ -326,19 +462,26 @@ export function ProductEditor({
 
   // Renk Sil
   const handleRemoveColor = (idx: number) => {
+    hasUserModifiedFormRef.current = true;
     const colorToRemove = colors[idx];
     if (!colorToRemove) return;
-    setColors((prev) => prev.filter((_, i) => i !== idx));
+    const nextColors = colors.filter((_, i) => i !== idx);
+    setColors(nextColors);
     setVariants((prev) =>
       prev.filter((v) => v.colorName.toLowerCase() !== colorToRemove.name.toLowerCase())
     );
-    setMedia((prev) =>
-      prev.filter((m) => m.colorName?.toLowerCase() !== colorToRemove.name.toLowerCase())
-    );
+    setMedia((prev) => {
+      const nextMedia = prev.filter(
+        (m) => m.colorName?.toLowerCase() !== colorToRemove.name.toLowerCase()
+      );
+      persistMediaImmediately(nextMedia, nextColors);
+      return nextMedia;
+    });
   };
 
   // Renk Adı Değiştiğinde Varyant ve Medyaları Güncelle
   const handleColorNameChange = (idx: number, newName: string) => {
+    hasUserModifiedFormRef.current = true;
     const oldName = colors[idx].name;
     const updated = [...colors];
     updated[idx].name = newName;
@@ -359,6 +502,7 @@ export function ProductEditor({
 
   // Belirli bir renge özel beden ekle
   const handleAddSizeToColor = (colorName: string, sizeName: string) => {
+    hasUserModifiedFormRef.current = true;
     const trimmedSize = sizeName.trim();
     if (!trimmedSize) return;
 
@@ -392,11 +536,13 @@ export function ProductEditor({
 
   // Belirli bir varyantı kaldır
   const handleRemoveVariant = (variantIdx: number) => {
+    hasUserModifiedFormRef.current = true;
     setVariants((prev) => prev.filter((_, idx) => idx !== variantIdx));
   };
 
   // Koleksiyon Seçimi Değiştirme
   const toggleCollection = (cSlug: string) => {
+    hasUserModifiedFormRef.current = true;
     setSelectedCollections((prev) =>
       prev.includes(cSlug) ? prev.filter((s) => s !== cSlug) : [...prev, cSlug]
     );
@@ -409,8 +555,10 @@ export function ProductEditor({
 
     setIsUploading(true);
     setErrorMessage(null);
+    hasUserModifiedMediaRef.current = true;
 
     try {
+      let runningMedia = [...media];
       for (let i = 0; i < files.length; i++) {
         const rawFile = files[i];
         const file = await compressImageBeforeUpload(rawFile);
@@ -430,20 +578,21 @@ export function ProductEditor({
         const uploaded = data.media;
         const colorForMedia = activeMediaColorTab !== "all" ? activeMediaColorTab : colors[0]?.name;
 
-        setMedia((prev) => [
-          ...prev,
-          {
-            id: `temp-${Date.now()}-${i}`,
-            colorName: colorForMedia,
-            type: uploaded.mediaType || (uploaded.mimeType.startsWith("video/") ? "VIDEO" : "IMAGE"),
-            url: uploaded.url,
-            thumbnailUrl: uploaded.thumbnailUrl || uploaded.url,
-            altText: `${title || "Ürün"} görseli`,
-            isThumbnail: prev.length === 0 && uploaded.mediaType !== "VIDEO",
-            displayOrder: prev.length + 1,
-          },
-        ]);
+        const newItem: EditableMedia = {
+          id: `temp-${Date.now()}-${i}`,
+          colorName: colorForMedia,
+          type: uploaded.mediaType || (uploaded.mimeType.startsWith("video/") ? "VIDEO" : "IMAGE"),
+          url: uploaded.url,
+          thumbnailUrl: uploaded.thumbnailUrl || uploaded.url,
+          altText: `${title || "Ürün"} görseli`,
+          isThumbnail: runningMedia.length === 0 && uploaded.mediaType !== "VIDEO",
+          displayOrder: runningMedia.length + 1,
+        };
+
+        runningMedia = [...runningMedia, newItem];
+        setMedia(runningMedia);
       }
+      persistMediaImmediately(runningMedia, colors);
     } catch (err: unknown) {
       setErrorMessage(err instanceof Error ? err.message : "Dosya yüklenirken hata oluştu.");
     } finally {
@@ -454,17 +603,25 @@ export function ProductEditor({
 
   // Medya Sil
   const handleRemoveMedia = (idx: number) => {
-    setMedia((prev) => prev.filter((_, i) => i !== idx));
+    hasUserModifiedMediaRef.current = true;
+    setMedia((prev) => {
+      const next = prev.filter((_, i) => i !== idx);
+      persistMediaImmediately(next, colors);
+      return next;
+    });
   };
 
   // Kapak Resmi Yap
   const handleSetCover = (idx: number) => {
-    setMedia((prev) =>
-      prev.map((m, i) => ({
+    hasUserModifiedMediaRef.current = true;
+    setMedia((prev) => {
+      const next = prev.map((m, i) => ({
         ...m,
         isThumbnail: i === idx,
-      }))
-    );
+      }));
+      persistMediaImmediately(next, colors);
+      return next;
+    });
   };
 
   // Formu Kaydet
@@ -576,22 +733,60 @@ export function ProductEditor({
         throw new Error(data.error || "Ürün kaydedilemedi.");
       }
 
-      saveClientStoreSnapshot({
+      const savedProduct: ProductItem | undefined = data.product
+        ? {
+            ...data.product,
+            media:
+              Array.isArray(data.product.media) && data.product.media.length > 0
+                ? data.product.media
+                : compactMedia.map((m, i) => ({
+                    id: m.id || `med-${data.product.id}-${i}`,
+                    colorId: data.product.colors?.find(
+                      (c: { name: string }) =>
+                        c.name.trim().toLowerCase() === (m.colorName || "").trim().toLowerCase()
+                    )?.id,
+                    type: m.type || "IMAGE",
+                    url: m.url,
+                    thumbnailUrl: m.thumbnailUrl || "",
+                    altText: m.altText || `${data.product.title} görseli`,
+                    isThumbnail: Boolean(m.isThumbnail || i === 0),
+                    displayOrder: i + 1,
+                  })),
+          }
+        : undefined;
+
+      const serverProductsList: ProductItem[] = Array.isArray(data.products)
+        ? data.products.map((p: ProductItem) =>
+            savedProduct && p.id === savedProduct.id ? savedProduct : p
+          )
+        : savedProduct
+        ? isNew
+          ? [savedProduct, ...(rawSnapshot.products || [])]
+          : (rawSnapshot.products || []).map((p) =>
+              p.id === savedProduct.id ? savedProduct : p
+            )
+        : rawSnapshot.products;
+
+      const finalEditedId = savedProduct?.id || targetUpdateId;
+      const savedSnap = saveClientStoreSnapshot({
         updatedAt: data.updatedAt,
-        editedProductId: data.product?.id || targetUpdateId,
-        products: Array.isArray(data.products)
-          ? data.products
-          : data.product
-          ? isNew
-            ? [data.product, ...(rawSnapshot.products || [])]
-            : (rawSnapshot.products || []).map((p) =>
-                p.id === data.product.id ? data.product : p
-              )
-          : rawSnapshot.products,
+        editedProductId: finalEditedId,
+        explicitEmptyMediaProductId: compactMedia.length === 0 ? finalEditedId : undefined,
+        products: serverProductsList,
         categories: Array.isArray(data.categories) ? data.categories : categories,
         collections: Array.isArray(data.collections) ? data.collections : collections,
-        bumpVersion: true,
       });
+
+      await saveToIndexedDB(savedSnap);
+      void syncSnapshotToServerInChunks(savedSnap);
+
+      if (isNew && typeof window !== "undefined") {
+        try {
+          window.sessionStorage.removeItem("humra_new_product_media_draft");
+        } catch {
+          // ignore
+        }
+      }
 
       setSuccessMessage("Ürün başarıyla kaydedildi! Yönlendiriliyorsunuz...");
       setTimeout(() => {
@@ -1325,6 +1520,7 @@ export function ProductEditor({
                             src={item.thumbnailUrl || item.url}
                             alt={item.altText}
                             fill
+                            unoptimized={(item.thumbnailUrl || item.url).startsWith("data:")}
                             sizes="130px"
                             style={{ objectFit: "cover" }}
                           />
@@ -1375,6 +1571,7 @@ export function ProductEditor({
                             const updated = [...media];
                             updated[idx].colorName = e.target.value;
                             setMedia(updated);
+                            persistMediaImmediately(updated, colors);
                           }}
                           className="hm-admin-select"
                           style={{ fontSize: "0.6875rem", padding: "0.2rem" }}

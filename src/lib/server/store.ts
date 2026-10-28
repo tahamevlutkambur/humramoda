@@ -761,20 +761,42 @@ export function syncStoreSnapshot(snapshot: {
   const incomingTime = typeof snapshot.updatedAt === "number" ? snapshot.updatedAt : 0;
   const currentTime = store.updatedAt || 0;
 
-  if (incomingTime > currentTime || snapshot._mergeOnly) {
+  const hasMissingMediaOnServer =
+    Array.isArray(snapshot.products) &&
+    snapshot.products.some((ip) => {
+      if (!ip.media || ip.media.length === 0) return false;
+      const sp = store.products.find((s) => s.id === ip.id || s.slug === ip.slug);
+      return !sp || !sp.media || sp.media.length === 0;
+    });
+
+  if (
+    incomingTime >= currentTime ||
+    snapshot._mergeOnly ||
+    store.products.length === 0 ||
+    hasMissingMediaOnServer
+  ) {
     if (Array.isArray(snapshot.products) && snapshot.products.length > 0) {
       const existingById = new Map(store.products.map((p) => [p.id, p]));
       const mergedProducts: ProductItem[] = snapshot.products.map((incomingProd) => {
         const existing = existingById.get(incomingProd.id);
         existingById.delete(incomingProd.id);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const isTruncated = Boolean((incomingProd as any)._mediaTruncated);
+        const cleanProd: ProductItem = { ...incomingProd };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        delete (cleanProd as any)._mediaTruncated;
+
         if (
           existing &&
           existing.media &&
-          existing.media.length > (incomingProd.media?.length || 0)
+          existing.media.length > 0 &&
+          ((isTruncated && existing.media.length > (cleanProd.media?.length || 0)) ||
+            !cleanProd.media ||
+            cleanProd.media.length === 0)
         ) {
-          return { ...incomingProd, media: existing.media };
+          return { ...cleanProd, media: existing.media };
         }
-        return incomingProd;
+        return cleanProd;
       });
       // Preserve any existing server products that were not in a partial chunk
       for (const leftover of existingById.values()) {
@@ -794,6 +816,57 @@ export function syncStoreSnapshot(snapshot: {
     }
     if (incomingTime > currentTime) {
       store.updatedAt = incomingTime;
+    }
+    usePersistentStoreData(store);
+  }
+  return store;
+}
+
+export function syncStoreProductMedia(input: {
+  id?: string;
+  slug?: string;
+  updatedAt?: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  media?: any[];
+}): AppStoreData {
+  const store = getStoreData();
+  if (!Array.isArray(input.media) || input.media.length === 0) {
+    return store;
+  }
+  const target = (input.id || input.slug || "").trim().toLowerCase();
+  if (!target) return store;
+
+  const idx = store.products.findIndex(
+    (p) =>
+      p.id === input.id ||
+      p.slug === input.slug ||
+      p.id.toLowerCase() === target ||
+      p.slug.toLowerCase() === target
+  );
+  if (idx !== -1) {
+    const prod = store.products[idx];
+    prod.media = input.media.map((m, i) => {
+      let colorId: string | undefined = m.colorId;
+      if (!colorId && m.colorName) {
+        const match = prod.colors?.find(
+          (c) => c.name.trim().toLowerCase() === String(m.colorName).trim().toLowerCase()
+        );
+        if (match) colorId = match.id;
+      }
+      return {
+        id: m.id || `med-${prod.id}-${i}`,
+        colorId,
+        type: m.type || "IMAGE",
+        url: m.url,
+        thumbnailUrl: m.url?.startsWith("data:") ? "" : m.thumbnailUrl || m.url,
+        altText: m.altText || `${prod.title} görseli`,
+        isThumbnail: Boolean(m.isThumbnail || i === 0),
+        displayOrder: m.displayOrder || i + 1,
+      };
+    });
+    store.products[idx] = prod;
+    if (typeof input.updatedAt === "number" && input.updatedAt > (store.updatedAt || 0)) {
+      store.updatedAt = input.updatedAt;
     }
     usePersistentStoreData(store);
   }

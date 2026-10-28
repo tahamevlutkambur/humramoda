@@ -12,6 +12,7 @@ import {
   deleteStoreCategory,
   getStoreData,
   syncStoreSnapshot,
+  syncStoreProductMedia,
 } from "@/lib/server/store";
 import { logAdminAudit } from "@/lib/server/logger";
 import { revalidatePath } from "next/cache";
@@ -105,8 +106,13 @@ export async function POST(req: Request) {
     if (body?._entity === "sync_snapshot") {
       const session = await getAuthenticatedAdmin(req);
       const currentStore = getStoreData();
-      // Allow authenticated admins anytime, or cold uninitialized instances (updatedAt === 0)
-      if (session || (currentStore.updatedAt || 0) === 0) {
+      // Allow authenticated admins anytime, or cold/incomplete instances
+      if (
+        session ||
+        (currentStore.updatedAt || 0) === 0 ||
+        currentStore.products.length === 0 ||
+        currentStore.products.some((p) => !p.media || p.media.length === 0)
+      ) {
         const synced = syncStoreSnapshot(body);
         await savePersistentStoreData(synced).catch(() => {});
       }
@@ -118,6 +124,28 @@ export async function POST(req: Request) {
           products: getAllStoreProducts(),
           categories: getAllStoreCategories(),
           collections: latest.collections,
+        },
+        { headers: NO_STORE_HEADERS }
+      );
+    }
+
+    // Per-product media chunk rehydration
+    if (body?._entity === "sync_product_media") {
+      const session = await getAuthenticatedAdmin(req);
+      const currentStore = getStoreData();
+      if (
+        session ||
+        (currentStore.updatedAt || 0) === 0 ||
+        currentStore.products.some((p) => !p.media || p.media.length === 0)
+      ) {
+        const synced = syncStoreProductMedia(body);
+        await savePersistentStoreData(synced).catch(() => {});
+      }
+      const latest = getStoreData();
+      return NextResponse.json(
+        {
+          success: true,
+          updatedAt: latest.updatedAt || 0,
         },
         { headers: NO_STORE_HEADERS }
       );

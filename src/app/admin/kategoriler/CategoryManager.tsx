@@ -482,6 +482,7 @@ export function CategoryManager({
                         src={formImageUrl}
                         alt="Kategori görsel önizleme"
                         fill
+                        unoptimized={formImageUrl.startsWith("data:")}
                         sizes="80px"
                         style={{ objectFit: "cover" }}
                       />
@@ -621,6 +622,7 @@ export function CategoryManager({
                               src={cat.imageUrl}
                               alt={cat.name}
                               fill
+                              unoptimized={cat.imageUrl.startsWith("data:")}
                               style={{ objectFit: "cover" }}
                               sizes="40px"
                             />

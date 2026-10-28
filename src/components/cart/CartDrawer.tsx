@@ -288,6 +288,7 @@ export function CartDrawer() {
                         src={colorMedia.thumbnailUrl || colorMedia.url}
                         alt={item.product.title}
                         fill
+                        unoptimized={(colorMedia.thumbnailUrl || colorMedia.url).startsWith("data:")}
                         sizes="72px"
                         style={{ objectFit: "cover" }}
                       />

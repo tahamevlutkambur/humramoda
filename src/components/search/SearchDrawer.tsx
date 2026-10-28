@@ -282,6 +282,7 @@ export function SearchDrawer({ isOpen, onClose }: SearchDrawerProps) {
                               src={firstImage.thumbnailUrl || firstImage.url}
                               alt={product.title}
                               fill
+                              unoptimized={(firstImage.thumbnailUrl || firstImage.url).startsWith("data:")}
                               sizes="56px"
                               style={{ objectFit: "cover" }}
                             />

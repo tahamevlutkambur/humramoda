@@ -21,6 +21,7 @@ const IDB_NAME = "humra_store_db";
 const IDB_STORE = "snapshots";
 
 let memorySnapshot: ClientStoreSnapshot | null = null;
+let idbCachedSnapshot: ClientStoreSnapshot | null = null;
 let inFlightPromise: Promise<ClientStoreSnapshot> | null = null;
 const listeners = new Set<(snapshot: ClientStoreSnapshot) => void>();
 
@@ -34,29 +35,113 @@ function notifyListeners(snapshot: ClientStoreSnapshot) {
   });
 }
 
-// IndexedDB helper for large catalogs (base64 images > 5MB)
-function saveToIndexedDB(snapshot: ClientStoreSnapshot): void {
-  if (typeof window === "undefined" || !("indexedDB" in window)) return;
-  try {
-    const req = window.indexedDB.open(IDB_NAME, 1);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      if (!db.objectStoreNames.contains(IDB_STORE)) {
-        db.createObjectStore(IDB_STORE);
-      }
-    };
-    req.onsuccess = () => {
-      try {
-        const db = req.result;
-        const tx = db.transaction(IDB_STORE, "readwrite");
-        tx.objectStore(IDB_STORE).put(snapshot, "main");
-      } catch {
-        // ignore
-      }
-    };
-  } catch {
-    // ignore
+function mergeTwoProductLists(
+  primaryList: ProductItem[],
+  secondaryList: ProductItem[],
+  options?: {
+    editedProductId?: string;
+    deletedProductId?: string;
+    explicitEmptyMediaProductId?: string;
   }
+): ProductItem[] {
+  const secondaryById = new Map<string, ProductItem>();
+  const secondaryBySlug = new Map<string, ProductItem>();
+  for (const sp of secondaryList || []) {
+    if (sp.id) secondaryById.set(sp.id, sp);
+    if (sp.slug) secondaryBySlug.set(sp.slug.toLowerCase(), sp);
+  }
+
+  const seenIds = new Set<string>();
+  const seenSlugs = new Set<string>();
+
+  const merged: ProductItem[] = (primaryList || []).map((p) => {
+    if (p.id) seenIds.add(p.id);
+    if (p.slug) seenSlugs.add(p.slug.toLowerCase());
+
+    const prev =
+      secondaryById.get(p.id) ||
+      (p.slug ? secondaryBySlug.get(p.slug.toLowerCase()) : undefined);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const isTruncated = Boolean((p as any)._mediaTruncated);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const cleanP: ProductItem = { ...p };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (cleanP as any)._mediaTruncated;
+
+    const isExplicitlyCleared =
+      options?.explicitEmptyMediaProductId &&
+      (p.id === options.explicitEmptyMediaProductId ||
+        p.slug === options.explicitEmptyMediaProductId);
+
+    if (!isExplicitlyCleared && prev && prev.media && prev.media.length > 0) {
+      const currentMediaLen = cleanP.media?.length || 0;
+      // Preserve secondary media if primary has 0 media, or was truncated, or wasn't the edited product and had fewer media
+      if (
+        currentMediaLen === 0 ||
+        isTruncated ||
+        (p.id !== options?.editedProductId &&
+          p.slug !== options?.editedProductId &&
+          prev.media.length > currentMediaLen)
+      ) {
+        return { ...cleanP, media: prev.media };
+      }
+    }
+
+    return cleanP;
+  });
+
+  for (const leftover of secondaryList || []) {
+    const isDeleted =
+      options?.deletedProductId &&
+      (leftover.id === options.deletedProductId ||
+        leftover.slug === options.deletedProductId);
+    if (isDeleted) continue;
+
+    const alreadyHas =
+      (leftover.id && seenIds.has(leftover.id)) ||
+      (leftover.slug && seenSlugs.has(leftover.slug.toLowerCase()));
+    if (!alreadyHas) {
+      merged.push(leftover);
+      if (leftover.id) seenIds.add(leftover.id);
+      if (leftover.slug) seenSlugs.add(leftover.slug.toLowerCase());
+    }
+  }
+
+  return merged;
+}
+
+// IndexedDB helper for large catalogs (base64 images > 5MB)
+export function saveToIndexedDB(snapshot: ClientStoreSnapshot): Promise<void> {
+  idbCachedSnapshot = snapshot;
+  if (typeof window === "undefined" || !("indexedDB" in window)) {
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => {
+    try {
+      const req = window.indexedDB.open(IDB_NAME, 1);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(IDB_STORE)) {
+          db.createObjectStore(IDB_STORE);
+        }
+      };
+      req.onsuccess = () => {
+        try {
+          const db = req.result;
+          const tx = db.transaction(IDB_STORE, "readwrite");
+          tx.objectStore(IDB_STORE).put(snapshot, "main");
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => resolve();
+        } catch {
+          resolve();
+        }
+      };
+      req.onerror = () => resolve();
+    } catch {
+      resolve();
+    }
+  });
 }
 
 function loadFromIndexedDB(): Promise<ClientStoreSnapshot | null> {
@@ -78,7 +163,9 @@ function loadFromIndexedDB(): Promise<ClientStoreSnapshot | null> {
           const tx = db.transaction(IDB_STORE, "readonly");
           const getReq = tx.objectStore(IDB_STORE).get("main");
           getReq.onsuccess = () => {
-            resolve((getReq.result as ClientStoreSnapshot) || null);
+            const res = (getReq.result as ClientStoreSnapshot) || null;
+            if (res) idbCachedSnapshot = res;
+            resolve(res);
           };
           getReq.onerror = () => resolve(null);
         } catch {
@@ -92,8 +179,68 @@ function loadFromIndexedDB(): Promise<ClientStoreSnapshot | null> {
   });
 }
 
+function writeSnapshotToLocalStorageSafe(snapshot: ClientStoreSnapshot): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+    return;
+  } catch {
+    // QuotaExceededError (localStorage UTF-16 ~2.5M chars limit):
+    // Store a fitted version in localStorage that keeps at least 1 cover image per product
+    // and marks overflow products with _mediaTruncated: true so IndexedDB restores full galleries.
+  }
+
+  try {
+    const MAX_LS_CHARS = 1_900_000;
+    let usedChars = 30_000;
+    const fittedProducts: ProductItem[] = [];
+
+    for (const prod of snapshot.products || []) {
+      const fullStr = JSON.stringify(prod);
+      if (usedChars + fullStr.length <= MAX_LS_CHARS) {
+        fittedProducts.push(prod);
+        usedChars += fullStr.length;
+      } else {
+        const coverOnly = prod.media?.[0] ? [prod.media[0]] : [];
+        const singleProd = {
+          ...prod,
+          media: coverOnly,
+          ...(prod.media && prod.media.length > coverOnly.length
+            ? { _mediaTruncated: true }
+            : {}),
+        } as ProductItem;
+        const singleStr = JSON.stringify(singleProd);
+        if (usedChars + singleStr.length <= MAX_LS_CHARS) {
+          fittedProducts.push(singleProd);
+          usedChars += singleStr.length;
+        } else {
+          fittedProducts.push({
+            ...prod,
+            media: [],
+            ...(prod.media && prod.media.length > 0 ? { _mediaTruncated: true } : {}),
+          } as ProductItem);
+        }
+      }
+    }
+
+    const lsSnap: ClientStoreSnapshot = {
+      updatedAt: snapshot.updatedAt,
+      categories: snapshot.categories,
+      collections: snapshot.collections,
+      products: fittedProducts,
+    };
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(lsSnap));
+  } catch {
+    // ignore if localStorage is completely disabled
+  }
+}
+
 export function getClientStoreSnapshot(): ClientStoreSnapshot | null {
   if (memorySnapshot) {
+    return memorySnapshot;
+  }
+  if (idbCachedSnapshot) {
+    memorySnapshot = idbCachedSnapshot;
     return memorySnapshot;
   }
   if (typeof window === "undefined") {
@@ -129,40 +276,44 @@ export function saveClientStoreSnapshot(
     bumpVersion?: boolean;
     editedProductId?: string;
     deletedProductId?: string;
+    explicitEmptyMediaProductId?: string;
   }
 ): ClientStoreSnapshot {
-  const existing = getClientStoreSnapshot();
-  const nextUpdatedAt =
-    partial.bumpVersion
-      ? Math.max(Date.now(), (existing?.updatedAt || 0) + 1)
-      : typeof partial.updatedAt === "number" && partial.updatedAt > 0
-      ? partial.updatedAt
-      : Math.max(Date.now(), (existing?.updatedAt || 0) + 1);
+  const lsSnap = getClientStoreSnapshot();
+  const baseExisting =
+    idbCachedSnapshot && lsSnap
+      ? {
+          updatedAt: Math.max(idbCachedSnapshot.updatedAt || 0, lsSnap.updatedAt || 0),
+          products: mergeTwoProductLists(idbCachedSnapshot.products, lsSnap.products),
+          categories:
+            idbCachedSnapshot.categories?.length > 0
+              ? idbCachedSnapshot.categories
+              : lsSnap.categories,
+          collections:
+            idbCachedSnapshot.collections?.length > 0
+              ? idbCachedSnapshot.collections
+              : lsSnap.collections,
+        }
+      : idbCachedSnapshot || lsSnap;
 
-  let finalProducts: ProductItem[] = existing?.products || PRODUCTS;
+  const nextUpdatedAt =
+    typeof partial.updatedAt === "number" && partial.updatedAt > 0
+      ? Math.max(partial.updatedAt, baseExisting?.updatedAt || 0)
+      : partial.bumpVersion
+      ? Math.max(Date.now(), (baseExisting?.updatedAt || 0) + 1)
+      : Math.max(Date.now(), (baseExisting?.updatedAt || 0) + 1);
+
+  let finalProducts: ProductItem[] = baseExisting?.products || PRODUCTS;
   if (Array.isArray(partial.products)) {
-    const existingById = new Map((existing?.products || []).map((p) => [p.id, p]));
-    const merged: ProductItem[] = partial.products.map((p) => {
-      const prev = existingById.get(p.id);
-      existingById.delete(p.id);
-      // If this wasn't the product being edited and the local copy had more media, preserve the local media
-      if (
-        prev &&
-        p.id !== partial.editedProductId &&
-        prev.media &&
-        prev.media.length > (p.media?.length || 0)
-      ) {
-        return { ...p, media: prev.media };
+    finalProducts = mergeTwoProductLists(
+      partial.products,
+      baseExisting?.products || [],
+      {
+        editedProductId: partial.editedProductId,
+        deletedProductId: partial.deletedProductId,
+        explicitEmptyMediaProductId: partial.explicitEmptyMediaProductId,
       }
-      return p;
-    });
-    // Keep any local products that weren't in a cold server's response (unless explicitly deleted)
-    for (const [id, leftover] of existingById.entries()) {
-      if (id !== partial.deletedProductId && leftover.slug !== partial.deletedProductId) {
-        merged.push(leftover);
-      }
-    }
-    finalProducts = merged;
+    );
   }
 
   const nextSnapshot: ClientStoreSnapshot = {
@@ -171,22 +322,19 @@ export function saveClientStoreSnapshot(
     categories:
       Array.isArray(partial.categories) && partial.categories.length > 0
         ? partial.categories
-        : existing?.categories || CATEGORIES,
+        : baseExisting?.categories || CATEGORIES,
     collections:
       Array.isArray(partial.collections) && partial.collections.length > 0
         ? partial.collections
-        : existing?.collections || COLLECTIONS,
+        : baseExisting?.collections || COLLECTIONS,
   };
 
   memorySnapshot = nextSnapshot;
+  idbCachedSnapshot = nextSnapshot;
 
   if (typeof window !== "undefined") {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextSnapshot));
-    } catch {
-      // If localStorage quota is exceeded due to many base64 images, IndexedDB still persists it
-    }
-    saveToIndexedDB(nextSnapshot);
+    writeSnapshotToLocalStorageSafe(nextSnapshot);
+    void saveToIndexedDB(nextSnapshot);
   }
 
   notifyListeners(nextSnapshot);
@@ -225,6 +373,56 @@ export function subscribeStoreChanges(
 }
 
 /**
+ * Pushes a full client snapshot to the server safely below Vercel's 4.5MB limit.
+ * If any product's media was truncated in the initial compact snapshot, sends follow-up
+ * per-product media sync requests so the server has 100% of all product photos.
+ */
+export async function syncSnapshotToServerInChunks(
+  snapshot: ClientStoreSnapshot
+): Promise<void> {
+  try {
+    const compactSync = getCompactSnapshotForRequest(snapshot);
+    await fetch("/api/admin/products", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        _entity: "sync_snapshot",
+        ...compactSync,
+      }),
+    });
+
+    // Send full media for any product whose media was truncated in the initial chunk
+    for (const compactProd of compactSync.products) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((compactProd as any)._mediaTruncated) {
+        const fullProd = snapshot.products.find(
+          (p) => p.id === compactProd.id || p.slug === compactProd.slug
+        );
+        if (fullProd && fullProd.media && fullProd.media.length > 0) {
+          const cleanMedia = fullProd.media.map((m) => ({
+            ...m,
+            thumbnailUrl: m.url?.startsWith("data:") ? "" : m.thumbnailUrl || m.url,
+          }));
+          await fetch("/api/admin/products", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              _entity: "sync_product_media",
+              id: fullProd.id,
+              slug: fullProd.slug,
+              updatedAt: snapshot.updatedAt,
+              media: cleanMedia,
+            }),
+          }).catch(() => {});
+        }
+      }
+    }
+  } catch {
+    // ignore background sync errors
+  }
+}
+
+/**
  * Single-flight deduplicated store fetcher.
  * Prevents multiple components on the same page from firing concurrent requests
  * that would spawn separate cold serverless Lambda containers on Vercel.
@@ -237,9 +435,24 @@ export async function fetchSharedStore(force = false): Promise<ClientStoreSnapsh
   inFlightPromise = (async () => {
     let localSnap = getClientStoreSnapshot();
     const idbSnap = await loadFromIndexedDB();
-    if (idbSnap && (!localSnap || idbSnap.updatedAt > localSnap.updatedAt)) {
-      localSnap = idbSnap;
-      memorySnapshot = idbSnap;
+    if (idbSnap) {
+      if (!localSnap) {
+        localSnap = idbSnap;
+      } else {
+        const primary =
+          (idbSnap.updatedAt || 0) >= (localSnap.updatedAt || 0) ? idbSnap : localSnap;
+        const secondary = primary === idbSnap ? localSnap : idbSnap;
+        localSnap = {
+          updatedAt: Math.max(idbSnap.updatedAt || 0, localSnap.updatedAt || 0),
+          products: mergeTwoProductLists(primary.products, secondary.products),
+          categories:
+            primary.categories?.length > 0 ? primary.categories : secondary.categories,
+          collections:
+            primary.collections?.length > 0 ? primary.collections : secondary.collections,
+        };
+      }
+      memorySnapshot = localSnap;
+      notifyListeners(localSnap);
     }
 
     try {
@@ -255,21 +468,45 @@ export async function fetchSharedStore(force = false): Promise<ClientStoreSnapsh
       const data = await res.json();
       const serverTime = typeof data.updatedAt === "number" ? data.updatedAt : 0;
       const localTime = localSnap?.updatedAt || 0;
+      const serverProducts: ProductItem[] = Array.isArray(data.products) ? data.products : [];
 
-      // If local snapshot is strictly newer than the server response (e.g. hit a cold Lambda instance),
-      // keep the local snapshot so the UI NEVER flickers or loses data, and push the snapshot to warm up the server!
-      if (localSnap && localTime > serverTime) {
-        notifyListeners(localSnap);
-        const compactSync = getCompactSnapshotForRequest(localSnap);
-        fetch("/api/admin/products", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            _entity: "sync_snapshot",
-            ...compactSync,
-          }),
-        }).catch(() => {});
-        return localSnap;
+      const serverMissingMediaOrProducts =
+        Boolean(localSnap) &&
+        (localSnap!.products || []).some((lp) => {
+          const sp = serverProducts.find(
+            (s) =>
+              s.id === lp.id ||
+              (s.slug && lp.slug && s.slug.toLowerCase() === lp.slug.toLowerCase())
+          );
+          if (!sp) return true;
+          if (lp.media && lp.media.length > 0 && (!sp.media || sp.media.length === 0)) {
+            return true;
+          }
+          return false;
+        });
+
+      // If local snapshot is newer OR server container is missing products/photos that local has,
+      // merge keeping local photos intact and warm up the server in chunks!
+      if (localSnap && (localTime > serverTime || serverMissingMediaOrProducts)) {
+        const mergedWithServer: ClientStoreSnapshot = {
+          updatedAt: Math.max(localTime, serverTime),
+          products: mergeTwoProductLists(localSnap.products, serverProducts),
+          categories:
+            localSnap.categories?.length >= (data.categories?.length || 0)
+              ? localSnap.categories
+              : data.categories,
+          collections:
+            localSnap.collections?.length > 0
+              ? localSnap.collections
+              : data.collections || COLLECTIONS,
+        };
+        memorySnapshot = mergedWithServer;
+        idbCachedSnapshot = mergedWithServer;
+        writeSnapshotToLocalStorageSafe(mergedWithServer);
+        void saveToIndexedDB(mergedWithServer);
+        notifyListeners(mergedWithServer);
+        void syncSnapshotToServerInChunks(mergedWithServer);
+        return mergedWithServer;
       }
 
       const nextSnapshot: ClientStoreSnapshot = {
@@ -286,13 +523,12 @@ export async function fetchSharedStore(force = false): Promise<ClientStoreSnapsh
       };
 
       if (serverTime > 0) {
-        saveClientStoreSnapshot(nextSnapshot);
+        return saveClientStoreSnapshot(nextSnapshot);
       } else {
         memorySnapshot = nextSnapshot;
         notifyListeners(nextSnapshot);
+        return nextSnapshot;
       }
-
-      return nextSnapshot;
     } catch {
       if (localSnap) {
         notifyListeners(localSnap);
@@ -329,7 +565,7 @@ export function getCompactSnapshotForRequest(
       collections: COLLECTIONS,
     };
 
-  const MAX_SNAPSHOT_CHARS = 950_000; // ~950 KB safe ceiling for _snapshot
+  const MAX_SNAPSHOT_CHARS = 2_600_000; // ~2.6 MB safe ceiling for _snapshot (holds ~45+ WebP photos)
   const keptProducts: ProductItem[] = [];
   let runningChars = 40_000;
 
@@ -343,7 +579,11 @@ export function getCompactSnapshotForRequest(
 
     if (isTargetBeingEdited) {
       // The product being edited already sends its full `media` in `payload.media`
-      const stubProd: ProductItem = { ...prod, media: [] };
+      const stubProd = {
+        ...prod,
+        media: [],
+        _mediaTruncated: true,
+      } as ProductItem;
       keptProducts.push(stubProd);
       runningChars += JSON.stringify(stubProd).length;
       continue;
@@ -363,14 +603,22 @@ export function getCompactSnapshotForRequest(
       runningChars += fullLen;
     } else {
       const firstMedia = dedupedProd.media?.[0] ? [dedupedProd.media[0]] : [];
-      const singleImgProd: ProductItem = { ...dedupedProd, media: firstMedia };
+      const singleImgProd = {
+        ...dedupedProd,
+        media: firstMedia,
+        ...(dedupedProd.media.length > firstMedia.length ? { _mediaTruncated: true } : {}),
+      } as ProductItem;
       const singleLen = JSON.stringify(singleImgProd).length;
       if (runningChars + singleLen <= MAX_SNAPSHOT_CHARS) {
         keptProducts.push(singleImgProd);
         runningChars += singleLen;
       } else {
         // Always keep the product record (never drop any product!)
-        const metadataOnlyProd: ProductItem = { ...dedupedProd, media: [] };
+        const metadataOnlyProd = {
+          ...dedupedProd,
+          media: [],
+          ...(dedupedProd.media.length > 0 ? { _mediaTruncated: true } : {}),
+        } as ProductItem;
         keptProducts.push(metadataOnlyProd);
         runningChars += JSON.stringify(metadataOnlyProd).length;
       }

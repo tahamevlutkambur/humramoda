@@ -250,6 +250,7 @@ export default function AdminProductsPage() {
                               src={firstImage.thumbnailUrl || firstImage.url}
                               alt={product.title}
                               fill
+                              unoptimized={(firstImage.thumbnailUrl || firstImage.url).startsWith("data:")}
                               sizes="48px"
                               style={{ objectFit: "cover" }}
                             />
