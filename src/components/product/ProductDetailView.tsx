@@ -210,17 +210,9 @@ export function ProductDetailView({
       <div style={{ padding: "var(--hm-space-6) 0 var(--hm-space-16)" }}>
         <Container>
           {/* İki Kolonlu Detay Düzeni (Masaüstü: Sol Galeri, Sağ Satın Alma Kutusu) */}
-          <div
-            className="hm-product-detail-layout"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr",
-              gap: "var(--hm-space-8)",
-              alignItems: "start",
-            }}
-          >
+          <div className="hm-product-detail-layout">
             {/* Sol: Renge Özel Galeri */}
-            <div>
+            <div style={{ width: "100%" }}>
               <ProductGallery
                 key={selectedColor.id}
                 media={colorMedia}
@@ -286,14 +278,7 @@ export function ProductDetailView({
                 </div>
               </div>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(2, 1fr)",
-                  gap: "var(--hm-space-4)",
-                }}
-                className="hm-related-products-grid"
-              >
+              <div className="hm-related-products-grid">
                 {relatedProducts.map((relProduct) => (
                   <ProductCard key={relProduct.id} product={relProduct} />
                 ))}

@@ -79,9 +79,11 @@ export function ProductCard({ product, initialColorSlug }: ProductCardProps) {
               src={currentMedia.url}
               alt={currentMedia.altText || product.title}
               fill
+              unoptimized={currentMedia.url.startsWith("data:")}
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               style={{
                 objectFit: "cover",
+                objectPosition: "center top",
                 transition: "transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
                 transform: isHovered ? "scale(1.03)" : "scale(1)",
               }}

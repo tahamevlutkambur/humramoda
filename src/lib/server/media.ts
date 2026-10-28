@@ -239,16 +239,18 @@ export async function processAndSaveUpload(
     let finalExt = "webp";
 
     try {
-      // 3:4 oranına uygun 640x853 vitrin boyutu
+      // Yüksek çözünürlüklü (1080x1440) en-boy oranını koruyan detay & vitrin boyutu
       cardBuffer = await sharp(buffer)
-        .resize(640, 853, { fit: "cover", position: "center" })
-        .webp({ quality: 86 })
+        .rotate()
+        .resize(1080, 1440, { fit: "inside", withoutEnlargement: true })
+        .webp({ quality: 88 })
         .toBuffer();
 
-      // 240x320 küçük resim (thumbnail) boyutu
+      // 360x480 küçük resim (thumbnail) boyutu
       thumbBuffer = await sharp(buffer)
-        .resize(240, 320, { fit: "cover", position: "center" })
-        .webp({ quality: 80 })
+        .rotate()
+        .resize(360, 480, { fit: "cover", position: "attention" })
+        .webp({ quality: 82 })
         .toBuffer();
     } catch (sharpErr) {
       console.warn("Görsel sharp optimizasyonu yapılamadı, orijinal arabellek kullanılıyor:", sharpErr);
