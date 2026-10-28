@@ -43,6 +43,8 @@ export async function getAuthenticatedAdmin(req?: Request): Promise<SessionPaylo
     return null;
   }
 
+  cookieValue = cookieValue.replace(/^"|"$/g, "");
+
   const payload = verifySessionToken(cookieValue);
   if (!payload || (payload.role !== "ADMIN" && payload.role !== "STAFF")) {
     return null;

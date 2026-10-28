@@ -19,7 +19,18 @@ export function CategoryManager({
   const [categories, setCategories] = useState<CategoryItem[]>(initialCategories);
 
   React.useEffect(() => {
-    setCategories(initialCategories);
+    if (initialCategories && initialCategories.length > 0) {
+      setCategories((prev) => {
+        const map = new Map<string, CategoryItem>();
+        initialCategories.forEach((c) => map.set(c.id, c));
+        prev.forEach((c) => {
+          if (!map.has(c.id)) {
+            map.set(c.id, c);
+          }
+        });
+        return Array.from(map.values()).sort((a, b) => (a.displayOrder || 1) - (b.displayOrder || 1));
+      });
+    }
   }, [initialCategories]);
 
   const [editingId, setEditingId] = useState<string | null>(null);

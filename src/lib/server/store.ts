@@ -519,11 +519,23 @@ export function getStoreData(): AppStoreData {
   let fileMtime = 0;
   let activeFile = "";
   try {
+    let tmpMtime = 0;
+    let storeMtime = 0;
+    if (fs.existsSync(TMP_STORE_FILE)) {
+      tmpMtime = fs.statSync(TMP_STORE_FILE).mtimeMs;
+    }
     if (fs.existsSync(STORE_FILE)) {
-      fileMtime = fs.statSync(STORE_FILE).mtimeMs;
+      storeMtime = fs.statSync(STORE_FILE).mtimeMs;
+    }
+
+    if (tmpMtime > 0 && tmpMtime >= storeMtime) {
+      fileMtime = tmpMtime;
+      activeFile = TMP_STORE_FILE;
+    } else if (storeMtime > 0) {
+      fileMtime = storeMtime;
       activeFile = STORE_FILE;
-    } else if (fs.existsSync(TMP_STORE_FILE)) {
-      fileMtime = fs.statSync(TMP_STORE_FILE).mtimeMs;
+    } else if (tmpMtime > 0) {
+      fileMtime = tmpMtime;
       activeFile = TMP_STORE_FILE;
     }
   } catch {
@@ -643,7 +655,20 @@ export function getStoreData(): AppStoreData {
 export function saveStoreData(data: AppStoreData): void {
   inMemoryStore = data;
 
-  // 1. Proje dizinine yazmayı dene (yerel geliştirme)
+  // 1. Vercel / Lambda ortamı için /tmp dizinine MUTLAKA yaz
+  try {
+    fs.writeFileSync(TMP_STORE_FILE, JSON.stringify(data, null, 2), "utf-8");
+    try {
+      lastStoreFileMtime = fs.statSync(TMP_STORE_FILE).mtimeMs;
+    } catch {
+      lastStoreFileMtime = Date.now();
+    }
+  } catch (err) {
+    console.warn("Could not persist to /tmp:", err);
+    lastStoreFileMtime = Date.now();
+  }
+
+  // 2. Proje dizinine yazmayı dene (yerel geliştirme / derleme ortamı)
   try {
     if (!fs.existsSync(DATA_DIR)) {
       fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -663,24 +688,10 @@ export function saveStoreData(data: AppStoreData): void {
     try {
       lastStoreFileMtime = fs.statSync(STORE_FILE).mtimeMs;
     } catch {
-      lastStoreFileMtime = Date.now();
+      // ignore
     }
-    return;
   } catch {
-    // Vercel serverless salt okunur dosya sistemi
-  }
-
-  // 2. Vercel / Lambda ortamı için /tmp dizinine yaz
-  try {
-    fs.writeFileSync(TMP_STORE_FILE, JSON.stringify(data, null, 2), "utf-8");
-    try {
-      lastStoreFileMtime = fs.statSync(TMP_STORE_FILE).mtimeMs;
-    } catch {
-      lastStoreFileMtime = Date.now();
-    }
-  } catch (err) {
-    console.warn("Could not persist to /tmp:", err);
-    lastStoreFileMtime = Date.now();
+    // Vercel serverless salt okunur dosya sistemi - normal
   }
 }
 
@@ -815,32 +826,68 @@ export function createStoreProduct(input: CreateProductInput): { product?: Produ
     return { error: `"${slug}" bağlantı adresi (slug) zaten başka bir üründe kullanılıyor.` };
   }
 
-  const category = store.categories.find((c) => c.slug === input.categorySlug);
+  // Eğer mağazada hiç kategori yoksa otomatik varsayılan bir kategori oluştur
+  if (!store.categories || store.categories.length === 0) {
+    store.categories = [
+      {
+        id: "cat-1",
+        name: "Genel",
+        slug: "genel",
+        description: "Genel Kategori",
+        displayOrder: 1,
+      },
+    ];
+  }
+
+  let category = store.categories.find(
+    (c) =>
+      c.slug === input.categorySlug ||
+      c.id === input.categorySlug ||
+      c.name.trim().toLowerCase() === (input.categorySlug || "").trim().toLowerCase()
+  );
+
   if (!category) {
-    return { error: "Geçersiz kategori seçimi." };
+    category = store.categories[0];
   }
 
   // Renkleri oluştur
-  const colors = (input.colors || []).map((c, idx) => ({
+  let colors = (input.colors || []).map((c, idx) => ({
     id: `col-${Date.now()}-${idx}`,
     name: c.name.trim(),
     slug: c.slug?.trim() ? generateSlug(c.slug) : generateSlug(c.name),
     colorCode: c.colorCode || "#111111",
     displayOrder: idx + 1,
   }));
+  if (colors.length === 0) {
+    colors = [{
+      id: `col-${Date.now()}-0`,
+      name: "Siyah",
+      slug: "siyah",
+      colorCode: "#111111",
+      displayOrder: 1,
+    }];
+  }
 
   // Bedenleri oluştur
-  const sizes = (input.sizes || []).map((s: string | { name: string; slug?: string }, idx) => {
+  let sizes = (input.sizes || []).map((s: string | { name: string; slug?: string }, idx) => {
     const rawName = typeof s === "string" ? s : s.name;
     const name = (rawName || "").trim();
     const rawSlug = typeof s === "object" && s.slug ? s.slug : name;
     return {
       id: `size-${Date.now()}-${idx}`,
-      name,
-      slug: generateSlug(rawSlug),
+      name: name || "Standart",
+      slug: generateSlug(rawSlug || "standart"),
       displayOrder: idx + 1,
     };
   });
+  if (sizes.length === 0) {
+    sizes = [{
+      id: `size-${Date.now()}-0`,
+      name: "Standart",
+      slug: "standart",
+      displayOrder: 1,
+    }];
+  }
 
   // Varyantları oluştur ve SKU denetimi yap
   const existingSkus = new Set(
@@ -849,12 +896,12 @@ export function createStoreProduct(input: CreateProductInput): { product?: Produ
 
   const variants = [];
   for (const v of input.variants || []) {
-    const sku = v.sku.trim().toUpperCase();
+    let sku = (v.sku || "").trim().toUpperCase();
     if (!sku) {
-      return { error: "Tüm varyantlar için geçerli bir SKU girilmelidir." };
+      sku = `HM-${slug.slice(0, 4).toUpperCase().replace(/[^A-Z0-9]/g, "")}-${variants.length + 1}-${Math.floor(100 + Math.random() * 900)}`;
     }
     if (existingSkus.has(sku)) {
-      return { error: `"${sku}" stok kodu (SKU) sistemde zaten mevcut.` };
+      sku = `${sku}-${Math.floor(10 + Math.random() * 90)}`;
     }
     existingSkus.add(sku);
 
@@ -868,17 +915,14 @@ export function createStoreProduct(input: CreateProductInput): { product?: Produ
         (v.colorId && c.id === v.colorId) ||
         (v.colorName && c.name.toLowerCase() === v.colorName.toLowerCase()) ||
         (v.colorId && (c.slug === v.colorId || c.name.toLowerCase() === v.colorId.replace("col-", "").toLowerCase()))
-    );
+    ) || colors[0];
+
     const matchedSize = sizes.find(
       (s) =>
         (v.sizeId && (s.id === v.sizeId || s.name === v.sizeId || s.slug === v.sizeId)) ||
         (v.sizeName && s.name.toLowerCase() === v.sizeName.toLowerCase()) ||
         (v.sizeId && s.name.toLowerCase() === v.sizeId.replace("size-", "").toLowerCase())
-    );
-
-    if (!matchedColor || !matchedSize) {
-      continue;
-    }
+    ) || sizes[0];
 
     const costPrice =
       v.costPrice !== undefined && v.costPrice !== null && !isNaN(Number(v.costPrice))
@@ -892,6 +936,20 @@ export function createStoreProduct(input: CreateProductInput): { product?: Produ
       sku,
       stockQuantity: stock,
       costPrice,
+      isActive: true,
+    });
+  }
+
+  // Hiçbir varyant üretilememişse otomatik 1 adet varsayılan varyant oluştur
+  if (variants.length === 0) {
+    const autoSku = `HM-${slug.slice(0, 4).toUpperCase().replace(/[^A-Z0-9]/g, "")}-${Math.floor(100 + Math.random() * 900)}`;
+    variants.push({
+      id: `var-${Date.now()}-0`,
+      colorId: colors[0].id,
+      sizeId: sizes[0].id,
+      sku: autoSku,
+      stockQuantity: 10,
+      costPrice: undefined,
       isActive: true,
     });
   }

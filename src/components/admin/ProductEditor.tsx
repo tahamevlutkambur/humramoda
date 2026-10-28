@@ -80,21 +80,29 @@ export function ProductEditor({
 
   // 3. Varyant Matrisi
   const [variants, setVariants] = useState<EditableVariant[]>(() => {
-    if (initialProduct?.variants && Array.isArray(initialProduct.variants)) {
+    if (initialProduct?.variants && Array.isArray(initialProduct.variants) && initialProduct.variants.length > 0) {
       return initialProduct.variants.map((v) => {
         const c = initialProduct.colors?.find((col) => col.id === v.colorId);
         const s = initialProduct.sizes?.find((siz) => siz.id === v.sizeId);
         return {
           id: v.id,
-          colorName: c?.name || (v as any).colorName || "",
-          sizeName: s?.name || (v as any).sizeName || "",
+          colorName: c?.name || (v as any).colorName || "Standart",
+          sizeName: s?.name || (v as any).sizeName || "Standart",
           sku: v.sku,
-          stockQuantity: v.stockQuantity,
+          stockQuantity: v.stockQuantity ?? 10,
           costPrice: v.costPrice,
         };
       });
     }
-    return [];
+    return [
+      {
+        colorName: "Siyah",
+        sizeName: "Standart",
+        sku: `HM-SIY-STD-${Math.floor(100 + Math.random() * 900)}`,
+        stockQuantity: 10,
+        costPrice: undefined,
+      },
+    ];
   });
 
   // 4. Medyalar
@@ -301,36 +309,45 @@ export function ProductEditor({
       if (!basePrice || isNaN(Number(basePrice)) || Number(basePrice) <= 0) {
         throw new Error("Geçerli bir normal satış fiyatı giriniz.");
       }
-      if (colors.length === 0) {
-        throw new Error("En az bir renk tanımlanmalıdır.");
-      }
-      if (variants.length === 0) {
-        throw new Error("En az bir beden/varyant tanımlanmalıdır.");
+      const activeColors = colors.length > 0 ? colors : [{ name: "Siyah", slug: "siyah", colorCode: "#141414" }];
+
+      let activeVariants = [...variants];
+      if (activeVariants.length === 0) {
+        const primaryColor = activeColors[0]?.name || "Siyah";
+        activeVariants = [
+          {
+            colorName: primaryColor,
+            sizeName: "Standart",
+            sku: `HM-${(slug || title || "HM").slice(0, 4).toUpperCase().replace(/[^A-Z0-9]/g, "")}-${Date.now().toString().slice(-4)}`,
+            stockQuantity: 10,
+            costPrice: undefined,
+          },
+        ];
       }
 
       // Negatif stok ve SKU denetimi
       const seenSkus = new Set<string>();
-      for (const v of variants) {
-        const skuTrimmed = v.sku.trim().toUpperCase();
+      activeVariants = activeVariants.map((v, i) => {
+        let skuTrimmed = (v.sku || "").trim().toUpperCase();
         if (!skuTrimmed) {
-          throw new Error(`"${v.colorName} - ${v.sizeName}" varyantı için SKU zorunludur.`);
+          skuTrimmed = `HM-${(slug || title || "HM").slice(0, 4).toUpperCase().replace(/[^A-Z0-9]/g, "")}-${i + 1}-${Math.floor(100 + Math.random() * 900)}`;
         }
         if (seenSkus.has(skuTrimmed)) {
-          throw new Error(`"${skuTrimmed}" stok kodu bu üründe birden fazla varyanta atanmış.`);
+          skuTrimmed = `${skuTrimmed}-${i + 1}`;
         }
         seenSkus.add(skuTrimmed);
-
-        if (isNaN(v.stockQuantity) || v.stockQuantity < 0) {
-          throw new Error(`"${skuTrimmed}" (${v.colorName} - ${v.sizeName}) için stok miktarı negatif olamaz.`);
-        }
-      }
+        return {
+          ...v,
+          sku: skuTrimmed,
+          stockQuantity: isNaN(v.stockQuantity) || v.stockQuantity < 0 ? 0 : v.stockQuantity,
+        };
+      });
 
       // Otomatik benzersiz beden listesi derle
-      const uniqueSizeNames = Array.from(new Set(variants.map((v) => v.sizeName.trim()))).filter(Boolean);
-      const computedSizes = uniqueSizeNames.map((name, i) => ({
-        name,
-        displayOrder: i + 1,
-      }));
+      const uniqueSizeNames = Array.from(new Set(activeVariants.map((v) => v.sizeName.trim()))).filter(Boolean);
+      const computedSizes = uniqueSizeNames.length > 0
+        ? uniqueSizeNames.map((name, i) => ({ name, displayOrder: i + 1 }))
+        : [{ name: "Standart", displayOrder: 1 }];
 
       const payload = {
         title: title.trim(),
@@ -343,13 +360,13 @@ export function ProductEditor({
         badge: badge.trim() || undefined,
         categorySlug,
         collectionSlugs: selectedCollections,
-        colors,
+        colors: activeColors,
         sizes: computedSizes,
-        variants,
+        variants: activeVariants,
         media,
       };
 
-      const url = isNew ? "/api/admin/products" : `/api/admin/products/${initialProduct?.id}`;
+      const url = isNew ? "/api/admin/products" : `/api/admin/products/${encodeURIComponent(initialProduct?.id || "")}`;
       const method = isNew ? "POST" : "PUT";
 
       const res = await fetch(url, {
