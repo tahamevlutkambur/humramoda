@@ -1,8 +1,8 @@
 import React, { Suspense } from "react";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { getProductBySlug, getRelatedProducts } from "@/lib/catalog";
+import { getProductBySlug } from "@/lib/catalog";
 import { getStoreData } from "@/lib/server/store";
+import { getPersistentStoreData } from "@/lib/server/persistent-store";
 import { ProductDetailView } from "@/components/product/ProductDetailView";
 
 export const dynamic = "force-dynamic";
@@ -14,12 +14,17 @@ interface PageProps {
   }>;
 }
 
-function resolveProduct(slug: string) {
-  const decoded = decodeURIComponent(slug);
+async function resolveProduct(slug: string) {
+  await getPersistentStoreData().catch(() => {});
+  const decoded = decodeURIComponent(slug).trim();
   try {
     const store = getStoreData();
     const found = store.products.find(
-      (p) => p.slug === decoded || p.id === decoded || p.slug.toLowerCase() === decoded.toLowerCase()
+      (p) =>
+        p.slug === decoded ||
+        p.id === decoded ||
+        p.slug.toLowerCase() === decoded.toLowerCase() ||
+        p.id.toLowerCase() === decoded.toLowerCase()
     );
     if (found) return found;
   } catch {
@@ -30,11 +35,11 @@ function resolveProduct(slug: string) {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = resolveProduct(slug);
+  const product = await resolveProduct(slug);
 
   if (!product) {
     return {
-      title: "Ürün Bulunamadı | Hümra Butik",
+      title: "Hümra Butik",
     };
   }
 
@@ -68,13 +73,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ProductDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const product = resolveProduct(slug);
-
-  if (!product) {
-    notFound();
-  }
-
-  const relatedProducts = getRelatedProducts(product.id, 4);
+  const decoded = decodeURIComponent(slug).trim();
+  const product = await resolveProduct(slug);
+  const store = getStoreData();
+  const relatedProducts = product
+    ? store.products.filter((p) => p.id !== product.id).slice(0, 4)
+    : store.products.slice(0, 4);
 
   return (
     <Suspense
@@ -92,7 +96,11 @@ export default async function ProductDetailPage({ params }: PageProps) {
         </div>
       }
     >
-      <ProductDetailView product={product} relatedProducts={relatedProducts} />
+      <ProductDetailView
+        slug={decoded}
+        product={product || null}
+        relatedProducts={relatedProducts}
+      />
     </Suspense>
   );
 }

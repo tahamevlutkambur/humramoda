@@ -11,6 +11,9 @@ import { logAdminAudit } from "@/lib/server/logger";
 import { revalidatePath } from "next/cache";
 import { getPersistentStoreData, savePersistentStoreData } from "@/lib/server/persistent-store";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface RouteParams {
   params: Promise<{
     id: string;

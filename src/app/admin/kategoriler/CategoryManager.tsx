@@ -13,25 +13,34 @@ interface CategoryManagerProps {
 
 export function CategoryManager({
   initialCategories,
-  products,
+  products: initialProducts,
 }: CategoryManagerProps) {
   const router = useRouter();
   const [categories, setCategories] = useState<CategoryItem[]>(initialCategories);
+  const [products, setProducts] = useState<ProductItem[]>(initialProducts);
+
+  const fetchLatestStoreCategories = React.useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/products?public=1", {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache" },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (Array.isArray(data.categories)) {
+        setCategories(data.categories);
+      }
+      if (Array.isArray(data.products)) {
+        setProducts(data.products);
+      }
+    } catch (err) {
+      console.error("Categories sync error:", err);
+    }
+  }, []);
 
   React.useEffect(() => {
-    if (initialCategories && initialCategories.length > 0) {
-      setCategories((prev) => {
-        const map = new Map<string, CategoryItem>();
-        initialCategories.forEach((c) => map.set(c.id, c));
-        prev.forEach((c) => {
-          if (!map.has(c.id)) {
-            map.set(c.id, c);
-          }
-        });
-        return Array.from(map.values()).sort((a, b) => (a.displayOrder || 1) - (b.displayOrder || 1));
-      });
-    }
-  }, [initialCategories]);
+    fetchLatestStoreCategories();
+  }, [fetchLatestStoreCategories]);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -82,12 +91,13 @@ export function CategoryManager({
     }
   };
 
-  const resetForm = () => {
+  const resetForm = (nextCount?: number | React.MouseEvent) => {
+    const count = typeof nextCount === "number" ? nextCount : categories.length;
     setFormName("");
     setFormSlug("");
     setFormDescription("");
     setFormImageUrl("");
-    setFormDisplayOrder(categories.length + 1);
+    setFormDisplayOrder(count + 1);
     setEditingId(null);
     setShowAddForm(false);
     setErrorMsg("");
@@ -113,6 +123,7 @@ export function CategoryManager({
 
     try {
       const payload = {
+        _entity: "category",
         name: formName,
         slug: formSlug || undefined,
         description: formDescription,
@@ -121,23 +132,36 @@ export function CategoryManager({
       };
 
       if (editingId) {
-        // Update
-        const res = await fetch(`/api/admin/categories/${editingId}`, {
+        // Update via unified store endpoint
+        const res = await fetch("/api/admin/products", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({ ...payload, id: editingId }),
         });
         const data = await res.json();
         if (!res.ok) {
           throw new Error(data.error || "Güncelleme başarısız.");
         }
-        setCategories((prev) =>
-          prev.map((c) => (c.id === editingId ? data.category : c))
-        );
+        // Best-effort sync to secondary categories endpoint
+        fetch(`/api/admin/categories/${encodeURIComponent(editingId)}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }).catch(() => {});
+
+        if (Array.isArray(data.categories)) {
+          setCategories(data.categories);
+          resetForm(data.categories.length);
+        } else {
+          setCategories((prev) =>
+            prev.map((c) => (c.id === editingId ? data.category : c))
+          );
+          resetForm();
+        }
         setSuccessMsg(`"${data.category.name}" kategorisi başarıyla güncellendi.`);
       } else {
-        // Create
-        const res = await fetch("/api/admin/categories", {
+        // Create via unified store endpoint
+        const res = await fetch("/api/admin/products", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -146,12 +170,24 @@ export function CategoryManager({
         if (!res.ok) {
           throw new Error(data.error || "Kategori oluşturulamadı.");
         }
-        setCategories((prev) => [...prev, data.category]);
+        // Best-effort sync to secondary categories endpoint
+        fetch("/api/admin/categories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }).catch(() => {});
+
+        if (Array.isArray(data.categories)) {
+          setCategories(data.categories);
+          resetForm(data.categories.length);
+        } else {
+          setCategories((prev) => [...prev, data.category]);
+          resetForm(categories.length + 1);
+        }
         setSuccessMsg(`"${data.category.name}" kategorisi başarıyla eklendi.`);
       }
 
       router.refresh();
-      resetForm();
     } catch (err: unknown) {
       if (err instanceof Error) {
         setErrorMsg(err.message);
@@ -165,7 +201,7 @@ export function CategoryManager({
 
   const handleDelete = async (cat: CategoryItem) => {
     const attachedCount = products.filter(
-      (p) => p.categorySlug === cat.slug || (p as any).categoryId === cat.id
+      (p) => p.categorySlug === cat.slug || (p as { categoryId?: string }).categoryId === cat.id
     ).length;
     let reassignTo: string | undefined;
 
@@ -194,23 +230,37 @@ export function CategoryManager({
     setLoading(true);
     setErrorMsg("");
     try {
-      const queryParam = reassignTo ? `?reassignTo=${encodeURIComponent(reassignTo)}` : "";
       const targetId = cat.id || cat.slug;
-      const res = await fetch(`/api/admin/categories/${encodeURIComponent(targetId)}${queryParam}`, {
-        method: "DELETE",
-      });
+      const reassignQuery = reassignTo ? `&reassignTo=${encodeURIComponent(reassignTo)}` : "";
+      const res = await fetch(
+        `/api/admin/products?entity=category&id=${encodeURIComponent(targetId)}${reassignQuery}`,
+        {
+          method: "DELETE",
+        }
+      );
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || "Silme işlemi başarısız.");
       }
+      // Best-effort sync to secondary categories endpoint
+      const legacyQuery = reassignTo ? `?reassignTo=${encodeURIComponent(reassignTo)}` : "";
+      fetch(`/api/admin/categories/${encodeURIComponent(targetId)}${legacyQuery}`, {
+        method: "DELETE",
+      }).catch(() => {});
 
-      setCategories((prev) => prev.filter((c) => c.id !== cat.id && c.slug !== cat.slug));
+      if (Array.isArray(data.categories)) {
+        setCategories(data.categories);
+      } else {
+        setCategories((prev) => prev.filter((c) => c.id !== cat.id && c.slug !== cat.slug));
+      }
       if (reassignTo) {
-        products.forEach((p) => {
-          if (p.categorySlug === cat.slug || (p as any).categoryId === cat.id) {
-            p.categorySlug = reassignTo;
-          }
-        });
+        setProducts((prev) =>
+          prev.map((p) =>
+            p.categorySlug === cat.slug || (p as { categoryId?: string }).categoryId === cat.id
+              ? { ...p, categorySlug: reassignTo! }
+              : p
+          )
+        );
       }
       setSuccessMsg(`"${cat.name}" kategorisi başarıyla silindi.`);
       router.refresh();

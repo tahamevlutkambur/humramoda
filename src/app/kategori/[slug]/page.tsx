@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import {
-  getCategoryBySlug,
-  getProducts,
-  getAllCategories,
-} from "@/lib/catalog";
+import { getCategoryBySlug } from "@/lib/catalog";
 import { getStoreData } from "@/lib/server/store";
+import { getPersistentStoreData } from "@/lib/server/persistent-store";
 import { CatalogView } from "@/components/catalog/CatalogView";
 
 export const dynamic = "force-dynamic";
@@ -17,12 +13,16 @@ interface CategoryPageProps {
   }>;
 }
 
-function resolveCategory(slug: string) {
-  const decoded = decodeURIComponent(slug);
+async function resolveCategory(slug: string) {
+  await getPersistentStoreData().catch(() => {});
+  const decoded = decodeURIComponent(slug).trim();
   try {
     const store = getStoreData();
     const found = store.categories.find(
-      (c) => c.slug === decoded || c.id === decoded || c.slug.toLowerCase() === decoded.toLowerCase()
+      (c) =>
+        c.slug === decoded ||
+        c.id === decoded ||
+        c.slug.toLowerCase() === decoded.toLowerCase()
     );
     if (found) return found;
   } catch {
@@ -35,11 +35,11 @@ export async function generateMetadata({
   params,
 }: CategoryPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const category = resolveCategory(slug);
+  const category = await resolveCategory(slug);
 
   if (!category) {
     return {
-      title: "Kategori Bulunamadı | Hümra Butik",
+      title: "Koleksiyon | Hümra Butik",
     };
   }
 
@@ -57,14 +57,22 @@ export async function generateMetadata({
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = await params;
-  const category = resolveCategory(slug);
+  const decoded = decodeURIComponent(slug).trim();
+  const category = (await resolveCategory(slug)) || {
+    id: decoded,
+    name: decoded.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+    slug: decoded,
+    description: "",
+    displayOrder: 99,
+  };
 
-  if (!category) {
-    notFound();
-  }
-
-  const products = getProducts({ categorySlug: category.slug });
-  const allCategories = getAllCategories();
+  const store = getStoreData();
+  const products = store.products
+    .filter((p) => p.categorySlug.toLowerCase() === category.slug.toLowerCase())
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const allCategories = [...store.categories].sort(
+    (a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)
+  );
 
   return (
     <CatalogView

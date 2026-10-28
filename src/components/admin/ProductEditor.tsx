@@ -7,6 +7,7 @@ import Link from "next/link";
 import { ProductItem, CategoryItem, CollectionItem } from "@/lib/catalog";
 
 interface ProductEditorProps {
+  productId?: string;
   initialProduct?: ProductItem;
   categories: CategoryItem[];
   collections: CollectionItem[];
@@ -41,21 +42,28 @@ interface EditableMedia {
 }
 
 export function ProductEditor({
+  productId,
   initialProduct,
-  categories,
-  collections,
+  categories: initialCategories,
+  collections: initialCollections,
   isNew = false,
 }: ProductEditorProps) {
   const router = useRouter();
+  const [categories, setCategories] = useState<CategoryItem[]>(initialCategories);
+  const [collections, setCollections] = useState<CollectionItem[]>(initialCollections);
+  const [resolvedId, setResolvedId] = useState<string>(initialProduct?.id || productId || "");
+  const [isFetchingProduct, setIsFetchingProduct] = useState<boolean>(!isNew && !initialProduct);
 
   // 1. Temel Bilgiler
   const [title, setTitle] = useState(initialProduct?.title || "");
   const [slug, setSlug] = useState(initialProduct?.slug || "");
   const [categorySlug, setCategorySlug] = useState(
-    initialProduct?.categorySlug || categories[0]?.slug || "takim"
+    initialProduct?.categorySlug || initialCategories[0]?.slug || "takim"
   );
   const [selectedCollections, setSelectedCollections] = useState<string[]>(
-    initialProduct?.collectionSlugs || ["yeni-sezon"]
+    initialProduct?.collectionSlugs && initialProduct.collectionSlugs.length > 0
+      ? initialProduct.collectionSlugs
+      : ["yeni-sezon", "cok-satanlar"]
   );
   const [basePrice, setBasePrice] = useState<string>(
     initialProduct ? String(initialProduct.basePrice) : ""
@@ -81,13 +89,15 @@ export function ProductEditor({
   // 3. Varyant Matrisi
   const [variants, setVariants] = useState<EditableVariant[]>(() => {
     if (initialProduct?.variants && Array.isArray(initialProduct.variants) && initialProduct.variants.length > 0) {
+      const defaultColorName = initialProduct.colors?.[0]?.name || "Siyah";
+      const defaultSizeName = initialProduct.sizes?.[0]?.name || "Standart";
       return initialProduct.variants.map((v) => {
         const c = initialProduct.colors?.find((col) => col.id === v.colorId);
         const s = initialProduct.sizes?.find((siz) => siz.id === v.sizeId);
         return {
           id: v.id,
-          colorName: c?.name || (v as any).colorName || "Standart",
-          sizeName: s?.name || (v as any).sizeName || "Standart",
+          colorName: c?.name || (v as { colorName?: string }).colorName || defaultColorName,
+          sizeName: s?.name || (v as { sizeName?: string }).sizeName || defaultSizeName,
           sku: v.sku,
           stockQuantity: v.stockQuantity ?? 10,
           costPrice: v.costPrice,
@@ -111,7 +121,7 @@ export function ProductEditor({
       const c = initialProduct.colors?.find((col) => col.id === m.colorId);
       return {
         id: m.id,
-        colorName: c?.name || (m as any).colorName,
+        colorName: c?.name || (m as { colorName?: string }).colorName,
         type: m.type,
         url: m.url,
         thumbnailUrl: m.thumbnailUrl || m.url,
@@ -121,6 +131,129 @@ export function ProductEditor({
       };
     }) || []
   );
+
+  const hydrateFromProduct = React.useCallback((prod: ProductItem) => {
+    setResolvedId(prod.id);
+    setTitle(prod.title || "");
+    setSlug(prod.slug || "");
+    if (prod.categorySlug) setCategorySlug(prod.categorySlug);
+    setSelectedCollections(
+      prod.collectionSlugs && prod.collectionSlugs.length > 0
+        ? prod.collectionSlugs
+        : ["yeni-sezon"]
+    );
+    setBasePrice(String(prod.basePrice));
+    setDiscountPrice(prod.discountPrice ? String(prod.discountPrice) : "");
+    setBadge(prod.badge || "");
+    setDescription(prod.description || "");
+    setFabricDetails(prod.fabricDetails || "");
+    setModelDimensions(prod.modelDimensions || "");
+
+    const loadedColors =
+      prod.colors && prod.colors.length > 0
+        ? prod.colors.map((c) => ({
+            id: c.id,
+            name: c.name,
+            slug: c.slug,
+            colorCode: c.colorCode,
+          }))
+        : [{ name: "Siyah", slug: "siyah", colorCode: "#141414" }];
+    setColors(loadedColors);
+
+    const fallbackColor = loadedColors[0]?.name || "Siyah";
+    const fallbackSize = prod.sizes?.[0]?.name || "Standart";
+
+    if (prod.variants && prod.variants.length > 0) {
+      setVariants(
+        prod.variants.map((v) => {
+          const c = prod.colors?.find((col) => col.id === v.colorId);
+          const s = prod.sizes?.find((siz) => siz.id === v.sizeId);
+          return {
+            id: v.id,
+            colorName: c?.name || (v as { colorName?: string }).colorName || fallbackColor,
+            sizeName: s?.name || (v as { sizeName?: string }).sizeName || fallbackSize,
+            sku: v.sku,
+            stockQuantity: v.stockQuantity ?? 10,
+            costPrice: v.costPrice,
+          };
+        })
+      );
+    }
+
+    if (prod.media) {
+      setMedia(
+        prod.media.map((m) => {
+          const c = prod.colors?.find((col) => col.id === m.colorId);
+          return {
+            id: m.id,
+            colorName: c?.name || (m as { colorName?: string }).colorName,
+            type: m.type,
+            url: m.url,
+            thumbnailUrl: m.thumbnailUrl || m.url,
+            altText: m.altText || "",
+            isThumbnail: m.isThumbnail,
+            displayOrder: m.displayOrder,
+          };
+        })
+      );
+    }
+  }, []);
+
+  React.useEffect(() => {
+    let active = true;
+    const targetLookup = productId || initialProduct?.id || "";
+    const query = targetLookup
+      ? `/api/admin/products?public=1&id=${encodeURIComponent(targetLookup)}`
+      : "/api/admin/products?public=1";
+
+    fetch(query, {
+      cache: "no-store",
+      headers: { "Cache-Control": "no-cache" },
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!active || !data) return;
+        if (Array.isArray(data.categories) && data.categories.length > 0) {
+          setCategories(data.categories);
+          if (isNew && !initialProduct?.categorySlug) {
+            setCategorySlug((prev) =>
+              data.categories.some((c: CategoryItem) => c.slug === prev)
+                ? prev
+                : data.categories[0].slug
+            );
+          }
+        }
+        if (Array.isArray(data.collections) && data.collections.length > 0) {
+          setCollections(data.collections);
+        }
+        if (!isNew) {
+          const matchedProduct: ProductItem | undefined =
+            data.product ||
+            (Array.isArray(data.products)
+              ? data.products.find(
+                  (p: ProductItem) =>
+                    p.id === targetLookup ||
+                    p.slug === targetLookup ||
+                    p.id.toLowerCase() === targetLookup.toLowerCase() ||
+                    p.slug.toLowerCase() === targetLookup.toLowerCase()
+                )
+              : undefined);
+          if (matchedProduct) {
+            hydrateFromProduct(matchedProduct);
+          }
+        }
+      })
+      .catch((err) => {
+        console.error("ProductEditor sync error:", err);
+      })
+      .finally(() => {
+        if (active) setIsFetchingProduct(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [isNew, productId, initialProduct?.id, initialProduct?.categorySlug, hydrateFromProduct]);
 
   const [activeMediaColorTab, setActiveMediaColorTab] = useState<string>("all");
   const [isUploading, setIsUploading] = useState(false);
@@ -349,7 +482,10 @@ export function ProductEditor({
         ? uniqueSizeNames.map((name, i) => ({ name, displayOrder: i + 1 }))
         : [{ name: "Standart", displayOrder: 1 }];
 
+      const targetUpdateId = resolvedId || productId || initialProduct?.id || "";
+
       const payload = {
+        ...(isNew ? {} : { id: targetUpdateId }),
         title: title.trim(),
         slug: slug.trim() || undefined,
         description,
@@ -359,14 +495,15 @@ export function ProductEditor({
         discountPrice: discountPrice ? Number(discountPrice) : undefined,
         badge: badge.trim() || undefined,
         categorySlug,
-        collectionSlugs: selectedCollections,
+        collectionSlugs:
+          selectedCollections.length > 0 ? selectedCollections : ["yeni-sezon", "cok-satanlar"],
         colors: activeColors,
         sizes: computedSizes,
         variants: activeVariants,
         media,
       };
 
-      const url = isNew ? "/api/admin/products" : `/api/admin/products/${encodeURIComponent(initialProduct?.id || "")}`;
+      const url = "/api/admin/products";
       const method = isNew ? "POST" : "PUT";
 
       const res = await fetch(url, {
@@ -380,6 +517,14 @@ export function ProductEditor({
         throw new Error(data.error || "Ürün kaydedilemedi.");
       }
 
+      if (!isNew && targetUpdateId) {
+        fetch(`/api/admin/products/${encodeURIComponent(targetUpdateId)}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }).catch(() => {});
+      }
+
       setSuccessMessage("Ürün başarıyla kaydedildi! Yönlendiriliyorsunuz...");
       setTimeout(() => {
         router.push("/admin/urunler");
@@ -390,6 +535,14 @@ export function ProductEditor({
       setIsSaving(false);
     }
   };
+
+  if (isFetchingProduct && !title) {
+    return (
+      <div className="hm-admin-card" style={{ padding: "3rem", textAlign: "center", color: "#718096" }}>
+        Ürün bilgileri yükleniyor...
+      </div>
+    );
+  }
 
   return (
     <form
@@ -414,11 +567,11 @@ export function ProductEditor({
             </Link>
             <span>/</span>
             <span style={{ color: "#1A202C", fontWeight: 600 }}>
-              {isNew ? "Yeni Ürün Ekle" : initialProduct?.title}
+              {isNew ? "Yeni Ürün Ekle" : title || initialProduct?.title || "Ürün Düzenle"}
             </span>
           </div>
           <h1 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#1A202C", marginTop: "0.25rem" }}>
-            {isNew ? "Yeni Ürün Oluştur" : `Ürünü Düzenle: ${initialProduct?.title}`}
+            {isNew ? "Yeni Ürün Oluştur" : `Ürünü Düzenle: ${title || initialProduct?.title || ""}`}
           </h1>
         </div>
 

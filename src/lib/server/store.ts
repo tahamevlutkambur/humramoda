@@ -324,9 +324,23 @@ const DATA_DIR = path.join(process.cwd(), "data");
 const STORE_FILE = path.join(DATA_DIR, "store.json");
 const TMP_STORE_FILE = path.join(os.tmpdir(), "humramoda_store.json");
 
-let inMemoryStore: AppStoreData | null = null;
-let persistentStoreOverride: AppStoreData | null = null;
-let lastStoreFileMtime = 0;
+interface GlobalStoreState {
+  inMemoryStore: AppStoreData | null;
+  persistentStoreOverride: AppStoreData | null;
+  lastStoreFileMtime: number;
+}
+
+declare global {
+  var __humraStoreState: GlobalStoreState | undefined;
+}
+
+const storeState: GlobalStoreState =
+  globalThis.__humraStoreState ||
+  (globalThis.__humraStoreState = {
+    inMemoryStore: null,
+    persistentStoreOverride: null,
+    lastStoreFileMtime: 0,
+  });
 
 const DEFAULT_HOMEPAGE_CONTENT: HomepageContent = {
   hero: {
@@ -517,7 +531,6 @@ const DEFAULT_ADMIN_USERS: AdminUser[] = [
  * Vercel / Serverless ortamında salt-okunur dosya sistemi hatalarını (EROFS) engeller.
  */
 export function getStoreData(): AppStoreData {
-  if (persistentStoreOverride) return persistentStoreOverride;
   let fileMtime = 0;
   let activeFile = "";
   try {
@@ -530,7 +543,7 @@ export function getStoreData(): AppStoreData {
       storeMtime = fs.statSync(STORE_FILE).mtimeMs;
     }
 
-    if (tmpMtime > 0 && tmpMtime >= storeMtime) {
+    if (tmpMtime > 0 && (process.env.VERCEL || tmpMtime >= storeMtime)) {
       fileMtime = tmpMtime;
       activeFile = TMP_STORE_FILE;
     } else if (storeMtime > 0) {
@@ -544,8 +557,16 @@ export function getStoreData(): AppStoreData {
     // Okuma hatası
   }
 
-  if (inMemoryStore && fileMtime > 0 && Math.abs(fileMtime - lastStoreFileMtime) < 10) {
-    return inMemoryStore;
+  if (
+    storeState.inMemoryStore &&
+    fileMtime > 0 &&
+    Math.abs(fileMtime - storeState.lastStoreFileMtime) < 10
+  ) {
+    return storeState.inMemoryStore;
+  }
+
+  if (storeState.persistentStoreOverride && fileMtime === 0) {
+    return storeState.persistentStoreOverride;
   }
 
   let raw: string | null = null;
@@ -554,7 +575,7 @@ export function getStoreData(): AppStoreData {
   try {
     if (activeFile && fs.existsSync(activeFile)) {
       raw = fs.readFileSync(activeFile, "utf-8");
-      lastStoreFileMtime = fileMtime;
+      storeState.lastStoreFileMtime = fileMtime;
     }
   } catch {
     // Okuma hatası
@@ -573,6 +594,9 @@ export function getStoreData(): AppStoreData {
 
   // Dosya mevcut değilse başlangıç verisi ile başlat
   if (!raw) {
+    if (storeState.inMemoryStore) {
+      return storeState.inMemoryStore;
+    }
     const initialData: AppStoreData = {
       products: PRODUCTS,
       categories: CATEGORIES,
@@ -587,7 +611,7 @@ export function getStoreData(): AppStoreData {
       returnRequests: [],
       notifications: [],
     };
-    inMemoryStore = initialData;
+    storeState.inMemoryStore = initialData;
 
     try {
       if (!fs.existsSync(DATA_DIR)) {
@@ -627,10 +651,13 @@ export function getStoreData(): AppStoreData {
       notifications: parsed.notifications || [],
     };
 
-    inMemoryStore = data;
+    storeState.inMemoryStore = data;
     return data;
   } catch (err) {
     console.error("Store data read/parse error:", err);
+    if (storeState.inMemoryStore) {
+      return storeState.inMemoryStore;
+    }
     const fallback: AppStoreData = {
       products: PRODUCTS,
       categories: CATEGORIES,
@@ -645,7 +672,7 @@ export function getStoreData(): AppStoreData {
       returnRequests: [],
       notifications: [],
     };
-    inMemoryStore = fallback;
+    storeState.inMemoryStore = fallback;
     return fallback;
   }
 }
@@ -655,20 +682,20 @@ export function getStoreData(): AppStoreData {
  * Vercel / Serverless salt-okunur dosya sisteminde hata fırlatmaz.
  */
 export function saveStoreData(data: AppStoreData): void {
-  inMemoryStore = data;
-  if (persistentStoreOverride) persistentStoreOverride = data;
+  storeState.inMemoryStore = data;
+  storeState.persistentStoreOverride = data;
 
   // 1. Vercel / Lambda ortamı için /tmp dizinine MUTLAKA yaz
   try {
     fs.writeFileSync(TMP_STORE_FILE, JSON.stringify(data, null, 2), "utf-8");
     try {
-      lastStoreFileMtime = fs.statSync(TMP_STORE_FILE).mtimeMs;
+      storeState.lastStoreFileMtime = fs.statSync(TMP_STORE_FILE).mtimeMs;
     } catch {
-      lastStoreFileMtime = Date.now();
+      storeState.lastStoreFileMtime = Date.now();
     }
   } catch (err) {
     console.warn("Could not persist to /tmp:", err);
-    lastStoreFileMtime = Date.now();
+    storeState.lastStoreFileMtime = Date.now();
   }
 
   // 2. Proje dizinine yazmayı dene (yerel geliştirme / derleme ortamı)
@@ -689,7 +716,7 @@ export function saveStoreData(data: AppStoreData): void {
       }
     }
     try {
-      lastStoreFileMtime = fs.statSync(STORE_FILE).mtimeMs;
+      storeState.lastStoreFileMtime = fs.statSync(STORE_FILE).mtimeMs;
     } catch {
       // ignore
     }
@@ -700,8 +727,14 @@ export function saveStoreData(data: AppStoreData): void {
 
 /** Hydrate the current request's store from the durable database snapshot. */
 export function usePersistentStoreData(data: AppStoreData): void {
-  inMemoryStore = data;
-  persistentStoreOverride = data;
+  storeState.inMemoryStore = data;
+  storeState.persistentStoreOverride = data;
+  try {
+    fs.writeFileSync(TMP_STORE_FILE, JSON.stringify(data, null, 2), "utf-8");
+    storeState.lastStoreFileMtime = fs.statSync(TMP_STORE_FILE).mtimeMs;
+  } catch {
+    // ignore
+  }
 }
 
 // -------------------------------------------------------------
@@ -983,6 +1016,11 @@ export function createStoreProduct(input: CreateProductInput): { product?: Produ
     };
   });
 
+  const normalizedCollections =
+    Array.isArray(input.collectionSlugs) && input.collectionSlugs.length > 0
+      ? input.collectionSlugs
+      : ["yeni-sezon", "cok-satanlar"];
+
   const newProduct: ProductItem = {
     id: `prod-${Date.now()}`,
     title: input.title.trim(),
@@ -996,7 +1034,7 @@ export function createStoreProduct(input: CreateProductInput): { product?: Produ
     badge: input.badge || undefined,
     categorySlug: category.slug,
     categoryName: category.name,
-    collectionSlugs: input.collectionSlugs || ["yeni-sezon"],
+    collectionSlugs: normalizedCollections,
     colors,
     sizes,
     variants,
@@ -1015,7 +1053,7 @@ export function updateStoreProduct(
   input: Partial<CreateProductInput> & { isDraft?: boolean }
 ): { product?: ProductItem; error?: string } {
   const store = getStoreData();
-  const trimmed = id.trim();
+  const trimmed = (id || "").trim();
   const decoded = decodeURIComponent(trimmed);
   const lower = trimmed.toLowerCase();
   const decodedLower = decoded.toLowerCase();
@@ -1035,18 +1073,21 @@ export function updateStoreProduct(
   }
 
   const current = store.products[index];
+  const productId = current.id;
 
   if (input.title !== undefined) {
     if (input.title.trim().length === 0) return { error: "Ürün başlığı boş bırakılamaz." };
     current.title = input.title.trim();
   }
 
-  if (input.slug !== undefined) {
+  if (input.slug !== undefined && input.slug.trim().length > 0) {
     const newSlug = generateSlug(input.slug);
-    if (store.products.some((p) => p.id !== id && p.slug === newSlug)) {
-      return { error: `"${newSlug}" slug adresi başka bir üründe kullanılıyor.` };
+    if (newSlug) {
+      if (store.products.some((p) => p.id !== productId && p.slug === newSlug)) {
+        return { error: `"${newSlug}" slug adresi başka bir üründe kullanılıyor.` };
+      }
+      current.slug = newSlug;
     }
-    current.slug = newSlug;
   }
 
   if (input.basePrice !== undefined) {
@@ -1056,7 +1097,7 @@ export function updateStoreProduct(
   }
 
   if (input.discountPrice !== undefined) {
-    if (input.discountPrice === null || input.discountPrice <= 0) {
+    if (input.discountPrice === null || Number(input.discountPrice) <= 0) {
       current.discountPrice = undefined;
     } else {
       const disc = Number(input.discountPrice);
@@ -1073,7 +1114,12 @@ export function updateStoreProduct(
   if (input.badge !== undefined) current.badge = input.badge || undefined;
 
   if (input.categorySlug !== undefined) {
-    const cat = store.categories.find((c) => c.slug === input.categorySlug);
+    const cat = store.categories.find(
+      (c) =>
+        c.slug === input.categorySlug ||
+        c.id === input.categorySlug ||
+        c.name.trim().toLowerCase() === (input.categorySlug || "").trim().toLowerCase()
+    );
     if (cat) {
       current.categorySlug = cat.slug;
       current.categoryName = cat.name;
@@ -1081,62 +1127,113 @@ export function updateStoreProduct(
   }
 
   if (input.collectionSlugs !== undefined) {
-    current.collectionSlugs = input.collectionSlugs;
+    current.collectionSlugs =
+      Array.isArray(input.collectionSlugs) && input.collectionSlugs.length > 0
+        ? input.collectionSlugs
+        : ["yeni-sezon"];
   }
 
   // Renkler, bedenler veya varyantlar güncellenmişse uygula
-  if (input.colors) {
+  if (input.colors && input.colors.length > 0) {
     current.colors = input.colors.map((c, idx) => ({
-      id: `col-${id}-${idx}`,
-      name: c.name.trim(),
-      slug: c.slug ? generateSlug(c.slug) : generateSlug(c.name),
-      colorCode: c.colorCode || c.hex || "#000000",
+      id: (c as { id?: string }).id || `col-${productId}-${idx}`,
+      name: (c.name || "Siyah").trim(),
+      slug: c.slug ? generateSlug(c.slug) : generateSlug(c.name || "siyah"),
+      colorCode: c.colorCode || c.hex || "#141414",
       displayOrder: idx + 1,
     }));
   }
+  if (!current.colors || current.colors.length === 0) {
+    current.colors = [
+      {
+        id: `col-${productId}-0`,
+        name: "Siyah",
+        slug: "siyah",
+        colorCode: "#141414",
+        displayOrder: 1,
+      },
+    ];
+  }
 
-  if (input.sizes) {
+  if (input.sizes && input.sizes.length > 0) {
     current.sizes = input.sizes.map((s, idx) => {
-      const name = (typeof s === "string" ? s : s.name || "").trim();
+      const name = (typeof s === "string" ? s : s.name || "Standart").trim();
       const slug = typeof s === "object" && s.slug ? generateSlug(s.slug) : generateSlug(name);
       return {
-        id: `size-${id}-${idx}`,
-        name,
-        slug,
+        id: (typeof s === "object" && (s as { id?: string }).id) || `size-${productId}-${idx}`,
+        name: name || "Standart",
+        slug: slug || "standart",
         displayOrder: idx + 1,
       };
     });
+  }
+  if (!current.sizes || current.sizes.length === 0) {
+    current.sizes = [
+      {
+        id: `size-${productId}-0`,
+        name: "Standart",
+        slug: "standart",
+        displayOrder: 1,
+      },
+    ];
   }
 
   if (input.variants) {
     const otherSkus = new Set(
       store.products
-        .filter((p) => p.id !== id)
+        .filter((p) => p.id !== productId)
         .flatMap((p) => p.variants.map((v) => v.sku.toUpperCase()))
     );
 
     const updatedVariants = [];
     for (const v of input.variants) {
-      const sku = v.sku.trim().toUpperCase();
+      let sku = (v.sku || "").trim().toUpperCase();
+      if (!sku) {
+        sku = `HM-${current.slug.slice(0, 4).toUpperCase().replace(/[^A-Z0-9]/g, "")}-${updatedVariants.length + 1}-${Math.floor(100 + Math.random() * 900)}`;
+      }
       if (otherSkus.has(sku)) {
-        return { error: `"${sku}" stok kodu başka bir üründe kullanılıyor.` };
+        sku = `${sku}-${Math.floor(10 + Math.random() * 90)}`;
       }
       otherSkus.add(sku);
 
-      const matchedColor = current.colors.find(
+      let matchedColor = current.colors.find(
         (c) =>
           (v.colorId && c.id === v.colorId) ||
-          (v.colorName && c.name.toLowerCase() === v.colorName.toLowerCase()) ||
+          (v.colorName && c.name.trim().toLowerCase() === v.colorName.trim().toLowerCase()) ||
           (v.colorId && (c.slug === v.colorId || c.name.toLowerCase() === v.colorId.replace("col-", "").toLowerCase()))
       );
-      const matchedSize = current.sizes.find(
+      if (!matchedColor && v.colorName?.trim()) {
+        matchedColor = {
+          id: `col-${productId}-${current.colors.length}`,
+          name: v.colorName.trim(),
+          slug: generateSlug(v.colorName.trim()),
+          colorCode: "#141414",
+          displayOrder: current.colors.length + 1,
+        };
+        current.colors.push(matchedColor);
+      }
+      if (!matchedColor) {
+        matchedColor = current.colors[0];
+      }
+
+      let matchedSize = current.sizes.find(
         (s) =>
           (v.sizeId && (s.id === v.sizeId || s.name === v.sizeId || s.slug === v.sizeId)) ||
-          (v.sizeName && s.name.toLowerCase() === v.sizeName.toLowerCase()) ||
+          (v.sizeName && s.name.trim().toLowerCase() === v.sizeName.trim().toLowerCase()) ||
           (v.sizeId && s.name.toLowerCase() === v.sizeId.replace("size-", "").toLowerCase())
       );
-
-      if (!matchedColor || !matchedSize) continue;
+      if (!matchedSize && v.sizeName?.trim()) {
+        matchedSize = {
+          id: `size-${productId}-${current.sizes.length}`,
+          name: v.sizeName.trim(),
+          slug: generateSlug(v.sizeName.trim()),
+          displayOrder: current.sizes.length + 1,
+        };
+        current.sizes.push(matchedSize);
+      }
+      if (!matchedSize) {
+        matchedSize = current.sizes[0];
+      }
 
       const costPrice =
         v.costPrice !== undefined && v.costPrice !== null && !isNaN(Number(v.costPrice))
@@ -1144,15 +1241,29 @@ export function updateStoreProduct(
           : undefined;
 
       updatedVariants.push({
-        id: `var-${id}-${updatedVariants.length}`,
+        id: `var-${productId}-${updatedVariants.length}`,
         colorId: matchedColor.id,
         sizeId: matchedSize.id,
         sku,
-        stockQuantity: Math.max(0, Number(v.stockQuantity) || 0),
+        stockQuantity: Math.max(0, isNaN(Number(v.stockQuantity)) ? 10 : Number(v.stockQuantity)),
         costPrice,
         isActive: true,
       });
     }
+
+    if (updatedVariants.length === 0) {
+      const autoSku = `HM-${current.slug.slice(0, 4).toUpperCase().replace(/[^A-Z0-9]/g, "")}-${Math.floor(100 + Math.random() * 900)}`;
+      updatedVariants.push({
+        id: `var-${productId}-0`,
+        colorId: current.colors[0].id,
+        sizeId: current.sizes[0].id,
+        sku: autoSku,
+        stockQuantity: 10,
+        costPrice: undefined,
+        isActive: true,
+      });
+    }
+
     current.variants = updatedVariants;
   }
 
@@ -1162,15 +1273,18 @@ export function updateStoreProduct(
 
   if (input.media) {
     current.media = input.media.map((m, idx) => {
-      let colorId: string | undefined = undefined;
+      let colorId: string | undefined = (m as { colorId?: string }).colorId;
       if (m.colorName) {
         const match = current.colors.find(
-          (c) => c.name.toLowerCase() === m.colorName?.toLowerCase()
+          (c) => c.name.trim().toLowerCase() === m.colorName?.trim().toLowerCase()
         );
         if (match) colorId = match.id;
       }
+      if (colorId && !current.colors.some((c) => c.id === colorId)) {
+        colorId = current.colors[0]?.id;
+      }
       return {
-        id: `med-${id}-${idx}`,
+        id: `med-${productId}-${idx}`,
         colorId,
         type: m.type || "IMAGE",
         url: m.url,

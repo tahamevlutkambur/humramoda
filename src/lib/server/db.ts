@@ -4,15 +4,19 @@ declare global {
   var __globalPrismaClient: PrismaClient | undefined;
 }
 
+const resolvedDbUrl =
+  process.env.DATABASE_URL ||
+  process.env.POSTGRES_PRISMA_URL ||
+  process.env.POSTGRES_URL;
+
 export const prisma =
   globalThis.__globalPrismaClient ||
   new PrismaClient({
+    ...(resolvedDbUrl ? { datasources: { db: { url: resolvedDbUrl } } } : {}),
     log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
   });
 
-if (process.env.NODE_ENV !== "production") {
-  globalThis.__globalPrismaClient = prisma;
-}
+globalThis.__globalPrismaClient = prisma;
 
 /**
  * PostgreSQL veritabanı bağlantısını güvenli biçimde test eder.

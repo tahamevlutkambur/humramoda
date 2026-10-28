@@ -15,8 +15,17 @@ interface ProductCardProps {
 
 export function ProductCard({ product, initialColorSlug }: ProductCardProps) {
   // Varsayılan rengi belirle
+  const fallbackColor = {
+    id: "col-default",
+    name: "Standart",
+    slug: "standart",
+    colorCode: "#141414",
+    displayOrder: 1,
+  };
   const defaultColor =
-    product.colors.find((c) => c.slug === initialColorSlug) || product.colors[0];
+    product.colors?.find((c) => c.slug === initialColorSlug) ||
+    product.colors?.[0] ||
+    fallbackColor;
 
   const [selectedColor, setSelectedColor] = useState(defaultColor);
   const [isHovered, setIsHovered] = useState(false);
@@ -25,8 +34,9 @@ export function ProductCard({ product, initialColorSlug }: ProductCardProps) {
   const isFav = isFavorite(product.id);
 
   // Seçili renge ait görselleri filtrele
-  const colorMedia = product.media.filter((m) => m.colorId === selectedColor.id);
-  const primaryMedia = colorMedia[0] || product.media[0];
+  const safeMedia = product.media || [];
+  const colorMedia = safeMedia.filter((m) => m.colorId === selectedColor?.id);
+  const primaryMedia = colorMedia[0] || safeMedia[0];
   const secondaryMedia = colorMedia[1] || primaryMedia;
 
   const currentMedia = isHovered && secondaryMedia ? secondaryMedia : primaryMedia;
@@ -37,7 +47,9 @@ export function ProductCard({ product, initialColorSlug }: ProductCardProps) {
     ? Math.round(((product.basePrice - product.discountPrice!) / product.basePrice) * 100)
     : 0;
 
-  const productUrl = `/urun/${product.slug}?renk=${selectedColor.slug}`;
+  const productUrl = selectedColor?.slug
+    ? `/urun/${product.slug}?renk=${selectedColor.slug}`
+    : `/urun/${product.slug}`;
 
   return (
     <div

@@ -691,6 +691,11 @@ export const FEATURED_VIDEOS: VideoLookItem[] = [
 // -------------------------------------------------------------
 
 function getActiveProductsList(): ProductItem[] {
+  const globalStore = (globalThis as { __humraStoreState?: { inMemoryStore?: { products?: ProductItem[] } } })
+    .__humraStoreState?.inMemoryStore;
+  if (globalStore && Array.isArray(globalStore.products)) {
+    return globalStore.products;
+  }
   if (typeof window === "undefined") {
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -704,6 +709,11 @@ function getActiveProductsList(): ProductItem[] {
 }
 
 function getActiveCategoriesList(): CategoryItem[] {
+  const globalStore = (globalThis as { __humraStoreState?: { inMemoryStore?: { categories?: CategoryItem[] } } })
+    .__humraStoreState?.inMemoryStore;
+  if (globalStore && Array.isArray(globalStore.categories)) {
+    return globalStore.categories;
+  }
   if (typeof window === "undefined") {
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -717,6 +727,11 @@ function getActiveCategoriesList(): CategoryItem[] {
 }
 
 function getActiveCollectionsList(): CollectionItem[] {
+  const globalStore = (globalThis as { __humraStoreState?: { inMemoryStore?: { collections?: CollectionItem[] } } })
+    .__humraStoreState?.inMemoryStore;
+  if (globalStore && Array.isArray(globalStore.collections)) {
+    return globalStore.collections;
+  }
   if (typeof window === "undefined") {
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -730,6 +745,11 @@ function getActiveCollectionsList(): CollectionItem[] {
 }
 
 function getActiveVideosList(): VideoLookItem[] {
+  const globalStore = (globalThis as { __humraStoreState?: { inMemoryStore?: { featuredVideos?: VideoLookItem[] } } })
+    .__humraStoreState?.inMemoryStore;
+  if (globalStore && Array.isArray(globalStore.featuredVideos)) {
+    return globalStore.featuredVideos;
+  }
   if (typeof window === "undefined") {
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports

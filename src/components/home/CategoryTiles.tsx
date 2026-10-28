@@ -1,11 +1,41 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Container } from "../ui/Container";
-import { getAllCategories } from "@/lib/catalog";
+import { getAllCategories, CategoryItem } from "@/lib/catalog";
 
-export function CategoryTiles() {
-  const categories = getAllCategories();
+interface CategoryTilesProps {
+  initialCategories?: CategoryItem[];
+}
+
+export function CategoryTiles({ initialCategories }: CategoryTilesProps) {
+  const [categories, setCategories] = useState<CategoryItem[]>(() =>
+    initialCategories && initialCategories.length > 0 ? initialCategories : getAllCategories()
+  );
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/admin/products?public=1", {
+      cache: "no-store",
+      headers: { "Cache-Control": "no-cache" },
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!active || !data) return;
+        if (Array.isArray(data.categories) && data.categories.length > 0) {
+          const sorted = [...data.categories].sort(
+            (a: CategoryItem, b: CategoryItem) => (a.displayOrder || 0) - (b.displayOrder || 0)
+          );
+          setCategories(sorted);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <section style={{ padding: "var(--hm-space-16) 0" }}>

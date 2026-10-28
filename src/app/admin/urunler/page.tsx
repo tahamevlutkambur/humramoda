@@ -16,7 +16,10 @@ export default function AdminProductsPage() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch("/api/admin/products");
+      const res = await fetch("/api/admin/products", {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache" },
+      });
       const data = await res.json();
       if (res.ok && data.products) {
         setProducts(data.products);
@@ -41,9 +44,14 @@ export default function AdminProductsPage() {
     setIsDeleting(true);
 
     try {
-      const res = await fetch(`/api/admin/products/${encodeURIComponent(id)}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, { method: "DELETE" });
       if (res.ok) {
-        setProducts((prev) => prev.filter((p) => p.id !== id && p.slug !== id));
+        const data = await res.json().catch(() => null);
+        if (data && Array.isArray(data.products)) {
+          setProducts(data.products);
+        } else {
+          setProducts((prev) => prev.filter((p) => p.id !== id && p.slug !== id));
+        }
       } else {
         alert("Ürün silinemedi.");
       }

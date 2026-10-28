@@ -280,17 +280,28 @@ export async function processAndSaveUpload(
       }
 
       // 3. Yerel geliştirme ortamında public dizinine yazmayı dene
+      let savedToPublicDisk = false;
       try {
-        fs.writeFileSync(cardPath, cardBuffer);
-        fs.writeFileSync(thumbPath, thumbBuffer);
+        if (!process.env.VERCEL) {
+          fs.writeFileSync(cardPath, cardBuffer);
+          fs.writeFileSync(thumbPath, thumbBuffer);
+          savedToPublicDisk = true;
+        }
       } catch {
-        // Vercel serverless salt okunur
+        savedToPublicDisk = false;
       }
+
+      const finalCardUrl = savedToPublicDisk
+        ? `/uploads/products/${cardFileName}`
+        : `data:${finalMime};base64,${cardBuffer.toString("base64")}`;
+      const finalThumbUrl = savedToPublicDisk
+        ? `/uploads/products/${thumbFileName}`
+        : `data:${finalMime};base64,${thumbBuffer.toString("base64")}`;
 
       return {
         result: {
-          url: `/uploads/products/${cardFileName}`,
-          thumbnailUrl: `/uploads/products/${thumbFileName}`,
+          url: finalCardUrl,
+          thumbnailUrl: finalThumbUrl,
           fileName: cardFileName,
           sizeBytes: cardBuffer.length,
           mimeType: finalMime,

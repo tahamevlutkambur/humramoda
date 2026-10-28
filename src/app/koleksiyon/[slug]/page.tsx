@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import {
-  getCollectionBySlug,
-  getProducts,
-  getAllCategories,
-} from "@/lib/catalog";
+import { getCollectionBySlug } from "@/lib/catalog";
 import { getStoreData } from "@/lib/server/store";
+import { getPersistentStoreData } from "@/lib/server/persistent-store";
 import { CatalogView } from "@/components/catalog/CatalogView";
 
 export const dynamic = "force-dynamic";
@@ -17,12 +14,16 @@ interface CollectionPageProps {
   }>;
 }
 
-function resolveCollection(slug: string) {
-  const decoded = decodeURIComponent(slug);
+async function resolveCollection(slug: string) {
+  await getPersistentStoreData().catch(() => {});
+  const decoded = decodeURIComponent(slug).trim();
   try {
     const store = getStoreData();
     const found = store.collections.find(
-      (c) => c.slug === decoded || c.id === decoded || c.slug.toLowerCase() === decoded.toLowerCase()
+      (c) =>
+        c.slug === decoded ||
+        c.id === decoded ||
+        c.slug.toLowerCase() === decoded.toLowerCase()
     );
     if (found) return found;
   } catch {
@@ -35,7 +36,7 @@ export async function generateMetadata({
   params,
 }: CollectionPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const collection = resolveCollection(slug);
+  const collection = await resolveCollection(slug);
 
   if (!collection) {
     return {
@@ -57,14 +58,19 @@ export async function generateMetadata({
 
 export default async function CollectionPage({ params }: CollectionPageProps) {
   const { slug } = await params;
-  const collection = resolveCollection(slug);
+  const collection = await resolveCollection(slug);
 
   if (!collection) {
     notFound();
   }
 
-  const products = getProducts({ collectionSlug: collection.slug });
-  const allCategories = getAllCategories();
+  const store = getStoreData();
+  const products = store.products
+    .filter((p) => p.collectionSlugs?.some((s) => s.toLowerCase() === collection.slug.toLowerCase()))
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const allCategories = [...store.categories].sort(
+    (a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)
+  );
 
   return (
     <CatalogView
@@ -72,6 +78,7 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
       description={collection.description}
       initialProducts={products}
       categories={allCategories}
+      currentCollectionSlug={collection.slug}
       breadcrumbs={[
         { label: "Ana Sayfa", href: "/" },
         { label: "Koleksiyonlar", href: "/urunler" },

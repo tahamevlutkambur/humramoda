@@ -9,42 +9,148 @@ import { ProductCard } from "./ProductCard";
 import { Container } from "../ui/Container";
 
 interface ProductDetailViewProps {
-  product: ProductItem;
+  product?: ProductItem | null;
+  slug?: string;
   relatedProducts: ProductItem[];
 }
 
-export function ProductDetailView({ product, relatedProducts }: ProductDetailViewProps) {
+const DEFAULT_FALLBACK_COLOR: ProductColorItem = {
+  id: "col-default",
+  name: "Standart",
+  slug: "standart",
+  colorCode: "#141414",
+  displayOrder: 1,
+};
+
+export function ProductDetailView({
+  product: initialProduct,
+  slug,
+  relatedProducts: initialRelatedProducts,
+}: ProductDetailViewProps) {
   const searchParams = useSearchParams();
   const initialRenkSlug = searchParams.get("renk");
 
-  // İlk rengi belirle: query param renk eşleşirse onu seç, eşleşmezse ilk rengi seç
-  const getInitialColor = useCallback((): ProductColorItem => {
-    if (initialRenkSlug && product.colors?.length > 0) {
-      const match = product.colors.find((c) => c.slug === initialRenkSlug);
-      if (match) return match;
-    }
-    return product.colors[0];
-  }, [initialRenkSlug, product.colors]);
+  const [product, setProduct] = useState<ProductItem | null>(initialProduct || null);
+  const [relatedProducts, setRelatedProducts] = useState<ProductItem[]>(initialRelatedProducts);
+  const [isLoading, setIsLoading] = useState<boolean>(!initialProduct);
 
-  const [selectedColor, setSelectedColor] = useState<ProductColorItem>(getInitialColor);
+  const getInitialColor = useCallback(
+    (prod?: ProductItem | null): ProductColorItem => {
+      if (!prod || !prod.colors || prod.colors.length === 0) {
+        return DEFAULT_FALLBACK_COLOR;
+      }
+      if (initialRenkSlug) {
+        const match = prod.colors.find((c) => c.slug === initialRenkSlug);
+        if (match) return match;
+      }
+      return prod.colors[0];
+    },
+    [initialRenkSlug]
+  );
+
+  const [selectedColor, setSelectedColor] = useState<ProductColorItem>(() =>
+    getInitialColor(initialProduct)
+  );
+
+  useEffect(() => {
+    let active = true;
+    const lookup = slug || initialProduct?.slug || initialProduct?.id || "";
+    const url = lookup
+      ? `/api/admin/products?public=1&id=${encodeURIComponent(lookup)}`
+      : "/api/admin/products?public=1";
+
+    fetch(url, {
+      cache: "no-store",
+      headers: { "Cache-Control": "no-cache" },
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!active || !data) return;
+        const matched: ProductItem | undefined =
+          data.product ||
+          (Array.isArray(data.products)
+            ? data.products.find(
+                (p: ProductItem) =>
+                  p.slug === lookup ||
+                  p.id === lookup ||
+                  p.slug.toLowerCase() === lookup.toLowerCase() ||
+                  p.id.toLowerCase() === lookup.toLowerCase()
+              )
+            : undefined);
+        if (matched) {
+          setProduct(matched);
+          setSelectedColor(getInitialColor(matched));
+          if (Array.isArray(data.products)) {
+            const rel = data.products
+              .filter((p: ProductItem) => p.id !== matched.id)
+              .slice(0, 4);
+            setRelatedProducts(rel);
+          }
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [slug, initialProduct?.slug, initialProduct?.id, getInitialColor]);
 
   // Tarayıcı geçmişi (back/forward) ile query param değişirse rengi güncelle
   useEffect(() => {
-    if (initialRenkSlug) {
+    if (initialRenkSlug && product?.colors) {
       const match = product.colors.find((c) => c.slug === initialRenkSlug);
       if (match && match.id !== selectedColor.id) {
         setSelectedColor(match);
       }
     }
-  }, [initialRenkSlug, product.colors, selectedColor.id]);
+  }, [initialRenkSlug, product?.colors, selectedColor.id]);
 
-  // Renge özel medya listesi (Asla diğer renklerin görselleri karışmaz)
+  // Renge özel medya listesi
   const colorMedia = useMemo<ProductMediaItem[]>(() => {
+    if (!product?.media || product.media.length === 0) return [];
     const filtered = product.media.filter((m) => m.colorId === selectedColor.id);
     if (filtered.length > 0) return filtered;
-    // Eğer renge atanmış görsel yoksa renksiz veya varsayılan görselleri göster
-    return product.media.filter((m) => !m.colorId);
-  }, [product.media, selectedColor.id]);
+    const uncolored = product.media.filter((m) => !m.colorId);
+    if (uncolored.length > 0) return uncolored;
+    return product.media;
+  }, [product?.media, selectedColor.id]);
+
+  if (isLoading && !product) {
+    return (
+      <div
+        style={{
+          minHeight: "60vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "var(--hm-color-text-muted)",
+        }}
+      >
+        Ürün yükleniyor...
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div
+        style={{
+          minHeight: "60vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "1rem",
+          color: "var(--hm-color-text-muted)",
+        }}
+      >
+        <p>Aradığınız ürün bulunamadı.</p>
+      </div>
+    );
+  }
 
   // Renk değiştirildiğinde URL query parametresini sayfa yenilenmeden güncelle
   const handleSelectColor = (color: ProductColorItem) => {

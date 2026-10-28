@@ -9,7 +9,10 @@ let isDbAvailable: boolean | null = null;
 let tableReady: Promise<void> | undefined;
 
 function isRemoteDatabaseConfigured(): boolean {
-  const dbUrl = process.env.DATABASE_URL;
+  const dbUrl =
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.POSTGRES_URL;
   if (!dbUrl) return false;
   const lower = dbUrl.toLowerCase();
   if (lower.includes("localhost") || lower.includes("127.0.0.1")) {

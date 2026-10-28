@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { getProducts, getAllCategories } from "@/lib/catalog";
+import { getStoreData } from "@/lib/server/store";
+import { getPersistentStoreData } from "@/lib/server/persistent-store";
 import { CatalogView } from "@/components/catalog/CatalogView";
 
 export const dynamic = "force-dynamic";
@@ -17,9 +18,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default function AllProductsPage() {
-  const products = getProducts();
-  const categories = getAllCategories();
+export default async function AllProductsPage() {
+  await getPersistentStoreData().catch(() => {});
+  const store = getStoreData();
+  const products = [...store.products].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+  const categories = [...store.categories].sort(
+    (a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)
+  );
 
   return (
     <CatalogView

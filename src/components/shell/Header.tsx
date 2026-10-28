@@ -20,7 +20,29 @@ export function Header({ categories: propCategories }: HeaderProps = {}) {
   const { totalCount: favCount } = useFavorites();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const categories = propCategories && propCategories.length > 0 ? propCategories : getAllCategories();
+  const [categories, setCategories] = useState<CategoryItem[]>(() =>
+    propCategories && propCategories.length > 0 ? propCategories : getAllCategories()
+  );
+
+  React.useEffect(() => {
+    if (pathname?.startsWith("/admin")) return;
+    let active = true;
+    fetch("/api/admin/products?public=1", {
+      cache: "no-store",
+      headers: { "Cache-Control": "no-cache" },
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!active || !data) return;
+        if (Array.isArray(data.categories) && data.categories.length > 0) {
+          setCategories(data.categories);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [pathname]);
 
   if (pathname?.startsWith("/admin")) {
     return null;

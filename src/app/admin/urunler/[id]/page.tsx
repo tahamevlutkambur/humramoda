@@ -1,6 +1,6 @@
 import React from "react";
-import { notFound } from "next/navigation";
 import { getStoreData, getStoreProductById } from "@/lib/server/store";
+import { getPersistentStoreData } from "@/lib/server/persistent-store";
 import { ProductEditor } from "@/components/admin/ProductEditor";
 
 import { CATEGORIES, COLLECTIONS, PRODUCTS } from "@/lib/catalog";
@@ -15,6 +15,7 @@ interface EditProductPageProps {
 }
 
 export default async function EditProductPage({ params }: EditProductPageProps) {
+  await getPersistentStoreData().catch(() => {});
   const resolvedParams = await Promise.resolve(params);
   const rawId = resolvedParams?.id || "";
   const id = typeof rawId === "string" ? rawId.trim() : String(rawId || "").trim();
@@ -46,16 +47,13 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
         p.slug.toLowerCase() === decoded.toLowerCase()
     );
 
-  if (!product) {
-    notFound();
-  }
-
   const safeCategories = store.categories.length > 0 ? store.categories : CATEGORIES;
   const safeCollections = store.collections.length > 0 ? store.collections : COLLECTIONS;
 
   return (
     <ProductEditor
-      initialProduct={product}
+      productId={decoded}
+      initialProduct={product || undefined}
       categories={safeCategories}
       collections={safeCollections}
       isNew={false}

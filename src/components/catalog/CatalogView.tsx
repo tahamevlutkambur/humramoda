@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Container } from "../ui/Container";
 import { ProductCard } from "../product/ProductCard";
@@ -17,24 +17,76 @@ interface CatalogViewProps {
   initialProducts: ProductItem[];
   categories: CategoryItem[];
   currentCategorySlug?: string;
+  currentCollectionSlug?: string;
   breadcrumbs: BreadcrumbItem[];
 }
 
 export function CatalogView({
-  title,
-  description,
+  title: initialTitle,
+  description: initialDescription,
   initialProducts,
-  categories,
+  categories: initialCategories,
   currentCategorySlug,
+  currentCollectionSlug,
   breadcrumbs,
 }: CatalogViewProps) {
+  const [products, setProducts] = useState<ProductItem[]>(initialProducts);
+  const [categories, setCategories] = useState<CategoryItem[]>(initialCategories);
+  const [title, setTitle] = useState<string>(initialTitle);
+  const [description, setDescription] = useState<string | undefined>(initialDescription);
   const [sortOption, setSortOption] = useState<"newest" | "price-asc" | "price-desc">("newest");
   const [selectedColorSlug, setSelectedColorSlug] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/admin/products?public=1", {
+      cache: "no-store",
+      headers: { "Cache-Control": "no-cache" },
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!active || !data) return;
+        if (Array.isArray(data.categories) && data.categories.length > 0) {
+          setCategories(data.categories);
+          if (currentCategorySlug) {
+            const matchedCat = data.categories.find(
+              (c: CategoryItem) =>
+                c.slug.toLowerCase() === currentCategorySlug.toLowerCase() ||
+                c.id.toLowerCase() === currentCategorySlug.toLowerCase()
+            );
+            if (matchedCat) {
+              setTitle(matchedCat.name);
+              setDescription(matchedCat.description);
+            }
+          }
+        }
+        if (Array.isArray(data.products)) {
+          let list: ProductItem[] = data.products;
+          if (currentCategorySlug) {
+            const catSlug = currentCategorySlug.toLowerCase();
+            list = list.filter((p) => p.categorySlug.toLowerCase() === catSlug);
+          }
+          if (currentCollectionSlug) {
+            const colSlug = currentCollectionSlug.toLowerCase();
+            const tagged = list.filter((p) =>
+              p.collectionSlugs?.some((s) => s.toLowerCase() === colSlug)
+            );
+            list = tagged.length > 0 || colSlug !== "cok-satanlar" ? tagged : list;
+          }
+          setProducts(list);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      active = false;
+    };
+  }, [currentCategorySlug, currentCollectionSlug]);
 
   // Mevcut ürünlerdeki tüm benzersiz renkleri çıkar
   const availableColors = useMemo(() => {
     const map = new Map<string, { name: string; colorCode: string; slug: string }>();
-    initialProducts.forEach((p) => {
+    products.forEach((p) => {
       p.colors.forEach((c) => {
         if (!map.has(c.slug)) {
           map.set(c.slug, { name: c.name, colorCode: c.colorCode, slug: c.slug });
@@ -42,11 +94,11 @@ export function CatalogView({
       });
     });
     return Array.from(map.values());
-  }, [initialProducts]);
+  }, [products]);
 
   // Filtrelenmiş ve sıralanmış ürünler
   const filteredProducts = useMemo(() => {
-    let result = [...initialProducts];
+    let result = [...products];
 
     // Renk filtresi
     if (selectedColorSlug) {
@@ -63,7 +115,7 @@ export function CatalogView({
     }
 
     return result;
-  }, [initialProducts, selectedColorSlug, sortOption]);
+  }, [products, selectedColorSlug, sortOption]);
 
   const hasActiveFilters = selectedColorSlug !== null;
 

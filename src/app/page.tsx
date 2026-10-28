@@ -2,20 +2,20 @@ import React from "react";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
-import { ProductCard } from "@/components/product/ProductCard";
 import { HeroSection } from "@/components/home/HeroSection";
 import { CategoryTiles } from "@/components/home/CategoryTiles";
+import { HomeProductGrid } from "@/components/home/HomeProductGrid";
 import { VerticalVideoLooks } from "@/components/home/VerticalVideoLooks";
 import { BrandValues } from "@/components/home/BrandValues";
-import { getProducts } from "@/lib/catalog";
-import { getStoreHomepageContent } from "@/lib/server/store";
+import { getStoreData, getStoreHomepageContent } from "@/lib/server/store";
+import { getPersistentStoreData } from "@/lib/server/persistent-store";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default function HomePage() {
-  const newArrivals = getProducts({ collectionSlug: "yeni-sezon" });
-  const bestSellers = getProducts({ collectionSlug: "cok-satanlar" });
+export default async function HomePage() {
+  await getPersistentStoreData().catch(() => {});
+  const store = getStoreData();
   const homepage = getStoreHomepageContent();
 
   return (
@@ -24,7 +24,7 @@ export default function HomePage() {
       <HeroSection content={homepage.hero} />
 
       {/* 2. Kategori Kartları */}
-      <CategoryTiles />
+      <CategoryTiles initialCategories={store.categories} />
 
       {/* 3. Yeni Gelenler (New Arrivals) */}
       <section style={{ padding: "var(--hm-space-12) 0 var(--hm-space-16)" }}>
@@ -80,11 +80,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="hm-catalog-grid">
-            {newArrivals.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          <HomeProductGrid initialProducts={store.products} mode="new-arrivals" />
         </Container>
       </section>
 
@@ -216,11 +212,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="hm-catalog-grid">
-            {bestSellers.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          <HomeProductGrid initialProducts={store.products} mode="best-sellers" />
         </Container>
       </section>
 
