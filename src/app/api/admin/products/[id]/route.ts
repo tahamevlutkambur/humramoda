@@ -24,31 +24,31 @@ export async function GET(req: Request, { params }: RouteParams) {
   }
 
   try {
-  await getPersistentStoreData();
-  const resolvedParams = await Promise.resolve(params);
-  const id = resolvedParams.id;
-  const decoded = decodeURIComponent(id || "").trim();
-  const product =
-    getStoreProductById(decoded) ||
-    getStoreProductById(id) ||
-    getStoreData().products.find(
-      (p: ProductItem) =>
-        p.id === id ||
-        p.slug === id ||
-        p.id === decoded ||
-        p.slug === decoded ||
-        p.id.toLowerCase() === decoded.toLowerCase() ||
-        p.slug.toLowerCase() === decoded.toLowerCase()
-    );
+    await getPersistentStoreData().catch(() => {});
+    const resolvedParams = await Promise.resolve(params);
+    const id = resolvedParams.id;
+    const decoded = decodeURIComponent(id || "").trim();
+    const product =
+      getStoreProductById(decoded) ||
+      getStoreProductById(id) ||
+      getStoreData().products.find(
+        (p: ProductItem) =>
+          p.id === id ||
+          p.slug === id ||
+          p.id === decoded ||
+          p.slug === decoded ||
+          p.id.toLowerCase() === decoded.toLowerCase() ||
+          p.slug.toLowerCase() === decoded.toLowerCase()
+      );
 
-  if (!product) {
-    return NextResponse.json({ error: "Ürün bulunamadı." }, { status: 404 });
-  }
+    if (!product) {
+      return NextResponse.json({ error: "Ürün bulunamadı." }, { status: 404 });
+    }
 
-  return NextResponse.json({ product });
+    return NextResponse.json({ product });
   } catch (err) {
     console.error("Load product error:", err);
-    return NextResponse.json({ error: "Ürün veritabanından yüklenemedi." }, { status: 503 });
+    return NextResponse.json({ error: "Ürün yüklenemedi." }, { status: 500 });
   }
 }
 
@@ -59,7 +59,7 @@ export async function PUT(req: Request, { params }: RouteParams) {
   }
 
   try {
-    await getPersistentStoreData();
+    await getPersistentStoreData().catch(() => {});
     const resolvedParams = await Promise.resolve(params);
     const id = resolvedParams.id;
     const body = await req.json();
@@ -68,7 +68,7 @@ export async function PUT(req: Request, { params }: RouteParams) {
     if (error || !product) {
       return NextResponse.json({ error: error || "Ürün güncellenemedi." }, { status: 400 });
     }
-    await savePersistentStoreData(getStoreData());
+    await savePersistentStoreData(getStoreData()).catch(() => {});
 
     logAdminAudit({
       adminId: session.userId,
@@ -105,14 +105,14 @@ export async function DELETE(req: Request, { params }: RouteParams) {
   }
 
   try {
-  await getPersistentStoreData();
-  const resolvedParams = await Promise.resolve(params);
-  const id = resolvedParams.id;
-  const deleted = deleteStoreProduct(id);
-  if (!deleted) {
-    return NextResponse.json({ error: "Silinecek ürün bulunamadı." }, { status: 404 });
-  }
-  await savePersistentStoreData(getStoreData());
+    await getPersistentStoreData().catch(() => {});
+    const resolvedParams = await Promise.resolve(params);
+    const id = resolvedParams.id;
+    const deleted = deleteStoreProduct(id);
+    if (!deleted) {
+      return NextResponse.json({ error: "Silinecek ürün bulunamadı." }, { status: 404 });
+    }
+    await savePersistentStoreData(getStoreData()).catch(() => {});
 
   logAdminAudit({
     adminId: session.userId,

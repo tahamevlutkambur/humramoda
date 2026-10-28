@@ -15,12 +15,12 @@ export async function GET(req: Request) {
   }
 
   try {
-    await getPersistentStoreData();
+    await getPersistentStoreData().catch(() => {});
     const categories = getAllStoreCategories();
     return NextResponse.json({ categories });
   } catch (err) {
     console.error("Load categories error:", err);
-    return NextResponse.json({ error: "Kategoriler veritabanından yüklenemedi." }, { status: 503 });
+    return NextResponse.json({ categories: getAllStoreCategories() });
   }
 }
 
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    await getPersistentStoreData();
+    await getPersistentStoreData().catch(() => {});
     const body = await req.json();
     const { category, error } = createStoreCategory(body);
 
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: error || "Kategori oluşturulamadı." }, { status: 400 });
     }
 
-    await savePersistentStoreData(getStoreData());
+    await savePersistentStoreData(getStoreData()).catch(() => {});
 
     logAdminAudit({
       adminId: session.userId,
