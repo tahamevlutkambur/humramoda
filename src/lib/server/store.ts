@@ -86,6 +86,7 @@ export interface StoreSettings {
     debugOn?: "0" | "1";
   };
   launchResetV1Done?: boolean;
+  cleanupUnpaidDraftsV2?: boolean;
 }
 
 export interface AdminUser {
@@ -2309,7 +2310,10 @@ export function getFinancialReport(filters?: {
   endDate?: string;
 }): FinancialReport {
   const store = getStoreData();
-  let orders = store.orders || [];
+  // Yalnızca ödemesi tamamlanmış veya operasyonel olarak onaylanmış gerçek siparişler finansal rapora dahil edilir.
+  let orders = (store.orders || []).filter(
+    (o) => o.paymentStatus === "PAID" || o.operationalStatus === "CONFIRMED" || o.paymentStatus === "REFUNDED"
+  );
 
   if (filters?.startDate) {
     const start = new Date(filters.startDate).getTime();

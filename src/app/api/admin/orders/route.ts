@@ -12,7 +12,14 @@ export async function GET(req: Request) {
   }
 
   const store = await getPersistentStoreData();
-  const orders = [...(store.orders || [])].sort(
+  // GÜVENLİK & İŞ KURALI: Yalnızca ödemesi PayTR ile başarıyla tamamlanmış (PAID), iade edilmiş
+  // veya operasyonel olarak onaylanmış gerçek siparişler listelenir.
+  // Müşterinin sepet/ödeme adımında bıraktığı, ödemesi tamamlanmamış taslak oturumlar (PENDING)
+  // kesinlikle sipariş ve kargo listelerine düşmez.
+  const validOrders = (store.orders || []).filter(
+    (o) => o.paymentStatus === "PAID" || o.paymentStatus === "REFUNDED" || o.operationalStatus === "CONFIRMED"
+  );
+  const orders = [...validOrders].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
   return NextResponse.json({ orders });

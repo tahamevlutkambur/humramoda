@@ -62,16 +62,18 @@ export default async function AdminDashboardPage() {
   const totalVisitors = new Set(visitors.map(visitorKey)).size;
   const totalPageViews = visitors.length;
 
-  // 2. Sipariş Metrikleri
-  const allOrders = store.orders || [];
-  const confirmedOrders = allOrders.filter(
+  // 2. Sipariş Metrikleri (Yalnızca ödemesi tamamlanmış veya onaylanmış gerçek siparişler)
+  const validOrders = (store.orders || []).filter(
+    (o) => o.paymentStatus === "PAID" || o.paymentStatus === "REFUNDED" || o.operationalStatus === "CONFIRMED"
+  );
+  const confirmedOrders = validOrders.filter(
     (o) => o.paymentStatus === "PAID" || o.operationalStatus === "CONFIRMED"
   );
-  const pendingOrders = allOrders.filter(
-    (o) => o.paymentStatus === "PENDING" && o.operationalStatus !== "CANCELLED"
+  const awaitingShipmentOrders = confirmedOrders.filter(
+    (o) => o.shippingStatus === "AWAITING_SHIPMENT" || !o.shippingStatus
   );
   const totalRevenue = confirmedOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
-  const recentOrders = [...allOrders]
+  const recentOrders = [...validOrders]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 8);
 
@@ -175,15 +177,18 @@ export default async function AdminDashboardPage() {
           </Link>
         </div>
 
-        {/* Ödeme Bekleyen / Taslak Siparişler */}
+        {/* Kargo Bekleyen Siparişler */}
         <div className="hm-admin-card" style={{ padding: "1.25rem" }}>
-          <span className="hm-admin-label">Ödeme Bekleyen / Taslak</span>
+          <span className="hm-admin-label">Kargo Bekleyenler</span>
           <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "#D97706", marginTop: "0.25rem" }}>
-            {pendingOrders.length}
+            {awaitingShipmentOrders.length}
           </div>
-          <span style={{ fontSize: "0.75rem", color: "#718096", marginTop: "0.5rem", display: "block" }}>
-            Müşteri ödeme aşamasında / henüz ödemedi
-          </span>
+          <Link
+            href="/admin/siparisler"
+            style={{ fontSize: "0.75rem", color: "#D97706", textDecoration: "underline", marginTop: "0.5rem", display: "block" }}
+          >
+            Kargoya verilecek →
+          </Link>
         </div>
 
         {/* Katalogdaki Ürünler */}
@@ -241,7 +246,7 @@ export default async function AdminDashboardPage() {
               Son Siparişler
             </span>
             <span className="hm-admin-badge" style={{ backgroundColor: "#EDF2F7", color: "#2D3748" }}>
-              {allOrders.length} Sipariş
+              {validOrders.length} Sipariş
             </span>
           </div>
 

@@ -127,6 +127,16 @@ export async function getPersistentStoreData(): Promise<AppStoreData> {
         merged = true;
       }
 
+      // Canlı temizliği: Ödemesi tamamlanmamış (PENDING) eski test/taslak oturumları sipariş havuzundan temizle
+      if (!dbData.settings?.cleanupUnpaidDraftsV2) {
+        dbData.orders = (dbData.orders || []).filter(
+          (o) => o.paymentStatus === "PAID" || o.operationalStatus === "CONFIRMED"
+        );
+        dbData.settings = dbData.settings || {};
+        dbData.settings.cleanupUnpaidDraftsV2 = true;
+        merged = true;
+      }
+
       if (merged) {
         dbData.updatedAt = Date.now();
         await savePersistentStoreData(dbData).catch(() => {});
