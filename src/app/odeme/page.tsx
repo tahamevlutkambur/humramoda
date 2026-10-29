@@ -268,13 +268,15 @@ export default function CheckoutPage() {
         {iframeUrl ? (
           <div
             style={{
+              width: "100%",
               maxWidth: "820px",
               margin: "0 auto",
               backgroundColor: "#FFF",
-              padding: "2rem",
+              padding: "clamp(1rem, 3vw, 2rem)",
               borderRadius: "12px",
               boxShadow: "0 10px 25px rgba(0,0,0,0.06)",
               border: "1px solid #E2E8F0",
+              boxSizing: "border-box",
             }}
           >
             <div
@@ -363,9 +365,9 @@ export default function CheckoutPage() {
           </div>
         ) : (
           /* Sipariş Bilgi Formu ve Sepet Özeti */
-          <div className="hm-checkout-layout flex flex-col lg:grid lg:grid-cols-12 gap-6 w-full max-w-6xl mx-auto">
+          <div className="hm-checkout-layout">
             {/* Sol Taraf: Teslimat Bilgileri Formu */}
-            <div className="hm-checkout-card w-full lg:col-span-7">
+            <div className="hm-checkout-card">
               <h2
                 style={{
                   fontSize: "1.125rem",
@@ -506,7 +508,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* Sağ Taraf: Sipariş Özeti ve Ürünler */}
-            <div className="w-full lg:col-span-5">
+            <div className="hm-checkout-summary-wrap">
               <div className="hm-checkout-card">
                 <h2 style={{ fontSize: "1.125rem", fontWeight: 600, color: "#1A202C", marginBottom: "1.25rem" }}>
                   Sipariş Özeti ({items.length} Kalem)
