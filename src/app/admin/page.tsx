@@ -5,6 +5,7 @@ import { getStoreData } from "@/lib/server/store";
 import { formatCurrency } from "@/lib/formatters";
 import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
 import { getPersistentStoreData } from "@/lib/server/persistent-store";
+import { getSiteActivityLogs } from "@/lib/server/logger";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -15,13 +16,52 @@ export default async function AdminDashboardPage() {
     redirect("/admin/login?from=/admin");
   }
 
-  await getPersistentStoreData().catch(() => {});
-  const store = getStoreData();
-  const visitors = (store.siteActivityLogs || []).filter((entry: any) => entry.eventType === "PAGE_VIEW");
-  const visitorKey = (entry: any) => entry.sessionId ? `session:${entry.sessionId}` : `ip:${entry.ipAddress || "unknown"}`;
-  const todayKey = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-  const todayVisitors = new Set(visitors.filter((entry: any) => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(entry.timestamp)) === todayKey).map(visitorKey)).size;
+  const store = (await getPersistentStoreData().catch(() => null)) || getStoreData();
+
+  // Ziyaretçi loglarını hem store'dan hem logger dosya/belleğinden birleştir
+  const loggerEntries = getSiteActivityLogs({ limit: 5000 }).logs || [];
+  const storeEntries = store.siteActivityLogs || [];
+  const mergedMap = new Map<string, any>();
+  for (const entry of [...storeEntries, ...loggerEntries]) {
+    if (entry && entry.id) {
+      mergedMap.set(entry.id, entry);
+    }
+  }
+  const allLogs = Array.from(mergedMap.values());
+  const visitors = allLogs.filter((entry: any) => entry.eventType === "PAGE_VIEW");
+  const visitorKey = (entry: any) =>
+    entry.sessionId ? `session:${entry.sessionId}` : `ip:${entry.ipAddress || "unknown"}`;
+
+  const now = new Date();
+  const todayKey = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Istanbul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+
+  const todayVisitors = new Set(
+    visitors
+      .filter((entry: any) => {
+        try {
+          return (
+            new Intl.DateTimeFormat("en-CA", {
+              timeZone: "Europe/Istanbul",
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+            }).format(new Date(entry.timestamp)) === todayKey
+          );
+        } catch {
+          return false;
+        }
+      })
+      .map(visitorKey)
+  ).size;
+
   const totalVisitors = new Set(visitors.map(visitorKey)).size;
+  const totalPageViews = visitors.length;
+
   const products = store.products;
   const categories = store.categories;
   const collections = store.collections;
@@ -75,7 +115,7 @@ export default async function AdminDashboardPage() {
             Mağaza Genel Bakış
           </h1>
           <p style={{ fontSize: "0.8125rem", color: "#718096", marginTop: "2px" }}>
-            Hümra Moda vitrin ve envanter durumunun gerçek zamanlı özeti.
+            Hümra Butik vitrin ve envanter durumunun gerçek zamanlı özeti.
           </p>
         </div>
 
@@ -148,22 +188,36 @@ export default async function AdminDashboardPage() {
           </span>
         </div>
 
+        {/* Bugünkü Ziyaretçi */}
         <div className="hm-admin-card" style={{ padding: "1.25rem" }}>
           <span className="hm-admin-label">Bugünkü Ziyaretçi</span>
-          <div style={{ fontSize: "1.875rem", fontWeight: 700, color: "#1A202C", marginTop: "0.25rem" }}>{todayVisitors}</div>
-          <span style={{ fontSize: "0.75rem", color: "#718096", marginTop: "0.5rem", display: "block" }}>Tekil oturum veya IP</span>
+          <div style={{ fontSize: "1.875rem", fontWeight: 700, color: "#1A202C", marginTop: "0.25rem" }}>
+            {todayVisitors}
+          </div>
+          <span style={{ fontSize: "0.75rem", color: "#718096", marginTop: "0.5rem", display: "block" }}>
+            Tekil oturum / IP (Bugün)
+          </span>
         </div>
+
+        {/* Toplam Ziyaretçi */}
         <div className="hm-admin-card" style={{ padding: "1.25rem" }}>
           <span className="hm-admin-label">Toplam Ziyaretçi</span>
-          <div style={{ fontSize: "1.875rem", fontWeight: 700, color: "#1A202C", marginTop: "0.25rem" }}>{totalVisitors}</div>
-          <span style={{ fontSize: "0.75rem", color: "#718096", marginTop: "0.5rem", display: "block" }}>Tekil oturum veya IP</span>
+          <div style={{ fontSize: "1.875rem", fontWeight: 700, color: "#1A202C", marginTop: "0.25rem" }}>
+            {totalVisitors}
+          </div>
+          <Link
+            href="/admin/loglar/site"
+            style={{ fontSize: "0.75rem", color: "#8B2635", textDecoration: "underline", marginTop: "0.5rem", display: "block" }}
+          >
+            {totalPageViews} sayfa görüntüleme →
+          </Link>
         </div>
 
         {/* Ücretsiz Kargo Baremi */}
         <div className="hm-admin-card" style={{ padding: "1.25rem" }}>
           <span className="hm-admin-label">Ücretsiz Kargo Baremi</span>
           <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "#1A202C", marginTop: "0.25rem" }}>
-            {formatCurrency(store.settings.freeShippingThreshold)}
+            {formatCurrency(store.settings?.freeShippingThreshold || 3500)}
           </div>
           <Link
             href="/admin/ayarlar"
@@ -266,23 +320,22 @@ export default async function AdminDashboardPage() {
         style={{
           padding: "1.25rem",
           backgroundColor: "#F7FAFC",
-          borderLeft: "4px solid #8B2635",
+          borderLeft: "4px solid #2E7D32",
         }}
       >
         <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}>
-          <div style={{ color: "#8B2635", marginTop: "2px" }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
+          <div style={{ color: "#2E7D32", marginTop: "2px" }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
             </svg>
           </div>
           <div>
             <h4 style={{ fontSize: "0.875rem", fontWeight: 600, color: "#1A202C" }}>
-              Faz 4 Durumu: Envanter, İçerik &amp; Katalog Yönetimi Aktif
+              Canlı Mağaza &amp; Gerçek PayTR Ödeme Sistemi Aktif
             </h4>
             <p style={{ fontSize: "0.8125rem", color: "#4A5568", marginTop: "4px", lineHeight: 1.5 }}>
-              Yönetici paneliniz ürün ekleme, fiyat değiştirme, renge özel galeri yönetimi ve vitrin içeriklerini güncellemeye tam hazırdır. Gerçek PayTR ödeme altyapısı ve canlı müşteri sipariş akışı Faz 5 kapsamında entegre edilecektir.
+              Mağazanız gerçek kredi kartı tahsilatına hazırdır. Önceki test siparişleri ve iadeler temizlenmiştir. Yeni siparişler doğrudan Yönetici ve Kargo panellerine gerçek zamanlı düşecektir.
             </p>
           </div>
         </div>

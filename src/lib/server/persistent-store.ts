@@ -113,6 +113,20 @@ export async function getPersistentStoreData(): Promise<AppStoreData> {
         }
       }
 
+      // Canlıya geçiş temizliği: Eski test siparişleri, iadeleri ve kargoları sıfırla (bir kerelik)
+      if (!dbData.settings?.launchResetV1Done) {
+        dbData.orders = [];
+        dbData.returnRequests = [];
+        dbData.shipments = [];
+        dbData.settings = dbData.settings || {};
+        dbData.settings.launchResetV1Done = true;
+        if (dbData.settings.paytr) {
+          dbData.settings.paytr.testMode = "0";
+          dbData.settings.paytr.debugOn = "0";
+        }
+        merged = true;
+      }
+
       if (merged) {
         dbData.updatedAt = Date.now();
         await savePersistentStoreData(dbData).catch(() => {});

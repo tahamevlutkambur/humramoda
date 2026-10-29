@@ -63,12 +63,12 @@ export function getPayTRConfig(): PayTRConfig {
   const testMode = (
     process.env.PAYTR_TEST_MODE ||
     (hasCustomCredentials ? paytrSettings?.testMode : "") ||
-    "1"
+    "0"
   ).trim();
   const debugOn = (
     process.env.PAYTR_DEBUG_ON ||
     (hasCustomCredentials ? paytrSettings?.debugOn : "") ||
-    "1"
+    "0"
   ).trim();
   const appBaseUrl = (
     process.env.NEXT_PUBLIC_APP_URL ||

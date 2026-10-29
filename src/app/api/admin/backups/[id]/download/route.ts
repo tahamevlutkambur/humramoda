@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
 import { requireAdminRole } from "@/lib/server/session-guard";
+import { findBackupFilePath } from "@/lib/server/backup";
 
 export async function GET(
   req: Request,
@@ -13,19 +14,19 @@ export async function GET(
   }
 
   const { id } = await params;
-  const safeId = path.basename(id).replace(/[^a-zA-Z0-9._-]/g, "");
-  const filePath = path.join(process.cwd(), "data", "backups", `${safeId}.json`);
+  const filePath = findBackupFilePath(id);
 
-  if (!fs.existsSync(filePath)) {
+  if (!filePath || !fs.existsSync(filePath)) {
     return NextResponse.json({ error: "Yedek dosyası bulunamadı." }, { status: 404 });
   }
 
   const fileContent = fs.readFileSync(filePath, "utf-8");
+  const fileName = path.basename(filePath);
 
   return new NextResponse(fileContent, {
     headers: {
       "Content-Type": "application/json",
-      "Content-Disposition": `attachment; filename="${safeId}.json"`,
+      "Content-Disposition": `attachment; filename="${fileName}"`,
     },
   });
 }

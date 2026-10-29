@@ -1,7 +1,8 @@
 import fs from "fs";
 import path from "path";
+import os from "os";
 import crypto from "crypto";
-import { getStoreData, AppStoreData, StoreOrder } from "./store";
+import { getStoreData, AppStoreData, StoreOrder, usePersistentStoreData } from "./store";
 import { logAdminAudit } from "./logger";
 
 export type BackupType = "MANUAL" | "AUTO" | "SAFETY";
@@ -34,13 +35,59 @@ export interface BackupFileContent {
 }
 
 const DATA_DIR = path.join(process.cwd(), "data");
-const BACKUPS_DIR = path.join(DATA_DIR, "backups");
+const REPO_BACKUPS_DIR = path.join(DATA_DIR, "backups");
+const TMP_BACKUPS_DIR = path.join(os.tmpdir(), "humra-backups");
 const STORE_FILE = path.join(DATA_DIR, "store.json");
 
-function ensureBackupsDir() {
-  if (!fs.existsSync(BACKUPS_DIR)) {
-    fs.mkdirSync(BACKUPS_DIR, { recursive: true });
+function isDirectoryWritable(dir: string): boolean {
+  try {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const testFile = path.join(dir, `.write-test-${Date.now()}`);
+    fs.writeFileSync(testFile, "test", "utf-8");
+    fs.unlinkSync(testFile);
+    return true;
+  } catch {
+    return false;
   }
+}
+
+export function getBackupsDir(): string {
+  if (isDirectoryWritable(REPO_BACKUPS_DIR)) {
+    return REPO_BACKUPS_DIR;
+  }
+  if (!fs.existsSync(TMP_BACKUPS_DIR)) {
+    try {
+      fs.mkdirSync(TMP_BACKUPS_DIR, { recursive: true });
+    } catch {}
+  }
+  return TMP_BACKUPS_DIR;
+}
+
+export function getAllBackupsDirs(): string[] {
+  const dirs = [REPO_BACKUPS_DIR, TMP_BACKUPS_DIR];
+  return dirs.filter((d) => fs.existsSync(/*turbopackIgnore: true*/ d));
+}
+
+export function findBackupFilePath(backupId: string): string | null {
+  const safeId = path.basename(backupId).replace(/[^a-zA-Z0-9._-]/g, "");
+  const fileName = safeId.endsWith(".json") ? safeId : `${safeId}.json`;
+  for (const dir of getAllBackupsDirs()) {
+    const full = path.join(dir, fileName);
+    if (fs.existsSync(/*turbopackIgnore: true*/ full)) {
+      return full;
+    }
+  }
+  return null;
+}
+
+function ensureBackupsDir(): string {
+  const dir = getBackupsDir();
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  return dir;
 }
 
 /**
@@ -58,7 +105,7 @@ export function createBackup(
   description?: string,
   adminInfo?: { adminId: string; adminEmail: string; ip?: string }
 ): { manifest?: BackupManifest; error?: string } {
-  ensureBackupsDir();
+  const targetDir = ensureBackupsDir();
 
   try {
     const storeData = getStoreData();
@@ -66,7 +113,7 @@ export function createBackup(
     const cleanDateStr = timestamp.replace(/[:.]/g, "-");
     const id = `backup-${type.toLowerCase()}-${cleanDateStr}`;
     const fileName = `${id}.json`;
-    const filePath = path.join(BACKUPS_DIR, fileName);
+    const filePath = path.join(targetDir, fileName);
 
     const payload: BackupFileContent = {
       manifest: {
@@ -101,7 +148,7 @@ export function createBackup(
     const finalRaw = JSON.stringify(finalFileContent, null, 2);
     fs.writeFileSync(filePath, finalRaw, "utf-8");
 
-    const stats = fs.statSync(filePath);
+    const stats = fs.statSync(/*turbopackIgnore: true*/ filePath);
 
     const manifest: BackupManifest = {
       id,
@@ -148,58 +195,62 @@ export function listBackups(): BackupManifest[] {
   ensureBackupsDir();
 
   try {
-    const files = fs.readdirSync(BACKUPS_DIR).filter((f) => f.endsWith(".json"));
     const manifests: BackupManifest[] = [];
     const seenIds = new Set<string>();
 
-    for (const file of files) {
-      const fullPath = path.join(BACKUPS_DIR, file);
-      const fileBaseName = path.basename(file, ".json");
-      if (seenIds.has(fileBaseName)) continue;
-      seenIds.add(fileBaseName);
+    for (const dir of getAllBackupsDirs()) {
+      if (!fs.existsSync(dir)) continue;
+      const files = fs.readdirSync(dir).filter((f) => f.endsWith(".json"));
 
-      try {
-        const stats = fs.statSync(fullPath);
-        const raw = fs.readFileSync(fullPath, "utf-8");
-        const parsed = JSON.parse(raw);
+      for (const file of files) {
+        const fullPath = path.join(dir, file);
+        const fileBaseName = path.basename(file, ".json");
+        if (seenIds.has(fileBaseName)) continue;
+        seenIds.add(fileBaseName);
 
-        const storedChecksum = parsed.checksum;
-        const serializedData = JSON.stringify(parsed.data || {});
-        const computed = computeSha256(serializedData);
-        const isValid = storedChecksum === computed && !!parsed.data?.products;
+        try {
+          const stats = fs.statSync(fullPath);
+          const raw = fs.readFileSync(fullPath, "utf-8");
+          const parsed = JSON.parse(raw);
 
-        manifests.push({
-          id: fileBaseName,
-          createdAt: parsed.manifest?.createdAt || stats.mtime.toISOString(),
-          type: parsed.manifest?.type || "MANUAL",
-          description: parsed.manifest?.description || "Açıklama belirtilmedi",
-          version: parsed.manifest?.version || "1.0",
-          sha256Checksum: storedChecksum || computed,
-          sizeBytes: stats.size,
-          itemCounts: parsed.manifest?.itemCounts || {
-            products: parsed.data?.products?.length || 0,
-            categories: parsed.data?.categories?.length || 0,
-            collections: parsed.data?.collections?.length || 0,
-            orders: parsed.data?.orders?.length || 0,
-            campaigns: parsed.data?.campaigns?.length || 0,
-            admins: parsed.data?.adminUsers?.length || 0,
-          },
-          isValid,
-          fileName: file,
-        });
-      } catch {
-        manifests.push({
-          id: fileBaseName,
-          createdAt: new Date().toISOString(),
-          type: "MANUAL",
-          description: "Bozuk veya okunamayan yedek dosyası",
-          version: "Bilinmiyor",
-          sha256Checksum: "GEÇERSİZ",
-          sizeBytes: 0,
-          itemCounts: { products: 0, categories: 0, collections: 0, orders: 0, campaigns: 0, admins: 0 },
-          isValid: false,
-          fileName: file,
-        });
+          const storedChecksum = parsed.checksum;
+          const serializedData = JSON.stringify(parsed.data || {});
+          const computed = computeSha256(serializedData);
+          const isValid = storedChecksum === computed && !!parsed.data?.products;
+
+          manifests.push({
+            id: fileBaseName,
+            createdAt: parsed.manifest?.createdAt || stats.mtime.toISOString(),
+            type: parsed.manifest?.type || "MANUAL",
+            description: parsed.manifest?.description || "Açıklama belirtilmedi",
+            version: parsed.manifest?.version || "1.0",
+            sha256Checksum: storedChecksum || computed,
+            sizeBytes: stats.size,
+            itemCounts: parsed.manifest?.itemCounts || {
+              products: parsed.data?.products?.length || 0,
+              categories: parsed.data?.categories?.length || 0,
+              collections: parsed.data?.collections?.length || 0,
+              orders: parsed.data?.orders?.length || 0,
+              campaigns: parsed.data?.campaigns?.length || 0,
+              admins: parsed.data?.adminUsers?.length || 0,
+            },
+            isValid,
+            fileName: file,
+          });
+        } catch {
+          manifests.push({
+            id: fileBaseName,
+            createdAt: new Date().toISOString(),
+            type: "MANUAL",
+            description: "Bozuk veya okunamayan yedek dosyası",
+            version: "Bilinmiyor",
+            sha256Checksum: "GEÇERSİZ",
+            sizeBytes: 0,
+            itemCounts: { products: 0, categories: 0, collections: 0, orders: 0, campaigns: 0, admins: 0 },
+            isValid: false,
+            fileName: file,
+          });
+        }
       }
     }
 
@@ -225,15 +276,15 @@ export function verifyBackupById(backupId: string): {
 } {
   ensureBackupsDir();
   const safeId = path.basename(backupId).replace(/[^a-zA-Z0-9._-]/g, "");
-  const filePath = path.join(BACKUPS_DIR, `${safeId}.json`);
+  const filePath = findBackupFilePath(backupId);
 
-  if (!fs.existsSync(filePath)) {
+  if (!filePath || !fs.existsSync(/*turbopackIgnore: true*/ filePath)) {
     return { isValid: false, valid: false, error: "Yedek dosyası bulunamadı." };
   }
 
   try {
     const stats = fs.statSync(filePath);
-    const raw = fs.readFileSync(filePath, "utf-8");
+    const raw = fs.readFileSync(/*turbopackIgnore: true*/ filePath, "utf-8");
     const parsed = JSON.parse(raw);
 
     const storedChecksum = parsed.checksum;
@@ -303,8 +354,10 @@ export function restoreBackupById(
     return { success: false, error: check.error || "Bozuk veya geçersiz yedek geri yüklenemez." };
   }
 
-  const safeId = path.basename(backupId).replace(/[^a-zA-Z0-9._-]/g, "");
-  const filePath = path.join(BACKUPS_DIR, `${safeId}.json`);
+  const filePath = findBackupFilePath(backupId);
+  if (!filePath || !fs.existsSync(filePath)) {
+    return { success: false, error: "Yedek dosyası bulunamadı." };
+  }
 
   try {
     // 2. Mevcut durumun otomatik güvenlik yedeğini al
@@ -376,10 +429,15 @@ export function restoreBackupById(
       }
     }
 
-    // 5. Atomik Kayıt: Önce geçici dosyaya yaz, sonra rename yap
-    const tempFile = path.join(DATA_DIR, `store.json.tmp-${Date.now()}`);
-    fs.writeFileSync(tempFile, JSON.stringify(restoredData, null, 2), "utf-8");
-    fs.renameSync(tempFile, STORE_FILE);
+    // 5. Kayıt: Yerel dosyaya yazılabilirse atomik kaydet, ayrıca bellek içi store'u güncelle
+    try {
+      const tempFile = path.join(DATA_DIR, `store.json.tmp-${Date.now()}`);
+      fs.writeFileSync(tempFile, JSON.stringify(restoredData, null, 2), "utf-8");
+      fs.renameSync(tempFile, STORE_FILE);
+    } catch (fsErr) {
+      console.warn("Local store.json write skipped or read-only:", fsErr);
+    }
+    usePersistentStoreData(restoredData);
 
     // 6. Başarılı geri yükleme denetim kaydı (Audit log)
     logAdminAudit({
@@ -446,8 +504,10 @@ export function dryRunRestore(
     return { success: false, error: check.error || "Bozuk veya geçersiz yedek dosyası." };
   }
 
-  const safeId = path.basename(backupId).replace(/[^a-zA-Z0-9._-]/g, "");
-  const filePath = path.join(BACKUPS_DIR, `${safeId}.json`);
+  const filePath = findBackupFilePath(backupId);
+  if (!filePath || !fs.existsSync(filePath)) {
+    return { success: false, error: "Yedek dosyası bulunamadı." };
+  }
 
   try {
     const raw = fs.readFileSync(filePath, "utf-8");

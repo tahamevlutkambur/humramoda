@@ -472,6 +472,19 @@ export function getSiteActivityLogs(filters?: {
     if (!map.has(l.id)) map.set(l.id, l);
   });
 
+  // 4. Store snapshot'ındaki aktiviteleri ekle
+  try {
+    const { getStoreData } = require("./store");
+    const store = getStoreData();
+    if (Array.isArray(store?.siteActivityLogs)) {
+      store.siteActivityLogs.forEach((l: SiteActivityLogEntry) => {
+        if (l && l.id && !map.has(l.id)) {
+          map.set(l.id, l);
+        }
+      });
+    }
+  } catch {}
+
   let list = Array.from(map.values()).sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );

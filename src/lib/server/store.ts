@@ -84,6 +84,7 @@ export interface StoreSettings {
     testMode?: "0" | "1";
     debugOn?: "0" | "1";
   };
+  launchResetV1Done?: boolean;
 }
 
 export interface AdminUser {
@@ -415,8 +416,8 @@ const DEFAULT_SETTINGS: StoreSettings = {
     merchantId: "768079",
     merchantKey: "D3gr1fBEUkkgjRaR",
     merchantSalt: "mzAPqkRnYqakr2Qo",
-    testMode: "1",
-    debugOn: "1",
+    testMode: "0",
+    debugOn: "0",
   },
 };
 
