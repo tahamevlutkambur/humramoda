@@ -1,5 +1,5 @@
 {
-  "updatedAt": 1793276449641,
+  "updatedAt": 1793277664571,
   "products": [
     {
       "id": "prod-1",
@@ -797,7 +797,129 @@
       "createdAt": "2026-10-27T00:00:00.000Z"
     }
   ],
-  "orders": [],
+  "orders": [
+    {
+      "id": "ord-1793275614913-3859",
+      "orderNumber": "HM-20261029-3859",
+      "customerFullName": "deneme",
+      "customerEmail": "taha023401@gmail.com",
+      "customerPhone": "05068505550",
+      "shippingAddress": {
+        "city": "İstanbul",
+        "district": "Bağcılar",
+        "fullAddress": "Çınar mah 788. sokak no: 8"
+      },
+      "operationalStatus": "CONFIRMED",
+      "paymentStatus": "PAID",
+      "paymentProvider": "PAYTR",
+      "paidAt": "2026-10-29T12:20:00.000Z",
+      "confirmedAt": "2026-10-29T12:20:00.000Z",
+      "subtotal": 199,
+      "discountAmount": 0,
+      "shippingAmount": 0,
+      "totalAmount": 199,
+      "totalKurus": 19900,
+      "items": [
+        {
+          "id": "ord-item-3859-1",
+          "productId": "prod-1793199201268",
+          "productName": "Gömlek",
+          "variantId": "var-fuhse-m",
+          "colorName": "FUHŞE",
+          "sizeName": "M",
+          "sku": "FUHŞE-M",
+          "unitPrice": 199,
+          "quantity": 1,
+          "totalPrice": 199,
+          "costPriceSnapshot": 80
+        }
+      ],
+      "customerNotes": "denemedir",
+      "createdAt": "2026-10-29T12:15:00.000Z",
+      "updatedAt": "2026-10-29T12:20:00.000Z",
+      "stockDeducted": true,
+      "shippingStatus": "AWAITING_SHIPMENT",
+      "refundedAmount": 0
+    },
+    {
+      "id": "ord-101",
+      "orderNumber": "HM-20261021-0001",
+      "customerFullName": "Zeynep Kaya",
+      "customerEmail": "zeynep.kaya@example.com",
+      "customerPhone": "+90 532 111 22 33",
+      "shippingAddress": {
+        "city": "İstanbul",
+        "district": "Kadıköy",
+        "fullAddress": "Moda Cad. No: 42 D: 5",
+        "postalCode": "34710"
+      },
+      "operationalStatus": "CONFIRMED",
+      "paymentStatus": "PAID",
+      "subtotal": 1749,
+      "discountAmount": 174.9,
+      "shippingAmount": 0,
+      "totalAmount": 1574.1,
+      "totalKurus": 157410,
+      "items": [
+        {
+          "id": "ord-item-1",
+          "productId": "prod-1",
+          "productName": "Qapitone Garnili Scuba İkili Takım",
+          "variantId": "var-1",
+          "colorName": "Siyah",
+          "sizeName": "1 Beden (36-38)",
+          "sku": "HM-SCB-SYH-B1",
+          "unitPrice": 1574.1,
+          "quantity": 1,
+          "totalPrice": 1574.1,
+          "costPriceSnapshot": 650
+        }
+      ],
+      "customerNotes": "Lütfen kapıda arayınız.",
+      "createdAt": "2026-10-21T10:15:00Z",
+      "updatedAt": "2026-10-21T10:20:00Z",
+      "confirmedAt": "2026-10-21T10:20:00Z",
+      "stockDeducted": true
+    },
+    {
+      "id": "ord-102",
+      "orderNumber": "HM-20261021-0002",
+      "customerFullName": "Elif Demir",
+      "customerEmail": "elif.demir@example.com",
+      "customerPhone": "+90 544 222 33 44",
+      "shippingAddress": {
+        "city": "Ankara",
+        "district": "Çankaya",
+        "fullAddress": "Tunalı Hilmi Cad. No: 18",
+        "postalCode": "06680"
+      },
+      "operationalStatus": "PENDING",
+      "paymentStatus": "UNPAID",
+      "subtotal": 2190,
+      "discountAmount": 0,
+      "shippingAmount": 0,
+      "totalAmount": 2190,
+      "totalKurus": 219000,
+      "items": [
+        {
+          "id": "ord-item-2",
+          "productId": "prod-2",
+          "productName": "Kruvaze Kruşe Detaylı Yün Karışımlı Trençkot",
+          "variantId": "var-2-1",
+          "colorName": "Camel",
+          "sizeName": "38-40",
+          "sku": "HM-TRN-CML-38",
+          "unitPrice": 2190,
+          "quantity": 1,
+          "totalPrice": 2190,
+          "costPriceSnapshot": 890
+        }
+      ],
+      "createdAt": "2026-10-21T14:30:00Z",
+      "updatedAt": "2026-10-21T14:30:00Z",
+      "stockDeducted": false
+    }
+  ],
   "shipments": [
     {
       "id": "shp-a8e1fe03092e",
@@ -2089,6 +2211,85 @@
       "idempotencyKey": "ORDER_CANCELLED:HM-20261028-4102:default",
       "sentAt": "2026-10-28T06:09:09.166Z",
       "createdAt": "2026-10-28T06:09:09.166Z"
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": "audit-1793277663656-10903b61",
+      "timestamp": "2026-10-29T12:41:03.656Z",
+      "adminId": "adm-pwd-test-1793277663452",
+      "adminEmail": "pwd-rotation-1793277663452@humramoda.local",
+      "action": "ADMIN_PASSWORD_CHANGED",
+      "targetType": "AUTH",
+      "targetId": "adm-pwd-test-1793277663452",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "1899e941c877",
+      "details": {
+        "reason": "PASSWORD_ROTATION_SUCCESS"
+      }
+    },
+    {
+      "id": "audit-1793277516407-d19df56c",
+      "timestamp": "2026-10-29T12:38:36.407Z",
+      "adminId": "adm-pwd-test-1793277516181",
+      "adminEmail": "pwd-rotation-1793277516181@humramoda.local",
+      "action": "ADMIN_PASSWORD_CHANGED",
+      "targetType": "AUTH",
+      "targetId": "adm-pwd-test-1793277516181",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "625701b56a16",
+      "details": {
+        "reason": "PASSWORD_ROTATION_SUCCESS"
+      }
+    },
+    {
+      "id": "audit-3859-paid",
+      "timestamp": "2026-10-29T12:20:00.000Z",
+      "adminId": "system-paytr",
+      "adminEmail": "paytr-webhook@humramoda.com",
+      "action": "PAYMENT_SUCCESS",
+      "targetType": "PAYMENT",
+      "targetId": "HM-20261029-3859",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "details": {
+        "orderNumber": "HM-20261029-3859",
+        "totalAmount": 199,
+        "paymentProvider": "PAYTR",
+        "customer": "deneme (taha023401@gmail.com)"
+      }
+    },
+    {
+      "id": "audit-3859-init",
+      "timestamp": "2026-10-29T12:15:00.000Z",
+      "adminId": "customer",
+      "adminEmail": "taha023401@gmail.com",
+      "action": "PAYMENT_INITIATED",
+      "targetType": "PAYMENT",
+      "targetId": "HM-20261029-3859",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "details": {
+        "orderNumber": "HM-20261029-3859",
+        "totalAmount": 199,
+        "itemsCount": 1
+      }
+    },
+    {
+      "id": "audit-init-settings",
+      "timestamp": "2026-10-29T11:00:00.000Z",
+      "adminId": "admin-1",
+      "adminEmail": "admin@humrabutik.com",
+      "action": "STORE_SETTINGS_UPDATED",
+      "targetType": "SETTINGS",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "details": {
+        "storeName": "Hümra Butik",
+        "whatsapp": "+90 530 527 00 72"
+      }
     }
   ]
 }

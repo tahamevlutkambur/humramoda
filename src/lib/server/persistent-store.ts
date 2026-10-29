@@ -95,6 +95,41 @@ export async function getPersistentStoreData(): Promise<AppStoreData> {
         }
       }
 
+      // Siparişleri koru ve çift yönlü birleştir (merge)
+      if (Array.isArray(localData.orders) && localData.orders.length > 0) {
+        dbData.orders = dbData.orders || [];
+        const dbOrderKeys = new Set(dbData.orders.map((o) => o.id || o.orderNumber));
+        let ordersMerged = false;
+        for (const lo of localData.orders) {
+          const key = lo.id || lo.orderNumber;
+          if (!dbOrderKeys.has(key)) {
+            dbData.orders.unshift(lo);
+            ordersMerged = true;
+          }
+        }
+        if (ordersMerged) {
+          dbData.updatedAt = Date.now();
+          await savePersistentStoreData(dbData).catch(() => {});
+        }
+      }
+
+      // Denetim loglarını koru ve birleştir (merge)
+      if (Array.isArray(localData.auditLogs) && localData.auditLogs.length > 0) {
+        dbData.auditLogs = dbData.auditLogs || [];
+        const dbLogIds = new Set(dbData.auditLogs.map((l: any) => l.id));
+        let logsMerged = false;
+        for (const ll of localData.auditLogs) {
+          if (!dbLogIds.has(ll.id)) {
+            dbData.auditLogs.push(ll);
+            logsMerged = true;
+          }
+        }
+        if (logsMerged) {
+          dbData.updatedAt = Date.now();
+          await savePersistentStoreData(dbData).catch(() => {});
+        }
+      }
+
       // WhatsApp numarasını ve mağaza ayarlarını senkronize et
       if (localData.settings?.whatsapp && dbData.settings?.whatsapp !== localData.settings.whatsapp) {
         dbData.settings = dbData.settings || {};

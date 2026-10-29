@@ -322,6 +322,7 @@ export interface AppStoreData {
   shipments?: ShipmentRecord[];
   returnRequests?: ReturnRequest[];
   notifications?: CustomerNotification[];
+  auditLogs?: any[];
 }
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -676,6 +677,7 @@ export function getStoreData(): AppStoreData {
       shipments: parsed.shipments || [],
       returnRequests: parsed.returnRequests || [],
       notifications: parsed.notifications || [],
+      auditLogs: parsed.auditLogs || [],
     };
 
     storeState.inMemoryStore = data;

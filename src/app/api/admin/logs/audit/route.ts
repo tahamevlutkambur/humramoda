@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
 import { requireAdminRole } from "@/lib/server/session-guard";
 import { getAdminAuditLogs } from "@/lib/server/logger";
+import { getPersistentStoreData } from "@/lib/server/persistent-store";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
   const auth = await requireAdminRole(req, ["ADMIN"]);
   if (auth.errorResponse) {
     return auth.errorResponse;
   }
+
+  await getPersistentStoreData().catch(() => {});
 
   try {
     const { searchParams } = new URL(req.url);

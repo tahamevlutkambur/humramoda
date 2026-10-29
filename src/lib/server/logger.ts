@@ -254,7 +254,19 @@ export function logAdminAudit(entry: Omit<AdminAuditLogEntry, "id" | "timestamp"
     inMemoryAuditLogs.pop();
   }
 
-  // 2. Diske / /tmp dizinine yazmayı dene
+  // 2. Global mağaza deposuna ekle (Vercel sunucusuz / PostgreSQL snapshot kalıcılığı)
+  try {
+    const state = (globalThis as unknown as { __humraStoreState?: { inMemoryStore?: { auditLogs?: AdminAuditLogEntry[] } } }).__humraStoreState;
+    if (state?.inMemoryStore) {
+      state.inMemoryStore.auditLogs = state.inMemoryStore.auditLogs || [];
+      state.inMemoryStore.auditLogs.unshift(record);
+      if (state.inMemoryStore.auditLogs.length > 500) {
+        state.inMemoryStore.auditLogs = state.inMemoryStore.auditLogs.slice(0, 500);
+      }
+    }
+  } catch {}
+
+  // 3. Diske / /tmp dizinine yazmayı dene
   try {
     let list: AdminAuditLogEntry[] = [];
     if (fs.existsSync(ADMIN_AUDIT_FILE)) {
@@ -373,6 +385,15 @@ export function getAdminAuditLogs(filters?: {
   inMemoryAuditLogs.forEach((l) => {
     if (!map.has(l.id)) map.set(l.id, l);
   });
+
+  // 4. Global mağaza deposundan (kalıcı snapshot) logları ekle
+  try {
+    const state = (globalThis as unknown as { __humraStoreState?: { inMemoryStore?: { auditLogs?: AdminAuditLogEntry[] } } }).__humraStoreState;
+    const storeLogs = state?.inMemoryStore?.auditLogs || [];
+    storeLogs.forEach((l) => {
+      if (!map.has(l.id)) map.set(l.id, l);
+    });
+  } catch {}
 
   let list = Array.from(map.values()).sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()

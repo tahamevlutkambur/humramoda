@@ -4,9 +4,13 @@ import {
   getMaskedOrderTrackingView,
 } from "@/lib/server/shipping";
 import { getReturnRequestsByOrderId } from "@/lib/server/returns";
+import { getPersistentStoreData } from "@/lib/server/persistent-store";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
+    await getPersistentStoreData().catch(() => {});
     const body = await req.json();
     const orderNumber = body.orderNumber?.trim();
     const email = body.email?.trim();

@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { getOrderPublicStatus } from "@/lib/server/store";
+import { getPersistentStoreData } from "@/lib/server/persistent-store";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
+  await getPersistentStoreData().catch(() => {});
   const { searchParams } = new URL(req.url);
   const orderNumber = searchParams.get("orderNumber");
 
