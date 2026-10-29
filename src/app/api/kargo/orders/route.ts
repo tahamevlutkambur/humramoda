@@ -5,13 +5,12 @@ import { requireAdminRole } from "@/lib/server/session-guard";
 
 export async function GET(req: Request) {
   try {
+    await getPersistentStoreData().catch(() => {});
     const auth = await requireAdminRole(req, ["CARRIER", "ADMIN", "STAFF"]);
     if (auth.errorResponse) {
       return auth.errorResponse;
     }
 
-    // Serverless ortamında en güncel sipariş verisini çek
-    await getPersistentStoreData().catch(() => {});
     const store = getStoreData();
     const orders = store.orders || [];
 

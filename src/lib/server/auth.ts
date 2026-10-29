@@ -186,7 +186,7 @@ export function verifySessionToken(
     if (!payload || typeof payload !== "object") return null;
     if (typeof payload.userId !== "string" || !payload.userId.trim()) return null;
     if (typeof payload.email !== "string" || !payload.email.includes("@")) return null;
-    if (payload.role !== "ADMIN" && payload.role !== "STAFF" && payload.role !== "CUSTOMER") return null;
+    if (payload.role !== "ADMIN" && payload.role !== "STAFF" && payload.role !== "CARRIER" && payload.role !== "CUSTOMER") return null;
     if (typeof payload.tokenId !== "string" || !payload.tokenId.trim()) return null;
     if (typeof payload.iat !== "number" || typeof payload.exp !== "number") return null;
     if (!Number.isFinite(payload.iat) || !Number.isFinite(payload.exp)) return null;

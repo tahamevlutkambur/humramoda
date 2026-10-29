@@ -10,6 +10,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await getPersistentStoreData().catch(() => {});
     const csrf = verifySameOrigin(req);
     if (!csrf.valid) {
       return NextResponse.json({ error: csrf.error }, { status: 403 });
