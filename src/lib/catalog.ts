@@ -660,6 +660,88 @@ export const PRODUCTS: ProductItem[] = [
       },
     ],
   },
+  {
+    id: "prod-1793199201268",
+    title: "Gömlek",
+    slug: "gomlek",
+    description: "Zarif dikiş detayları ve dökümlü formuyla modern kadın gardırobunun vazgeçilmez parçası. Nefes alan kaliteli kumaşı gün boyu konfor sunar.",
+    fabricDetails: "%100 Pamuklu Gabardin. 30 derecede hassas yıkama tavsiye edilir.",
+    modelDimensions: "Model Boy: 176 cm, Göğüs: 84 cm, Bel: 62 cm, Kalça: 90 cm. Beden: M.",
+    basePrice: 249,
+    discountPrice: 199,
+    badge: "YENİ SEZON",
+    categorySlug: "yeni-koleksiyon",
+    categoryName: "Yeni Koleksiyon",
+    collectionSlugs: ["yeni-sezon"],
+    createdAt: "2026-10-28T12:00:00Z",
+    colors: [
+      {
+        id: "col-fuhse",
+        name: "FUHŞE",
+        slug: "fuhse",
+        colorCode: "#6B1D2F",
+        displayOrder: 1,
+      },
+    ],
+    sizes: [
+      {
+        id: "size-m",
+        name: "M",
+        slug: "m",
+        displayOrder: 1,
+      },
+      {
+        id: "size-s",
+        name: "S",
+        slug: "s",
+        displayOrder: 2,
+      },
+      {
+        id: "size-l",
+        name: "L",
+        slug: "l",
+        displayOrder: 3,
+      },
+    ],
+    variants: [
+      {
+        id: "var-fuhse-m",
+        colorId: "col-fuhse",
+        sizeId: "size-m",
+        sku: "FUHŞE-M",
+        stockQuantity: 100,
+        isActive: true,
+      },
+      {
+        id: "var-fuhse-s",
+        colorId: "col-fuhse",
+        sizeId: "size-s",
+        sku: "FUHŞE-S",
+        stockQuantity: 100,
+        isActive: true,
+      },
+      {
+        id: "var-fuhse-l",
+        colorId: "col-fuhse",
+        sizeId: "size-l",
+        sku: "FUHŞE-L",
+        stockQuantity: 100,
+        isActive: true,
+      },
+    ],
+    media: [
+      {
+        id: "med-gomlek-1",
+        colorId: "col-fuhse",
+        type: "IMAGE",
+        url: "/uploads/products/IMG_2190-detail.webp",
+        thumbnailUrl: "/uploads/products/IMG_2190-thumb.webp",
+        altText: "Gömlek FUHŞE",
+        isThumbnail: true,
+        displayOrder: 1,
+      },
+    ],
+  },
 ];
 
 // -------------------------------------------------------------

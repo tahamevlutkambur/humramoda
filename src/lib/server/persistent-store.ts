@@ -77,16 +77,34 @@ export async function getPersistentStoreData(): Promise<AppStoreData> {
 
     if (rows && rows[0]?.data) {
       const dbData = rows[0].data;
-      const dbTime = dbData.updatedAt || 0;
-      const localTime = localData.updatedAt || 0;
 
-      if (dbTime >= localTime) {
-        usePersistentStoreData(dbData);
-        return dbData;
-      } else {
-        await savePersistentStoreData(localData);
-        return localData;
+      // Eksik ürünleri koru ve birleştir (merge): Yerelde tanımlı ürünler veritabanında yoksa ekle
+      if (Array.isArray(localData.products) && localData.products.length > 0) {
+        dbData.products = dbData.products || [];
+        const dbProductIds = new Set(dbData.products.map((p) => p.id));
+        let merged = false;
+        for (const lp of localData.products) {
+          if (!dbProductIds.has(lp.id)) {
+            dbData.products.push(lp);
+            merged = true;
+          }
+        }
+        if (merged) {
+          dbData.updatedAt = Date.now();
+          await savePersistentStoreData(dbData).catch(() => {});
+        }
       }
+
+      // WhatsApp numarasını ve mağaza ayarlarını senkronize et
+      if (localData.settings?.whatsapp && dbData.settings?.whatsapp !== localData.settings.whatsapp) {
+        dbData.settings = dbData.settings || {};
+        dbData.settings.whatsapp = localData.settings.whatsapp;
+        dbData.updatedAt = Date.now();
+        await savePersistentStoreData(dbData).catch(() => {});
+      }
+
+      usePersistentStoreData(dbData);
+      return dbData;
     }
 
     await savePersistentStoreData(localData);

@@ -394,7 +394,7 @@ const DEFAULT_SETTINGS: StoreSettings = {
   storeName: "Hümra Butik & Moda",
   currency: "TRY",
   phone: "+90 850 000 00 00",
-  whatsapp: "+90 555 000 00 00",
+  whatsapp: "+90 530 527 00 72",
   email: "destek@humrabutik.com",
   address: "Nişantaşı, İstanbul, Türkiye",
   freeShippingThreshold: 3500,
@@ -654,7 +654,10 @@ export function getStoreData(): AppStoreData {
         : typeof parsed.updatedAt === "number"
         ? parsed.updatedAt
         : 0,
-      products: parsed.products !== undefined && Array.isArray(parsed.products) ? parsed.products : PRODUCTS,
+      products:
+        parsed.products !== undefined && Array.isArray(parsed.products) && parsed.products.length > 0
+          ? parsed.products
+          : PRODUCTS,
       categories: parsed.categories !== undefined && Array.isArray(parsed.categories) ? parsed.categories : CATEGORIES,
       collections: parsed.collections !== undefined && Array.isArray(parsed.collections) ? parsed.collections : COLLECTIONS,
       featuredVideos: parsed.featuredVideos || FEATURED_VIDEOS,
