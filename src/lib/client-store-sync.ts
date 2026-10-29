@@ -456,10 +456,17 @@ export async function fetchSharedStore(force = false): Promise<ClientStoreSnapsh
     }
 
     try {
-      const res = await fetch("/api/admin/products?public=1", {
+      let res = await fetch("/api/catalog", {
         cache: "no-store",
         headers: { "Cache-Control": "no-cache" },
       });
+
+      if (!res.ok) {
+        res = await fetch("/api/admin/products?public=1", {
+          cache: "no-store",
+          headers: { "Cache-Control": "no-cache" },
+        });
+      }
 
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`);
@@ -540,6 +547,9 @@ export async function fetchSharedStore(force = false): Promise<ClientStoreSnapsh
         categories: CATEGORIES,
         collections: COLLECTIONS,
       };
+      memorySnapshot = fallback;
+      notifyListeners(fallback);
+      writeSnapshotToLocalStorageSafe(fallback);
       return fallback;
     } finally {
       inFlightPromise = null;

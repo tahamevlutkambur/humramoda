@@ -9,6 +9,14 @@ export function middleware(req: NextRequest) {
   if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
     const isLoginPage = pathname === "/admin/login";
     const isLoginApi = pathname === "/api/admin/auth/login";
+    const isPublicProductsApi =
+      pathname === "/api/admin/products" &&
+      req.nextUrl.searchParams.get("public") === "1";
+
+    // Genel ürün sorgusu herkese açıktır
+    if (isPublicProductsApi) {
+      return NextResponse.next();
+    }
 
     // Giriş sayfası ve login API'si herkese açıktır
     if (isLoginPage || isLoginApi) {
