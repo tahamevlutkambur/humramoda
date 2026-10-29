@@ -5,6 +5,8 @@ import {
 } from "@/lib/server/shipping";
 import { getReturnRequestsByOrderId } from "@/lib/server/returns";
 import { getPersistentStoreData } from "@/lib/server/persistent-store";
+import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
+import { getStoreData } from "@/lib/server/store";
 
 export const dynamic = "force-dynamic";
 
@@ -16,9 +18,36 @@ export async function POST(req: Request) {
     const email = body.email?.trim();
     const phone = body.phone?.trim();
 
-    if (!orderNumber || (!email && !phone)) {
+    if (!orderNumber) {
       return NextResponse.json(
-        { error: "Lütfen sipariş numaranızı ve siparişe ait e-posta adresinizi veya telefon numaranızı giriniz." },
+        { error: "Lütfen sipariş numaranızı giriniz." },
+        { status: 400 }
+      );
+    }
+
+    // 1. Yönetici oturumu açıksa siparişi doğrudan sorgulama kolaylığı sağla
+    const adminSession = await getAuthenticatedAdmin(req);
+    if (adminSession) {
+      const store = getStoreData();
+      const cleanOrderNumber = orderNumber.toUpperCase();
+      const order = store.orders?.find(
+        (o) =>
+          o.orderNumber.toUpperCase() === cleanOrderNumber ||
+          o.id.toUpperCase() === cleanOrderNumber ||
+          (o.trackingNumber && o.trackingNumber.toUpperCase() === cleanOrderNumber)
+      );
+      if (order) {
+        return NextResponse.json({
+          success: true,
+          tracking: getMaskedOrderTrackingView(order),
+          returnRequests: getReturnRequestsByOrderId(order.id),
+        });
+      }
+    }
+
+    if (!email && !phone) {
+      return NextResponse.json(
+        { error: "Sipariş detaylarınızı görüntülemek için lütfen siparişte kullandığınız e-posta adresinizi veya telefon numaranızı giriniz." },
         { status: 400 }
       );
     }

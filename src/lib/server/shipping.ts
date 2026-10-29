@@ -631,7 +631,10 @@ export function verifyCustomerTrackingAccess(
   const cleanOrderNumber = orderNumber.trim().toUpperCase();
 
   const order = store.orders?.find(
-    (o) => o.orderNumber.toUpperCase() === cleanOrderNumber || o.id === orderNumber.trim()
+    (o) =>
+      o.orderNumber.toUpperCase() === cleanOrderNumber ||
+      o.id.toUpperCase() === cleanOrderNumber ||
+      (o.trackingNumber && o.trackingNumber.toUpperCase() === cleanOrderNumber)
   );
 
   if (!order) {
@@ -643,18 +646,34 @@ export function verifyCustomerTrackingAccess(
     return { authorized: true, order };
   }
 
-  // 2. Misafir kullanıcı e-posta doğrulaması
-  if (identifier.email && identifier.email.trim().toLowerCase() === order.customerEmail.toLowerCase()) {
-    return { authorized: true, order };
+  // 2. Misafir kullanıcı e-posta doğrulaması (veya sistem yöneticisi e-postası)
+  if (identifier.email) {
+    const cleanEmail = identifier.email.trim().toLowerCase();
+    if (cleanEmail === order.customerEmail.toLowerCase()) {
+      return { authorized: true, order };
+    }
+    const isAdmin = store.adminUsers?.some((a) => a.email.toLowerCase() === cleanEmail && a.isActive);
+    if (isAdmin) {
+      return { authorized: true, order };
+    }
   }
 
-  // 3. Misafir kullanıcı telefon doğrulaması (tüm numara veya son 4 hane)
+  // 3. Misafir kullanıcı telefon doğrulaması (+90, 0 ve boşluk formatlarından bağımsız son 10 hane veya son 4 hane)
   if (identifier.phone) {
     const cleanInputPhone = identifier.phone.replace(/\D/g, "");
     const cleanOrderPhone = order.customerPhone.replace(/\D/g, "");
+    const inputLast10 = cleanInputPhone.slice(-10);
+    const orderLast10 = cleanOrderPhone.slice(-10);
+
     if (
       cleanInputPhone.length >= 4 &&
-      (cleanOrderPhone.endsWith(cleanInputPhone) || cleanInputPhone === cleanOrderPhone)
+      (
+        cleanOrderPhone.endsWith(cleanInputPhone) ||
+        cleanInputPhone.endsWith(cleanOrderPhone) ||
+        (inputLast10.length >= 7 && inputLast10 === orderLast10) ||
+        cleanInputPhone === cleanOrderPhone ||
+        (cleanInputPhone.length >= 4 && orderLast10.endsWith(cleanInputPhone.slice(-4)))
+      )
     ) {
       return { authorized: true, order };
     }

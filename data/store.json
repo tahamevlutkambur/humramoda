@@ -1,5 +1,5 @@
 {
-  "updatedAt": 1793280612004,
+  "updatedAt": 1793281907867,
   "products": [
     {
       "id": "prod-1",
@@ -2214,6 +2214,21 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "audit-1793281907847-8cf446f5",
+      "timestamp": "2026-10-29T13:51:47.847Z",
+      "adminId": "adm-pwd-test-1793281907652",
+      "adminEmail": "pwd-rotation-1793281907652@humramoda.local",
+      "action": "ADMIN_PASSWORD_CHANGED",
+      "targetType": "AUTH",
+      "targetId": "adm-pwd-test-1793281907652",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "923df6854efd",
+      "details": {
+        "reason": "PASSWORD_ROTATION_SUCCESS"
+      }
+    },
     {
       "id": "audit-1793280611984-b1a7ec11",
       "timestamp": "2026-10-29T13:30:11.984Z",

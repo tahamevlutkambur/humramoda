@@ -318,6 +318,12 @@ describe("Faz 6: Kargo, Sipariş Takibi, İade Talepleri ve Bildirimler", () => 
     expect(authAccess.authorized).toBe(true);
     expect(authAccess.order?.id).toBe(paidOrder.id);
 
+    // +90 ile biçimlendirilmiş telefon ile erişim: BAŞARILI
+    const authByIntlPhone = verifyCustomerTrackingAccess(paidOrder.orderNumber, {
+      phone: "+90 (532) 111 22 33",
+    });
+    expect(authByIntlPhone.authorized).toBe(true);
+
     // Başka birinin e-postası ile erişim: YETKİSİZ
     const unauthorizedAccess = verifyCustomerTrackingAccess(paidOrder.orderNumber, {
       email: "baska.biri@example.com",

@@ -71,8 +71,8 @@ export default function OrderTrackingPage() {
 
   async function handleLookup(e: React.FormEvent) {
     e.preventDefault();
-    if (!orderNumber.trim() || !emailOrPhone.trim()) {
-      setError("Lütfen sipariş numaranızı ve e-posta adresinizi veya telefon numaranızı giriniz.");
+    if (!orderNumber.trim()) {
+      setError("Lütfen sipariş numaranızı veya kargo takip numaranızı giriniz.");
       return;
     }
 
@@ -87,8 +87,8 @@ export default function OrderTrackingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           orderNumber: orderNumber.trim(),
-          email: isEmail ? emailOrPhone.trim() : undefined,
-          phone: !isEmail ? emailOrPhone.trim() : undefined,
+          email: isEmail && emailOrPhone.trim() ? emailOrPhone.trim() : undefined,
+          phone: !isEmail && emailOrPhone.trim() ? emailOrPhone.trim() : undefined,
         }),
       });
 
