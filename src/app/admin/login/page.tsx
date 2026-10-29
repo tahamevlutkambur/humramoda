@@ -184,9 +184,15 @@ function LoginForm() {
             textAlign: "center",
             fontSize: "0.75rem",
             color: "#A0AEC0",
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.35rem",
           }}
         >
-          <span>🔒 256-Bit SSL Korumalı Yönetici Alanı</span>
+          <span>🔒 256-Bit SSL Korumalı Güvenli Giriş</span>
+          <span style={{ color: "#718096", fontSize: "0.7rem" }}>
+            Ana Yönetici veya Kargo Dağıtım bilgileriyle giriş yapabilirsiniz.
+          </span>
         </div>
       </div>
     </div>

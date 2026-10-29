@@ -162,7 +162,7 @@ export default function CargoDashboardPage() {
       // devam et
     }
     setIsLoggedOut(true);
-    router.push("/admin/login");
+    window.location.href = "/admin/login?switch=1";
   };
 
   // Filtreleme

@@ -14,8 +14,23 @@ export function middleware(req: NextRequest) {
     if (isLoginPage || isLoginApi) {
       const sessionCookie = req.cookies.get(ADMIN_COOKIE_NAME);
       if (sessionCookie && sessionCookie.value && isLoginPage) {
-        // Oturumu açık olan yönetici tekrar login sayfasına girerse dashboard'a yönlendir
-        return NextResponse.redirect(new URL("/admin", req.url));
+        // Eğer CARRIER oturumu açıksa veya ?switch parametresi varsa login formunu aç (kullanıcı değiştirebilsin)
+        let isCarrier = false;
+        try {
+          const parts = sessionCookie.value.split(".");
+          if (parts.length === 2) {
+            const payload = JSON.parse(Buffer.from(parts[0], "base64url").toString("utf-8"));
+            if (payload?.role === "CARRIER") {
+              isCarrier = true;
+            }
+          }
+        } catch {
+          // parse hatası
+        }
+
+        if (!isCarrier && !req.nextUrl.searchParams.has("switch")) {
+          return NextResponse.redirect(new URL("/admin", req.url));
+        }
       }
       const res = NextResponse.next();
       res.headers.set("X-Robots-Tag", "noindex, nofollow");
