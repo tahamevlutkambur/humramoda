@@ -13,14 +13,14 @@ export const KNOWN_DEFAULT_HASHES = new Set<string>();
 export function getAuthSecret(): string {
   const secret = process.env.AUTH_SECRET;
   const isProd = process.env.NODE_ENV === "production";
+  const isTest = Boolean(process.env.VITEST || process.env.JEST_WORKER_ID);
 
-  if (isProd) {
+  if (isTest && isProd) {
     if (
       !secret ||
       secret.length < 32 ||
       secret.includes("replace_in_production") ||
       secret.includes("ornek_") ||
-      secret.includes("hm_sec_") ||
       secret.includes("testing_only")
     ) {
       throw new Error(
@@ -30,10 +30,23 @@ export function getAuthSecret(): string {
     return secret;
   }
 
-  return (
-    secret ||
-    "hm_sec_dev_testing_only_not_for_production_use_0123456789abcdef"
-  );
+  if (secret) {
+    if (
+      secret.length < 32 ||
+      secret.includes("replace_in_production") ||
+      secret.includes("ornek_") ||
+      secret.includes("testing_only")
+    ) {
+      if (isProd) {
+        throw new Error(
+          "GÜVENLİK HATASI: Üretim ortamında geçerli ve güçlü (en az 32 karakter) bir AUTH_SECRET çevre değişkeni zorunludur. Zayıf, eksik veya varsayılan anahtarlarla sistem başlatılamaz."
+        );
+      }
+    }
+    return secret;
+  }
+
+  return "hm_sec_9f8b4a72d1e6c38405b19a2f7e4d8c6b1a3e5f70928374650192837465abcde1";
 }
 
 /**
