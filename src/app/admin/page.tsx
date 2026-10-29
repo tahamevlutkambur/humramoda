@@ -18,7 +18,7 @@ export default async function AdminDashboardPage() {
 
   const store = (await getPersistentStoreData().catch(() => null)) || getStoreData();
 
-  // Ziyaretçi loglarını hem store'dan hem logger dosya/belleğinden birleştir
+  // 1. Ziyaretçi Metrikleri
   const loggerEntries = getSiteActivityLogs({ limit: 5000 }).logs || [];
   const storeEntries = store.siteActivityLogs || [];
   const mergedMap = new Map<string, any>();
@@ -62,11 +62,24 @@ export default async function AdminDashboardPage() {
   const totalVisitors = new Set(visitors.map(visitorKey)).size;
   const totalPageViews = visitors.length;
 
-  const products = store.products;
-  const categories = store.categories;
-  const collections = store.collections;
+  // 2. Sipariş Metrikleri
+  const allOrders = store.orders || [];
+  const confirmedOrders = allOrders.filter(
+    (o) => o.paymentStatus === "PAID" || o.operationalStatus === "CONFIRMED"
+  );
+  const pendingOrders = allOrders.filter(
+    (o) => o.paymentStatus === "PENDING" && o.operationalStatus !== "CANCELLED"
+  );
+  const totalRevenue = confirmedOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+  const recentOrders = [...allOrders]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 8);
 
-  // Kritik stoklu (stok <= 3 olan) varyantları tespit et
+  // 3. Envanter & Stok Metrikleri
+  const products = store.products || [];
+  const categories = store.categories || [];
+  const collections = store.collections || [];
+
   const lowStockVariants: Array<{
     productId: string;
     productTitle: string;
@@ -115,32 +128,68 @@ export default async function AdminDashboardPage() {
             Mağaza Genel Bakış
           </h1>
           <p style={{ fontSize: "0.8125rem", color: "#718096", marginTop: "2px" }}>
-            Hümra Butik vitrin ve envanter durumunun gerçek zamanlı özeti.
+            Hümra Butik canlı sipariş, vitrin ve envanter durumunun anlık özeti.
           </p>
         </div>
 
-        <div style={{ display: "flex", gap: "0.75rem" }}>
-          <Link href="/admin/urunler/yeni" className="hm-admin-btn hm-admin-btn-primary">
-            <span>+ Yeni Ürün Ekle</span>
+        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+          <Link href="/admin/siparisler" className="hm-admin-btn hm-admin-btn-primary">
+            <span>Siparişleri Yönet</span>
           </Link>
-          <Link href="/admin/vitrin" className="hm-admin-btn hm-admin-btn-outline">
-            <span>Vitrin İçeriği</span>
+          <Link href="/admin/urunler/yeni" className="hm-admin-btn hm-admin-btn-outline">
+            <span>+ Yeni Ürün</span>
           </Link>
         </div>
       </div>
 
-      {/* KPI Kartları Izgarası */}
+      {/* Sipariş & Finans KPI Kartları */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
           gap: "1rem",
         }}
       >
-        {/* Toplam Ürün */}
+        {/* Toplam Onaylı Ciro */}
+        <div className="hm-admin-card" style={{ padding: "1.25rem" }}>
+          <span className="hm-admin-label">Onaylı Net Ciro</span>
+          <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "#2E7D32", marginTop: "0.25rem" }}>
+            {formatCurrency(totalRevenue)}
+          </div>
+          <span style={{ fontSize: "0.75rem", color: "#718096", marginTop: "0.5rem", display: "block" }}>
+            PayTR ile tahsil edilen toplam tutar
+          </span>
+        </div>
+
+        {/* Onaylanan Siparişler */}
+        <div className="hm-admin-card" style={{ padding: "1.25rem" }}>
+          <span className="hm-admin-label">Onaylanan Siparişler</span>
+          <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "#1A202C", marginTop: "0.25rem" }}>
+            {confirmedOrders.length}
+          </div>
+          <Link
+            href="/admin/siparisler"
+            style={{ fontSize: "0.75rem", color: "#2E7D32", textDecoration: "underline", marginTop: "0.5rem", display: "block" }}
+          >
+            Ödemesi tamamlandı →
+          </Link>
+        </div>
+
+        {/* Ödeme Bekleyen / Taslak Siparişler */}
+        <div className="hm-admin-card" style={{ padding: "1.25rem" }}>
+          <span className="hm-admin-label">Ödeme Bekleyen / Taslak</span>
+          <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "#D97706", marginTop: "0.25rem" }}>
+            {pendingOrders.length}
+          </div>
+          <span style={{ fontSize: "0.75rem", color: "#718096", marginTop: "0.5rem", display: "block" }}>
+            Müşteri ödeme aşamasında / henüz ödemedi
+          </span>
+        </div>
+
+        {/* Katalogdaki Ürünler */}
         <div className="hm-admin-card" style={{ padding: "1.25rem" }}>
           <span className="hm-admin-label">Katalogdaki Ürünler</span>
-          <div style={{ fontSize: "1.875rem", fontWeight: 700, color: "#1A202C", marginTop: "0.25rem" }}>
+          <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "#1A202C", marginTop: "0.25rem" }}>
             {products.length}
           </div>
           <span style={{ fontSize: "0.75rem", color: "#718096", marginTop: "0.5rem", display: "block" }}>
@@ -148,50 +197,10 @@ export default async function AdminDashboardPage() {
           </span>
         </div>
 
-        {/* Kategoriler */}
-        <div className="hm-admin-card" style={{ padding: "1.25rem" }}>
-          <span className="hm-admin-label">Kategoriler</span>
-          <div style={{ fontSize: "1.875rem", fontWeight: 700, color: "#1A202C", marginTop: "0.25rem" }}>
-            {categories.length}
-          </div>
-          <span style={{ fontSize: "0.75rem", color: "#718096", marginTop: "0.5rem", display: "block" }}>
-            Tüm vitrinde aktif
-          </span>
-        </div>
-
-        {/* Koleksiyonlar */}
-        <div className="hm-admin-card" style={{ padding: "1.25rem" }}>
-          <span className="hm-admin-label">Koleksiyonlar</span>
-          <div style={{ fontSize: "1.875rem", fontWeight: 700, color: "#1A202C", marginTop: "0.25rem" }}>
-            {collections.length}
-          </div>
-          <span style={{ fontSize: "0.75rem", color: "#718096", marginTop: "0.5rem", display: "block" }}>
-            Yeni Sezon, Çok Satanlar
-          </span>
-        </div>
-
-        {/* Kritik Stok & Tükenenler */}
-        <div className="hm-admin-card" style={{ padding: "1.25rem" }}>
-          <span className="hm-admin-label">Tükenen Varyantlar</span>
-          <div
-            style={{
-              fontSize: "1.875rem",
-              fontWeight: 700,
-              color: outOfStockCount > 0 ? "#E53E3E" : "#2E7D32",
-              marginTop: "0.25rem",
-            }}
-          >
-            {outOfStockCount}
-          </div>
-          <span style={{ fontSize: "0.75rem", color: "#718096", marginTop: "0.5rem", display: "block" }}>
-            {lowStockVariants.length} varyantta kritik stok (≤3)
-          </span>
-        </div>
-
         {/* Bugünkü Ziyaretçi */}
         <div className="hm-admin-card" style={{ padding: "1.25rem" }}>
           <span className="hm-admin-label">Bugünkü Ziyaretçi</span>
-          <div style={{ fontSize: "1.875rem", fontWeight: 700, color: "#1A202C", marginTop: "0.25rem" }}>
+          <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "#1A202C", marginTop: "0.25rem" }}>
             {todayVisitors}
           </div>
           <span style={{ fontSize: "0.75rem", color: "#718096", marginTop: "0.5rem", display: "block" }}>
@@ -202,7 +211,7 @@ export default async function AdminDashboardPage() {
         {/* Toplam Ziyaretçi */}
         <div className="hm-admin-card" style={{ padding: "1.25rem" }}>
           <span className="hm-admin-label">Toplam Ziyaretçi</span>
-          <div style={{ fontSize: "1.875rem", fontWeight: 700, color: "#1A202C", marginTop: "0.25rem" }}>
+          <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "#1A202C", marginTop: "0.25rem" }}>
             {totalVisitors}
           </div>
           <Link
@@ -212,20 +221,137 @@ export default async function AdminDashboardPage() {
             {totalPageViews} sayfa görüntüleme →
           </Link>
         </div>
+      </div>
 
-        {/* Ücretsiz Kargo Baremi */}
-        <div className="hm-admin-card" style={{ padding: "1.25rem" }}>
-          <span className="hm-admin-label">Ücretsiz Kargo Baremi</span>
-          <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "#1A202C", marginTop: "0.25rem" }}>
-            {formatCurrency(store.settings?.freeShippingThreshold || 3500)}
+      {/* Son Siparişler Tablosu */}
+      <div className="hm-admin-card">
+        <div
+          style={{
+            padding: "1rem 1.25rem",
+            borderBottom: "1px solid var(--hm-admin-border)",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "0.5rem",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <span style={{ fontSize: "0.875rem", fontWeight: 700, color: "#1A202C" }}>
+              Son Siparişler
+            </span>
+            <span className="hm-admin-badge" style={{ backgroundColor: "#EDF2F7", color: "#2D3748" }}>
+              {allOrders.length} Sipariş
+            </span>
           </div>
+
           <Link
-            href="/admin/ayarlar"
-            style={{ fontSize: "0.75rem", color: "#8B2635", textDecoration: "underline", marginTop: "0.5rem", display: "block" }}
+            href="/admin/siparisler"
+            style={{ fontSize: "0.75rem", color: "#8B2635", textDecoration: "none", fontWeight: 600 }}
           >
-            Ayarlardan Düzenle →
+            Tüm Siparişleri Gör &amp; Yönet →
           </Link>
         </div>
+
+        {recentOrders.length === 0 ? (
+          <div style={{ padding: "2.5rem 1rem", textAlign: "center", color: "#718096", fontSize: "0.875rem" }}>
+            Henüz sipariş kaydı bulunmuyor. Yeni siparişler buraya anlık olarak yansıyacaktır.
+          </div>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table className="hm-admin-table">
+              <thead>
+                <tr>
+                  <th>Sipariş No</th>
+                  <th>Müşteri</th>
+                  <th>Ürünler</th>
+                  <th>Tutar</th>
+                  <th>Ödeme Durumu</th>
+                  <th>Sipariş Durumu</th>
+                  <th>Tarih</th>
+                  <th style={{ textAlign: "right" }}>İşlem</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentOrders.map((order) => {
+                  const isPaid = order.paymentStatus === "PAID";
+                  const isPending = order.paymentStatus === "PENDING";
+                  const isConfirmed = order.operationalStatus === "CONFIRMED";
+                  const isCancelled = order.operationalStatus === "CANCELLED";
+
+                  return (
+                    <tr key={order.id}>
+                      <td>
+                        <div style={{ fontWeight: 700, color: "#1A202C" }}>{order.orderNumber}</div>
+                        {order.paymentProvider && (
+                          <div style={{ fontSize: "0.7rem", color: "#718096" }}>{order.paymentProvider}</div>
+                        )}
+                      </td>
+                      <td>
+                        <div style={{ fontWeight: 600 }}>{order.customerFullName}</div>
+                        <div style={{ fontSize: "0.75rem", color: "#718096" }}>
+                          {order.shippingAddress?.city || "Şehir Belirtilmedi"}
+                        </div>
+                      </td>
+                      <td>
+                        <span style={{ fontSize: "0.8125rem" }}>
+                          {(order.items || []).reduce((sum, it) => sum + it.quantity, 0)} Adet
+                        </span>
+                      </td>
+                      <td style={{ fontWeight: 700 }} className="tabular-nums">
+                        {formatCurrency(order.totalAmount)}
+                      </td>
+                      <td>
+                        <span
+                          className={`hm-admin-badge ${
+                            isPaid
+                              ? "hm-admin-badge-success"
+                              : order.paymentStatus === "FAILED"
+                              ? "hm-admin-badge-danger"
+                              : "hm-admin-badge-warning"
+                          }`}
+                        >
+                          {isPaid ? "ÖDENDİ • PAYTR" : isPending ? "ÖDEME BEKLİYOR" : "BAŞARISIZ"}
+                        </span>
+                      </td>
+                      <td>
+                        <span
+                          className={`hm-admin-badge ${
+                            isConfirmed
+                              ? "hm-admin-badge-success"
+                              : isCancelled
+                              ? "hm-admin-badge-danger"
+                              : "hm-admin-badge-warning"
+                          }`}
+                        >
+                          {isConfirmed ? "ONAYLANDI" : isCancelled ? "İPTAL" : "BEKLEMEDE"}
+                        </span>
+                      </td>
+                      <td style={{ fontSize: "0.75rem", color: "#718096" }}>
+                        {new Date(order.createdAt).toLocaleString("tr-TR", {
+                          timeZone: "Europe/Istanbul",
+                          day: "2-digit",
+                          month: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        <Link
+                          href="/admin/siparisler"
+                          className="hm-admin-btn hm-admin-btn-outline"
+                          style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+                        >
+                          İncele →
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Kritik Stok Uyarı Tablosu */}
@@ -314,7 +440,7 @@ export default async function AdminDashboardPage() {
         )}
       </div>
 
-      {/* Sipariş & Ödeme Bilgilendirme Kartı */}
+      {/* Bilgilendirme Kartı */}
       <div
         className="hm-admin-card"
         style={{
@@ -335,7 +461,7 @@ export default async function AdminDashboardPage() {
               Canlı Mağaza &amp; Gerçek PayTR Ödeme Sistemi Aktif
             </h4>
             <p style={{ fontSize: "0.8125rem", color: "#4A5568", marginTop: "4px", lineHeight: 1.5 }}>
-              Mağazanız gerçek kredi kartı tahsilatına hazırdır. Önceki test siparişleri ve iadeler temizlenmiştir. Yeni siparişler doğrudan Yönetici ve Kargo panellerine gerçek zamanlı düşecektir.
+              Müşteri ödeme formunu açtığında sipariş önce taslak (Ödeme Bekliyor) olarak ana panele düşer. PayTR üzerinden ödeme tamamlandığında durum otomatik olarak Onaylandı ve Ödendi durumuna geçer; ardından Kargo paneline kargolanmak üzere anlık olarak iletilir.
             </p>
           </div>
         </div>

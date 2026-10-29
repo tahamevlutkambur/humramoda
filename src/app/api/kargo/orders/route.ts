@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { getStoreData } from "@/lib/server/store";
 import { getPersistentStoreData } from "@/lib/server/persistent-store";
 import { requireAdminRole } from "@/lib/server/session-guard";
 import { checkDatabaseConnection } from "@/lib/server/db";
@@ -15,7 +14,12 @@ export async function GET(req: Request) {
     }
 
     const store = await getPersistentStoreData();
-    const orders = [...(store.orders || [])].sort(
+    // GÜVENLİK & İŞ KURALI: Ödemesi tamamlanmamış (PENDING veya FAILED) siparişler
+    // kargo görevlisine kesinlikle iletilmez. Yalnızca ödemesi onaylanmış siparişler listelenir.
+    const paidOrders = (store.orders || []).filter(
+      (o) => o.paymentStatus === "PAID" || o.operationalStatus === "CONFIRMED"
+    );
+    const orders = [...paidOrders].sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
