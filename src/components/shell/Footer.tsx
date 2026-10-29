@@ -138,13 +138,54 @@ export function Footer() {
                 <Link href="/kategori/takim">İkili &amp; Üçlü Takımlar</Link>
               </li>
               <li>
-                <Link href="/kategori/dis-giyim">Dış Giyim &amp; Trenç</Link>
+                <Link href="/kategori/dis-giyim">Dış Giyim &amp; Trençkot</Link>
               </li>
               <li>
                 <Link href="/kategori/triko">Triko &amp; Tunik</Link>
               </li>
               <li>
-                <Link href="/koleksiyon/cok-satanlar">Çok Satanlar</Link>
+                <Link href="/koleksiyonlar/cok-satanlar">Çok Satanlar</Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Popüler Aramalar & SEO İç Bağlantılar */}
+          <div>
+            <h4
+              style={{
+                fontSize: "var(--hm-text-xs)",
+                letterSpacing: "var(--hm-tracking-wider)",
+                textTransform: "uppercase",
+                fontWeight: "var(--hm-font-medium)",
+                marginBottom: "var(--hm-space-4)",
+              }}
+            >
+              Popüler Aramalar
+            </h4>
+            <ul
+              style={{
+                listStyle: "none",
+                fontSize: "var(--hm-text-sm)",
+                display: "flex",
+                flexDirection: "column",
+                gap: "var(--hm-space-2)",
+                color: "var(--hm-color-text-light-muted)",
+              }}
+            >
+              <li>
+                <Link href="/kategori/takim">Kadın İkili Takım Modelleri</Link>
+              </li>
+              <li>
+                <Link href="/kategori/dis-giyim">Kadın Trençkot &amp; Ceket</Link>
+              </li>
+              <li>
+                <Link href="/urunler?q=gömlek">Modern Kadın Gömlek</Link>
+              </li>
+              <li>
+                <Link href="/urunler">Yeni Sezon Kadın Giyim</Link>
+              </li>
+              <li>
+                <Link href="/siparis-takip">Kargo Takip &amp; Destek</Link>
               </li>
             </ul>
           </div>

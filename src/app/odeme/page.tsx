@@ -363,26 +363,9 @@ export default function CheckoutPage() {
           </div>
         ) : (
           /* Sipariş Bilgi Formu ve Sepet Özeti */
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1.3fr 1fr",
-              gap: "2.5rem",
-              maxWidth: "1100px",
-              margin: "0 auto",
-            }}
-            className="hm-checkout-layout"
-          >
+          <div className="hm-checkout-layout">
             {/* Sol Taraf: Teslimat Bilgileri Formu */}
-            <div
-              style={{
-                backgroundColor: "#FFF",
-                padding: "2rem",
-                borderRadius: "12px",
-                boxShadow: "0 4px 15px rgba(0,0,0,0.03)",
-                border: "1px solid #EDF2F7",
-              }}
-            >
+            <div className="hm-checkout-card">
               <h2
                 style={{
                   fontSize: "1.125rem",
@@ -410,17 +393,11 @@ export default function CheckoutPage() {
                       onChange={handleInputChange}
                       placeholder="Örn: Zeynep Kaya"
                       required
-                      style={{
-                        width: "100%",
-                        padding: "0.75rem",
-                        border: "1px solid #CBD5E0",
-                        borderRadius: "6px",
-                        fontSize: "0.875rem",
-                      }}
+                      className="hm-checkout-input"
                     />
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                  <div className="hm-checkout-grid-2">
                     <div>
                       <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#4A5568", marginBottom: "0.25rem" }}>
                         E-Posta Adresi *
@@ -432,13 +409,7 @@ export default function CheckoutPage() {
                         onChange={handleInputChange}
                         placeholder="zeynep@example.com"
                         required
-                        style={{
-                          width: "100%",
-                          padding: "0.75rem",
-                          border: "1px solid #CBD5E0",
-                          borderRadius: "6px",
-                          fontSize: "0.875rem",
-                        }}
+                        className="hm-checkout-input"
                       />
                     </div>
 
@@ -453,18 +424,12 @@ export default function CheckoutPage() {
                         onChange={handleInputChange}
                         placeholder="0532 111 22 33"
                         required
-                        style={{
-                          width: "100%",
-                          padding: "0.75rem",
-                          border: "1px solid #CBD5E0",
-                          borderRadius: "6px",
-                          fontSize: "0.875rem",
-                        }}
+                        className="hm-checkout-input"
                       />
                     </div>
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                  <div className="hm-checkout-grid-2">
                     <div>
                       <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#4A5568", marginBottom: "0.25rem" }}>
                         İl *
@@ -476,13 +441,7 @@ export default function CheckoutPage() {
                         onChange={handleInputChange}
                         placeholder="İstanbul"
                         required
-                        style={{
-                          width: "100%",
-                          padding: "0.75rem",
-                          border: "1px solid #CBD5E0",
-                          borderRadius: "6px",
-                          fontSize: "0.875rem",
-                        }}
+                        className="hm-checkout-input"
                       />
                     </div>
 
@@ -497,13 +456,7 @@ export default function CheckoutPage() {
                         onChange={handleInputChange}
                         placeholder="Kadıköy"
                         required
-                        style={{
-                          width: "100%",
-                          padding: "0.75rem",
-                          border: "1px solid #CBD5E0",
-                          borderRadius: "6px",
-                          fontSize: "0.875rem",
-                        }}
+                        className="hm-checkout-input"
                       />
                     </div>
                   </div>
@@ -519,14 +472,7 @@ export default function CheckoutPage() {
                       placeholder="Mahalle, cadde, sokak, bina ve daire no..."
                       rows={3}
                       required
-                      style={{
-                        width: "100%",
-                        padding: "0.75rem",
-                        border: "1px solid #CBD5E0",
-                        borderRadius: "6px",
-                        fontSize: "0.875rem",
-                        fontFamily: "inherit",
-                      }}
+                      className="hm-checkout-input"
                     />
                   </div>
 
@@ -540,13 +486,7 @@ export default function CheckoutPage() {
                       value={formData.customerNotes}
                       onChange={handleInputChange}
                       placeholder="Varsa kargo veya teslimat notunuz..."
-                      style={{
-                        width: "100%",
-                        padding: "0.75rem",
-                        border: "1px solid #CBD5E0",
-                        borderRadius: "6px",
-                        fontSize: "0.875rem",
-                      }}
+                      className="hm-checkout-input"
                     />
                   </div>
 
@@ -567,15 +507,7 @@ export default function CheckoutPage() {
 
             {/* Sağ Taraf: Sipariş Özeti ve Ürünler */}
             <div>
-              <div
-                style={{
-                  backgroundColor: "#FFF",
-                  padding: "1.75rem",
-                  borderRadius: "12px",
-                  boxShadow: "0 4px 15px rgba(0,0,0,0.03)",
-                  border: "1px solid #EDF2F7",
-                }}
-              >
+              <div className="hm-checkout-card">
                 <h2 style={{ fontSize: "1.125rem", fontWeight: 600, color: "#1A202C", marginBottom: "1.25rem" }}>
                   Sipariş Özeti ({items.length} Kalem)
                 </h2>
