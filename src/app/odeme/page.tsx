@@ -363,9 +363,9 @@ export default function CheckoutPage() {
           </div>
         ) : (
           /* Sipariş Bilgi Formu ve Sepet Özeti */
-          <div className="hm-checkout-layout">
+          <div className="hm-checkout-layout flex flex-col lg:grid lg:grid-cols-12 gap-6 w-full max-w-6xl mx-auto">
             {/* Sol Taraf: Teslimat Bilgileri Formu */}
-            <div className="hm-checkout-card">
+            <div className="hm-checkout-card w-full lg:col-span-7">
               <h2
                 style={{
                   fontSize: "1.125rem",
@@ -506,7 +506,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* Sağ Taraf: Sipariş Özeti ve Ürünler */}
-            <div>
+            <div className="w-full lg:col-span-5">
               <div className="hm-checkout-card">
                 <h2 style={{ fontSize: "1.125rem", fontWeight: 600, color: "#1A202C", marginBottom: "1.25rem" }}>
                   Sipariş Özeti ({items.length} Kalem)

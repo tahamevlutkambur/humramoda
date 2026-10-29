@@ -49,7 +49,7 @@ export async function getAuthenticatedAdmin(req?: Request): Promise<SessionPaylo
   cookieValue = cookieValue.replace(/^"|"$/g, "");
 
   const payload = verifySessionToken(cookieValue);
-  if (!payload || (payload.role !== "ADMIN" && payload.role !== "STAFF")) {
+  if (!payload || (payload.role !== "ADMIN" && payload.role !== "STAFF" && payload.role !== "CARRIER")) {
     return null;
   }
 
@@ -78,7 +78,7 @@ export async function getAuthenticatedAdmin(req?: Request): Promise<SessionPaylo
  */
 export async function requireAdminRole(
   req: Request | undefined,
-  allowedRoles: Array<"ADMIN" | "STAFF"> = ["ADMIN"]
+  allowedRoles: Array<"ADMIN" | "STAFF" | "CARRIER"> = ["ADMIN"]
 ): Promise<
   | { session: SessionPayload; errorResponse?: never }
   | { session?: never; errorResponse: NextResponse }
@@ -94,7 +94,7 @@ export async function requireAdminRole(
     };
   }
 
-  if (!allowedRoles.includes(session.role as "ADMIN" | "STAFF")) {
+  if (!allowedRoles.includes(session.role as any)) {
     return {
       errorResponse: NextResponse.json(
         { error: "Yetersiz yetki. Bu işlem için ADMIN rolü gereklidir." },

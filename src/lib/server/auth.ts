@@ -84,7 +84,7 @@ export function verifyPassword(password: string, storedHash: string): boolean {
 export interface SessionPayload {
   userId: string;
   email: string;
-  role: "ADMIN" | "STAFF" | "CUSTOMER";
+  role: "ADMIN" | "STAFF" | "CARRIER" | "CUSTOMER";
   fullName: string;
   tokenId: string; // Oturum iptali (revocation) için benzersiz ID
   iat: number; // Verilme zamanı (ms)

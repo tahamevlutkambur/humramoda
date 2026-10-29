@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { authenticateAdmin } from "@/lib/server/store";
+import { getPersistentStoreData } from "@/lib/server/persistent-store";
 import {
   createSessionToken,
   ADMIN_COOKIE_NAME,
@@ -13,6 +14,7 @@ import { verifySameOrigin } from "@/lib/server/session-guard";
 
 export async function POST(req: Request) {
   try {
+    await getPersistentStoreData().catch(() => {});
     const csrf = verifySameOrigin(req);
     if (!csrf.valid) {
       return NextResponse.json({ error: csrf.error }, { status: 403 });

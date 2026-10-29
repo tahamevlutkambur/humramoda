@@ -91,7 +91,7 @@ export interface AdminUser {
   email: string;
   fullName: string;
   passwordHash: string;
-  role: "ADMIN" | "STAFF";
+  role: "ADMIN" | "STAFF" | "CARRIER";
   isActive: boolean;
   createdAt: string;
   tokenVersionTimestamp?: number;
@@ -535,6 +535,15 @@ const DEFAULT_ADMIN_USERS: AdminUser[] = [
     role: "ADMIN",
     isActive: true,
     createdAt: "2026-10-27T00:00:00.000Z",
+  },
+  {
+    id: "carrier-1",
+    email: "kargo@kargo.com",
+    fullName: "Kargo Görevlisi",
+    passwordHash: "335cac53991b484f4c4feabc9b9669f1:2472926381eb9d7d9f8884fa4156a200c209898bb1ecf80d6ec0393177e20f5787e3a1a667576daac80d844cb7f71bf0caf9ae415a456941a775047863bebbcc",
+    role: "CARRIER",
+    isActive: true,
+    createdAt: "2026-10-29T00:00:00.000Z",
   },
 ];
 
@@ -2438,9 +2447,21 @@ export function createPendingOrder(input: CreateOrderInput): {
       return { success: false, error: "Geçersiz ürün adedi." };
     }
 
-    const product = store.products.find(
+    let product = store.products.find(
       (p) => p.id === it.productId || p.slug === it.productId
     );
+
+    if (!product) {
+      // Fallback: Yerleşik kod kataloğunda (PRODUCTS) var mı kontrol et
+      const codeCatalogProduct = PRODUCTS.find(
+        (p) => p.id === it.productId || p.slug === it.productId
+      );
+      if (codeCatalogProduct) {
+        product = codeCatalogProduct;
+        // Eksik olan ürünü bellek deposuna da ekle
+        store.products.push(codeCatalogProduct);
+      }
+    }
 
     if (!product) {
       return { success: false, error: `Seçilen ürün katalogda bulunamadı (ID: ${it.productId}).` };

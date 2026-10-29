@@ -47,7 +47,11 @@ function LoginForm() {
         return;
       }
 
-      router.push(redirectTarget);
+      if (data.user?.role === "CARRIER") {
+        router.push("/kargo");
+      } else {
+        router.push(redirectTarget);
+      }
       router.refresh();
     } catch {
       setError("Bağlantı hatası oluştu. Lütfen tekrar deneyiniz.");

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/server/db";
+import { PRODUCTS } from "@/lib/catalog";
 import {
   getStoreData,
   usePersistentStoreData,
@@ -78,18 +79,36 @@ export async function getPersistentStoreData(): Promise<AppStoreData> {
     if (rows && rows[0]?.data) {
       const dbData = rows[0].data;
 
-      // Eksik ürünleri koru ve birleştir (merge): Yerelde tanımlı ürünler veritabanında yoksa ekle
-      if (Array.isArray(localData.products) && localData.products.length > 0) {
-        dbData.products = dbData.products || [];
-        const dbProductIds = new Set(dbData.products.map((p) => p.id));
-        let merged = false;
-        for (const lp of localData.products) {
-          if (!dbProductIds.has(lp.id)) {
-            dbData.products.push(lp);
-            merged = true;
+      // Eksik ürünleri koru ve birleştir (merge): Yerelde veya katalogda tanımlı tüm ürünleri veritabanına ekle
+      const allKnownProducts = [...(localData.products || []), ...PRODUCTS];
+      dbData.products = dbData.products || [];
+      const dbProductIds = new Set(dbData.products.map((p) => p.id));
+      let merged = false;
+      for (const lp of allKnownProducts) {
+        if (!dbProductIds.has(lp.id)) {
+          dbData.products.push(lp);
+          dbProductIds.add(lp.id);
+          merged = true;
+        }
+      }
+      if (merged) {
+        dbData.updatedAt = Date.now();
+        await savePersistentStoreData(dbData).catch(() => {});
+      }
+
+      // Yönetici ve kargo kullanıcılarını koru ve birleştir (merge)
+      if (Array.isArray(localData.adminUsers) && localData.adminUsers.length > 0) {
+        dbData.adminUsers = dbData.adminUsers || [];
+        const dbAdminEmails = new Set(dbData.adminUsers.map((u) => u.email.toLowerCase()));
+        let adminsMerged = false;
+        for (const la of localData.adminUsers) {
+          if (!dbAdminEmails.has(la.email.toLowerCase())) {
+            dbData.adminUsers.push(la);
+            dbAdminEmails.add(la.email.toLowerCase());
+            adminsMerged = true;
           }
         }
-        if (merged) {
+        if (adminsMerged) {
           dbData.updatedAt = Date.now();
           await savePersistentStoreData(dbData).catch(() => {});
         }

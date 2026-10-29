@@ -123,12 +123,13 @@ export async function runMigration(): Promise<{
   try {
     // A. Yöneticiler
     for (const u of store.adminUsers) {
+      const prismaRole = (u.role === "CARRIER" ? "STAFF" : u.role) as "ADMIN" | "STAFF";
       await prisma.user.upsert({
         where: { email: u.email },
         update: {
           fullName: u.fullName,
           passwordHash: u.passwordHash,
-          role: u.role,
+          role: prismaRole,
           isActive: u.isActive,
         },
         create: {
@@ -136,7 +137,7 @@ export async function runMigration(): Promise<{
           email: u.email,
           fullName: u.fullName,
           passwordHash: u.passwordHash,
-          role: u.role,
+          role: prismaRole,
           isActive: u.isActive,
           createdAt: new Date(u.createdAt),
         },

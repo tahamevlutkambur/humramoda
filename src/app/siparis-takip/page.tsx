@@ -159,37 +159,32 @@ export default function OrderTrackingPage() {
     }
   }
 
-  // İlerleme Aşamaları
+  // 3 Net İlerleme Aşaması
+  const isShipped =
+    data?.shippingStatus === "SHIPPED" ||
+    data?.shippingStatus === "IN_TRANSIT" ||
+    data?.shippingStatus === "OUT_FOR_DELIVERY" ||
+    data?.shippingStatus === "DELIVERED";
+  const isDelivered = data?.shippingStatus === "DELIVERED";
+
   const steps = [
-    { key: "ORDER_CREATED", label: "Sipariş Alındı", done: true },
     {
-      key: "PAID",
-      label: "Ödeme Onaylandı",
-      done: data?.paymentStatus === "PAID" || data?.paymentStatus === "REFUNDED",
-    },
-    {
-      key: "PREPARING",
-      label: "Kargo Hazırlanıyor",
-      done:
-        data?.shippingStatus === "AWAITING_SHIPMENT" ||
-        data?.shippingStatus === "SHIPPED" ||
-        data?.shippingStatus === "IN_TRANSIT" ||
-        data?.shippingStatus === "OUT_FOR_DELIVERY" ||
-        data?.shippingStatus === "DELIVERED",
+      key: "RECEIVED",
+      label: "1. Siparişiniz Tarafımıza Ulaşmıştır",
+      done: true,
+      desc: "Siparişiniz alındı ve ödemeniz onaylandı.",
     },
     {
       key: "SHIPPED",
-      label: "Kargoya Verildi",
-      done:
-        data?.shippingStatus === "SHIPPED" ||
-        data?.shippingStatus === "IN_TRANSIT" ||
-        data?.shippingStatus === "OUT_FOR_DELIVERY" ||
-        data?.shippingStatus === "DELIVERED",
+      label: "2. Ürün Kargoya Verildi",
+      done: Boolean(isShipped),
+      desc: isShipped ? "Ürününüz kargo firmasına teslim edildi ve yola çıktı." : "Kargo dağıtım görevlisi paketi hazırlıyor.",
     },
     {
-      key: "DELIVERY",
-      label: "Dağıtımda / Teslim Edildi",
-      done: data?.shippingStatus === "DELIVERED",
+      key: "DELIVERED",
+      label: "3. Ürün Teslim Edildi",
+      done: Boolean(isDelivered),
+      desc: isDelivered ? "Siparişiniz alıcıya teslim edilmiştir." : "Teslimat henüz gerçekleşmedi.",
     },
   ];
 
@@ -429,11 +424,11 @@ export default function OrderTrackingPage() {
                   <div
                     style={{
                       position: "absolute",
-                      top: "14px",
-                      left: "5%",
-                      right: "5%",
-                      height: "3px",
-                      backgroundColor: "#E0E0E0",
+                      top: "16px",
+                      left: "15%",
+                      right: "15%",
+                      height: "4px",
+                      backgroundColor: "#E2E8F0",
                       zIndex: 1,
                     }}
                   />
@@ -446,36 +441,48 @@ export default function OrderTrackingPage() {
                         display: "flex",
                         flexDirection: "column",
                         alignItems: "center",
-                        width: "18%",
+                        width: "30%",
                         textAlign: "center",
                       }}
                     >
                       <div
                         style={{
-                          width: "30px",
-                          height: "30px",
+                          width: "36px",
+                          height: "36px",
                           borderRadius: "50%",
-                          backgroundColor: st.done ? "#141414" : "#FFFFFF",
-                          border: st.done ? "2px solid #141414" : "2px solid #CCCCCC",
-                          color: st.done ? "#FFFFFF" : "#888888",
+                          backgroundColor: st.done ? "#059669" : "#FFFFFF",
+                          border: st.done ? "2px solid #059669" : "2px solid #CBD5E1",
+                          color: st.done ? "#FFFFFF" : "#64748B",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          fontSize: "12px",
-                          fontWeight: 600,
+                          fontSize: "14px",
+                          fontWeight: 700,
                           marginBottom: "8px",
+                          boxShadow: st.done ? "0 2px 8px rgba(5, 150, 105, 0.3)" : "none",
                         }}
                       >
                         {st.done ? "✓" : i + 1}
                       </div>
                       <span
                         style={{
-                          fontSize: "11px",
-                          fontWeight: st.done ? 600 : 400,
-                          color: st.done ? "#141414" : "#888888",
+                          fontSize: "13px",
+                          fontWeight: st.done ? 700 : 500,
+                          color: st.done ? "#0F172A" : "#64748B",
+                          marginBottom: "4px",
                         }}
                       >
                         {st.label}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          color: "#94A3B8",
+                          maxWidth: "180px",
+                          lineHeight: 1.3,
+                        }}
+                      >
+                        {st.desc}
                       </span>
                     </div>
                   ))}
