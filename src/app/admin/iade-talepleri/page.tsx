@@ -266,7 +266,7 @@ export default function AdminReturnsPage() {
               </tr>
             ) : (
               filteredReturns.map((ret) => (
-                <tr key={ret.id}>
+                <tr key={ret.id} style={ret.requestType === "CANCEL" ? { backgroundColor: "#fff1f1", borderLeft: "4px solid #c5221f" } : undefined}>
                   <td>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                       <span style={{ fontWeight: 600 }}>{ret.id}</span>
@@ -340,6 +340,10 @@ export default function AdminReturnsPage() {
                     {new Date(ret.createdAt).toLocaleDateString("tr-TR")}
                   </td>
                   <td style={{ textAlign: "right" }}>
+                    {(ret.requestType === "CANCEL" || ret.status === "REQUESTED") && <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem", marginBottom: "0.4rem" }}>
+                      <button type="button" className="hm-admin-btn hm-admin-btn-outline" style={{ color: "#9b1c1c", borderColor: "#ef9a9a", fontSize: "0.7rem" }} onClick={async () => { const response = await fetch(`/api/admin/returns/${ret.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "REFUND_PENDING", decision: "REFUND", adminNotes: "Para iadesi yapılacak" }) }); const result = await response.json(); if (!response.ok) setErrorMsg(result.error || "İşlem başarısız."); else { setReturns((prev) => prev.map((item) => item.id === ret.id ? result.returnRequest : item)); setSuccessMsg("Para iadesi süreci işaretlendi."); } }}>💳 Para İadesi Yapılacak</button>
+                      <button type="button" className="hm-admin-btn hm-admin-btn-outline" style={{ color: "#1d4ed8", borderColor: "#93c5fd", fontSize: "0.7rem" }} onClick={async () => { const response = await fetch(`/api/admin/returns/${ret.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "APPROVED", decision: "EXCHANGE", adminNotes: "Ürün değişimi yapılacak" }) }); const result = await response.json(); if (!response.ok) setErrorMsg(result.error || "İşlem başarısız."); else { setReturns((prev) => prev.map((item) => item.id === ret.id ? { ...result.returnRequest, requestType: "EXCHANGE" } : item)); setSuccessMsg("Ürün değişimi süreci işaretlendi."); } }}>🔄 Ürün Değişimi Yapılacak</button>
+                    </div>}
                     <button
                       type="button"
                       onClick={() => setSelectedReturn(ret)}

@@ -58,6 +58,10 @@ export async function PUT(
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
+    if (body.decision === "EXCHANGE" && result.returnRequest) {
+      result.returnRequest.requestType = "EXCHANGE";
+      result.returnRequest.adminNotes = adminNotes || "Ürün değişimi yapılacak";
+    }
     await savePersistentStoreData(getStoreData()).catch(() => { });
 
     return NextResponse.json({

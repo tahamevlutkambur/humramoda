@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { getAuthSecret } from "./auth";
 import {
   getStoreData,
   saveStoreData,
@@ -688,6 +689,27 @@ export function verifyCustomerTrackingAccess(
 /**
  * Müşteriye gösterilmek üzere hassas kişisel verileri maskelenmiş sipariş takip verisi oluşturur.
  */
+export function createOrderTrackingToken(order: StoreOrder): string {
+  const expiresAt = Date.now() + 30 * 60 * 1000;
+  const payload = Buffer.from(JSON.stringify({ orderId: order.id, expiresAt })).toString("base64url");
+  const signature = crypto.createHmac("sha256", getAuthSecret()).update(payload).digest("base64url");
+  return `${payload}.${signature}`;
+}
+
+export function verifyOrderTrackingToken(token: string, expectedOrderId: string): boolean {
+  try {
+    const [payload, signature] = token.split(".");
+    if (!payload || !signature) return false;
+    const expected = crypto.createHmac("sha256", getAuthSecret()).update(payload).digest();
+    const actual = Buffer.from(signature, "base64url");
+    if (actual.length !== expected.length || !crypto.timingSafeEqual(actual, expected)) return false;
+    const decoded = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+    return decoded.orderId === expectedOrderId && Number(decoded.expiresAt) > Date.now();
+  } catch {
+    return false;
+  }
+}
+
 export function getMaskedOrderTrackingView(order: StoreOrder) {
   const names = order.customerFullName.split(" ");
   const maskedName = names

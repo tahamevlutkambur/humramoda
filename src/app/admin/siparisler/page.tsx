@@ -105,6 +105,10 @@ export default function AdminOrdersPage() {
 
   useEffect(() => {
     fetchOrders();
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") fetchOrders();
+    }, 5000);
+    return () => window.clearInterval(timer);
   }, []);
 
   useEffect(() => {
@@ -263,6 +267,21 @@ export default function AdminOrdersPage() {
     } finally {
       setActionLoading(false);
     }
+  };
+
+  const openOrderPrint = (order: Order) => {
+    const popup = window.open("", "_blank", "width=800,height=900");
+    if (!popup) { alert("Yazdırma penceresi açılamadı. Tarayıcı açılır pencerelerine izin verin."); return; }
+    const esc = (value: string) => value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[char] || char));
+    popup.document.write(`<!doctype html><html lang="tr"><head><meta charset="utf-8"><title>Sipariş ${esc(order.orderNumber)}</title><style>body{font:14px Arial,sans-serif;margin:36px;color:#111}h1{font-size:22px}table{border-collapse:collapse;width:100%;margin-top:22px}td,th{border:1px solid #ccc;padding:9px;text-align:left}.total{text-align:right;font-size:18px;margin-top:20px}@media print{button{display:none}}</style></head><body><h1>Hümra Moda · Sipariş Fişi</h1><p>Sipariş: ${esc(order.orderNumber)} · ${new Date(order.createdAt).toLocaleString("tr-TR")}</p><p>${esc(order.customerFullName)}<br>${esc(order.customerPhone)}<br>${esc(order.shippingAddress.fullAddress)} · ${esc(order.shippingAddress.district)}, ${esc(order.shippingAddress.city)}</p><table><thead><tr><th>Ürün</th><th>Renk / Beden</th><th>Adet</th><th>Tutar</th></tr></thead><tbody>${order.items.map((item) => `<tr><td>${esc(item.productName)}</td><td>${esc(item.colorName)} / ${esc(item.sizeName)}</td><td>${item.quantity}</td><td>${formatCurrency(item.totalPrice)}</td></tr>`).join("")}</tbody></table><div class="total">Toplam: <strong>${formatCurrency(order.totalAmount)}</strong></div><script>window.onload=()=>window.print()</script></body></html>`);
+    popup.document.close();
+  };
+
+  const whatsappUrl = (order: Order) => {
+    const phone = order.customerPhone.replace(/\D/g, "");
+    const internationalPhone = phone.startsWith("0") ? `90${phone.slice(1)}` : phone;
+    const message = `Merhaba ${order.customerFullName}, ${order.orderNumber} numaralı siparişiniz hakkında bilgi vermek istiyoruz. Sipariş tutarı: ${formatCurrency(order.totalAmount)}.`;
+    return `https://wa.me/${internationalPhone}?text=${encodeURIComponent(message)}`;
   };
 
   const filteredOrders = orders.filter((o) => {
@@ -628,209 +647,9 @@ export default function AdminOrdersPage() {
               </div>
             </div>
 
-            {/* Kargo İşlemleri ve Takip Paneli (Faz 6) */}
-            <div
-              style={{
-                backgroundColor: "#F0F4F8",
-                padding: "1.25rem",
-                borderRadius: "6px",
-                border: "1px solid #D9E2EC",
-                marginBottom: "1.25rem",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: "1rem",
-                  flexWrap: "wrap",
-                  gap: "0.5rem",
-                }}
-              >
-                <div style={{ fontWeight: 700, fontSize: "0.9375rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <span>📦</span> Kargo Yönetimi ve Sevkiyat
-                </div>
-
-                <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-                  <span
-                    className={`hm-admin-badge ${
-                      selectedOrder.shippingStatus === "DELIVERED"
-                        ? "hm-admin-badge-success"
-                        : selectedOrder.shippingStatus === "SHIPPED"
-                        ? "hm-admin-badge-info"
-                        : "hm-admin-badge-warning"
-                    }`}
-                  >
-                    Durum: {selectedOrder.shippingStatus || "Kargo Bekleniyor"}
-                  </span>
-
-                  {selectedOrder.shipmentMethod && (
-                    <span
-                      style={{
-                        fontSize: "0.75rem",
-                        padding: "2px 6px",
-                        borderRadius: "4px",
-                        backgroundColor: selectedOrder.shipmentMethod === "API_INTEGRATED" ? "#E3F2FD" : "#FFF3E0",
-                        color: selectedOrder.shipmentMethod === "API_INTEGRATED" ? "#0D47A1" : "#E65100",
-                        fontWeight: 600,
-                      }}
-                    >
-                      {selectedOrder.shipmentMethod === "API_INTEGRATED" ? "API ENTEGRE" : "MANUEL GİRİŞ"}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Kargo Bilgileri Formu */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", marginBottom: "1rem" }}>
-                <div>
-                  <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, marginBottom: "0.25rem" }}>
-                    Kargo Firması
-                  </label>
-                  <select
-                    value={selectedCarrier}
-                    onChange={(e) => setSelectedCarrier(e.target.value)}
-                    className="hm-admin-select"
-                    style={{ width: "100%", fontSize: "0.8125rem" }}
-                  >
-                    <option value="yurtici">Yurtiçi Kargo</option>
-                    <option value="aras">Aras Kargo</option>
-                    <option value="mng">MNG Kargo</option>
-                    <option value="ptt">PTT Kargo</option>
-                    <option value="surat">Sürat Kargo</option>
-                    <option value="hepsijet">HepsiJet</option>
-                    <option value="custom">Özel / Diğer Kurye</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, marginBottom: "0.25rem" }}>
-                    Takip Numarası
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Örn: YK123456789"
-                    value={inputTrackingNumber}
-                    onChange={(e) => setInputTrackingNumber(e.target.value)}
-                    className="hm-admin-input"
-                    style={{ width: "100%", fontSize: "0.8125rem" }}
-                  />
-                </div>
-              </div>
-
-              {/* Kargo Aksiyonları */}
-              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
-                <button
-                  type="button"
-                  onClick={handleCreateShipment}
-                  disabled={actionLoading || selectedOrder.paymentStatus !== "PAID" || selectedOrder.operationalStatus === "CANCELLED"}
-                  className="hm-admin-btn hm-admin-btn-primary"
-                  style={{ fontSize: "0.8125rem" }}
-                >
-                  🚀 Gönderi Oluştur
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleSaveManualTracking}
-                  disabled={actionLoading || !inputTrackingNumber.trim()}
-                  className="hm-admin-btn hm-admin-btn-outline"
-                  style={{ fontSize: "0.8125rem" }}
-                >
-                  💾 Takip No Kaydet
-                </button>
-
-                {selectedOrder.trackingUrl && (
-                  <a
-                    href={selectedOrder.trackingUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hm-admin-btn hm-admin-btn-outline"
-                    style={{ fontSize: "0.8125rem", textDecoration: "none" }}
-                  >
-                    ↗️ Takip Bağlantısını Aç
-                  </a>
-                )}
-
-                {selectedOrder.shipmentId && (
-                  <a
-                    href={`/api/shipping/labels/${selectedOrder.shipmentId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hm-admin-btn hm-admin-btn-outline"
-                    style={{ fontSize: "0.8125rem", textDecoration: "none" }}
-                  >
-                    🏷️ Kargo Etiketi Yazdır
-                  </a>
-                )}
-              </div>
-
-              {/* Kargo Hareketleri Geçmişi */}
-              {selectedOrder.trackingEvents && selectedOrder.trackingEvents.length > 0 && (
-                <div style={{ marginTop: "1rem", borderTop: "1px solid #D9E2EC", paddingTop: "0.75rem" }}>
-                  <div style={{ fontSize: "0.75rem", fontWeight: 700, marginBottom: "0.5rem" }}>
-                    Kargo Hareket Geçmişi:
-                  </div>
-                  <div style={{ maxHeight: "120px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                    {selectedOrder.trackingEvents.map((evt) => (
-                      <div
-                        key={evt.id}
-                        style={{
-                          fontSize: "0.75rem",
-                          backgroundColor: "#FFF",
-                          padding: "0.4rem 0.6rem",
-                          borderRadius: "3px",
-                          border: "1px solid #E2E8F0",
-                          display: "flex",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <span>
-                          <strong>{evt.description}</strong> {evt.location ? `(${evt.location})` : ""}
-                        </span>
-                        <span style={{ color: "#718096" }}>
-                          {new Date(evt.timestamp).toLocaleString("tr-TR")}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Yeni Hareket Ekleme Alanı */}
-              <div style={{ marginTop: "0.75rem", display: "flex", gap: "0.5rem", alignItems: "center" }}>
-                <select
-                  value={newMovementStatus}
-                  onChange={(e) => setNewMovementStatus(e.target.value)}
-                  className="hm-admin-select"
-                  style={{ fontSize: "0.75rem", minWidth: "130px" }}
-                >
-                  <option value="IN_TRANSIT">Dağıtımda / Yolda</option>
-                  <option value="OUT_FOR_DELIVERY">Kurye Dağıtıma Çıktı</option>
-                  <option value="DELIVERED">Teslim Edildi</option>
-                  <option value="SHIPMENT_ISSUE">Kargo Sorunu</option>
-                </select>
-
-                <input
-                  type="text"
-                  placeholder="Hareket açıklaması (Örn: Kadıköy Şubeden Dağıtıma Çıktı)"
-                  value={newMovementDesc}
-                  onChange={(e) => setNewMovementDesc(e.target.value)}
-                  className="hm-admin-input"
-                  style={{ flex: 1, fontSize: "0.75rem" }}
-                />
-
-                <button
-                  type="button"
-                  onClick={handleAddMovement}
-                  disabled={actionLoading || !newMovementDesc.trim()}
-                  className="hm-admin-btn hm-admin-btn-outline"
-                  style={{ fontSize: "0.75rem" }}
-                >
-                  Hareket Ekle
-                </button>
-              </div>
+            <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginBottom: "1.25rem" }}>
+              <a href={whatsappUrl(selectedOrder)} target="_blank" rel="noopener noreferrer" className="hm-admin-btn hm-admin-btn-primary" style={{ textDecoration: "none" }}>WhatsApp Mesajı</a>
+              <button type="button" onClick={() => openOrderPrint(selectedOrder)} className="hm-admin-btn hm-admin-btn-outline">Fatura / Sipariş Fişi Çıkar</button>
             </div>
 
             {/* Kalemler Tablosu */}
@@ -912,16 +731,7 @@ export default function AdminOrdersPage() {
                 </button>
               )}
 
-              {selectedOrder.operationalStatus !== "CONFIRMED" && (
-                <button
-                  type="button"
-                  onClick={() => handleUpdateStatus(selectedOrder.id, "CONFIRMED")}
-                  disabled={actionLoading}
-                  className="hm-admin-btn hm-admin-btn-primary"
-                >
-                  Siparişi Onayla
-                </button>
-              )}
+
             </div>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getStoreData } from "@/lib/server/store";
 import { formatCurrency } from "@/lib/formatters";
 import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
+import { getPersistentStoreData } from "@/lib/server/persistent-store";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -14,7 +15,13 @@ export default async function AdminDashboardPage() {
     redirect("/admin/login?from=/admin");
   }
 
+  await getPersistentStoreData().catch(() => {});
   const store = getStoreData();
+  const visitors = (store.siteActivityLogs || []).filter((entry: any) => entry.eventType === "PAGE_VIEW");
+  const visitorKey = (entry: any) => entry.sessionId ? `session:${entry.sessionId}` : `ip:${entry.ipAddress || "unknown"}`;
+  const todayKey = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  const todayVisitors = new Set(visitors.filter((entry: any) => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(entry.timestamp)) === todayKey).map(visitorKey)).size;
+  const totalVisitors = new Set(visitors.map(visitorKey)).size;
   const products = store.products;
   const categories = store.categories;
   const collections = store.collections;
@@ -139,6 +146,17 @@ export default async function AdminDashboardPage() {
           <span style={{ fontSize: "0.75rem", color: "#718096", marginTop: "0.5rem", display: "block" }}>
             {lowStockVariants.length} varyantta kritik stok (≤3)
           </span>
+        </div>
+
+        <div className="hm-admin-card" style={{ padding: "1.25rem" }}>
+          <span className="hm-admin-label">Bugünkü Ziyaretçi</span>
+          <div style={{ fontSize: "1.875rem", fontWeight: 700, color: "#1A202C", marginTop: "0.25rem" }}>{todayVisitors}</div>
+          <span style={{ fontSize: "0.75rem", color: "#718096", marginTop: "0.5rem", display: "block" }}>Tekil oturum veya IP</span>
+        </div>
+        <div className="hm-admin-card" style={{ padding: "1.25rem" }}>
+          <span className="hm-admin-label">Toplam Ziyaretçi</span>
+          <div style={{ fontSize: "1.875rem", fontWeight: 700, color: "#1A202C", marginTop: "0.25rem" }}>{totalVisitors}</div>
+          <span style={{ fontSize: "0.75rem", color: "#718096", marginTop: "0.5rem", display: "block" }}>Tekil oturum veya IP</span>
         </div>
 
         {/* Ücretsiz Kargo Baremi */}

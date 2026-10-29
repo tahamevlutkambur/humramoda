@@ -53,15 +53,16 @@ export async function POST(
     order.trackingEvents = order.trackingEvents || [];
 
     if (targetStatus === "SHIPPED") {
+      const enteringShipped = order.shippingStatus !== "SHIPPED" && order.shippingStatus !== "IN_TRANSIT" && order.shippingStatus !== "OUT_FOR_DELIVERY" && order.shippingStatus !== "DELIVERED";
       order.shippingStatus = "SHIPPED";
-      order.shippedAt = now;
+      order.shippedAt = order.shippedAt || now;
       if (trackingNumber && typeof trackingNumber === "string" && trackingNumber.trim()) {
         order.trackingNumber = trackingNumber.trim();
       } else if (!order.trackingNumber) {
         order.trackingNumber = `TRK-${Date.now().toString().slice(-8)}`;
       }
 
-      order.trackingEvents.push({
+      if (enteringShipped) order.trackingEvents.push({
         id: `evt-${crypto.randomBytes(6).toString("hex")}`,
         timestamp: now,
         status: "SHIPPED",
@@ -70,10 +71,11 @@ export async function POST(
         createdAt: now,
       });
     } else if (targetStatus === "DELIVERED") {
+      const enteringDelivered = order.shippingStatus !== "DELIVERED";
       order.shippingStatus = "DELIVERED";
-      order.deliveredAt = now;
+      order.deliveredAt = order.deliveredAt || now;
 
-      order.trackingEvents.push({
+      if (enteringDelivered) order.trackingEvents.push({
         id: `evt-${crypto.randomBytes(6).toString("hex")}`,
         timestamp: now,
         status: "DELIVERED",

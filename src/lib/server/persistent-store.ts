@@ -191,24 +191,48 @@ export async function savePersistentStoreData(data: AppStoreData): Promise<void>
       return;
     }
 
-    const serialized = JSON.stringify(data);
-    try {
-      await prisma.$executeRaw`
-        INSERT INTO "HumraStoreSnapshot" ("id", "data", "updatedAt")
-        VALUES ('main', CAST(${serialized} AS jsonb), NOW())
-        ON CONFLICT ("id") DO UPDATE
-        SET "data" = EXCLUDED."data", "updatedAt" = NOW()
-      `;
-    } catch {
-      await prisma.$executeRawUnsafe(
+    const merged = await prisma.$transaction(async (tx) => {
+      // Serialize full-snapshot writers across serverless instances. Merge append-only
+      // records and newer order/return revisions before replacing the JSON snapshot.
+      await tx.$queryRawUnsafe(`SELECT pg_advisory_xact_lock(726194031)`);
+      const rows = await tx.$queryRawUnsafe<Array<{ data: AppStoreData }>>(
+        `SELECT "data" FROM "HumraStoreSnapshot" WHERE "id" = 'main' LIMIT 1`
+      );
+      const latest = rows?.[0]?.data;
+      const next: AppStoreData = { ...data };
+      if (latest) {
+        const mergeByRevision = <T extends { id: string; updatedAt?: string; createdAt?: string }>(
+          incoming: T[] = [],
+          existing: T[] = []
+        ): T[] => {
+          const items = new Map(existing.map((item) => [item.id, item]));
+          for (const item of incoming) {
+            const previous = items.get(item.id);
+            const itemTime = new Date(item.updatedAt || item.createdAt || 0).getTime();
+            const previousTime = previous
+              ? new Date(previous.updatedAt || previous.createdAt || 0).getTime()
+              : -1;
+            if (!previous || itemTime >= previousTime) items.set(item.id, item);
+          }
+          return Array.from(items.values());
+        };
+        next.orders = mergeByRevision(data.orders, latest.orders);
+        next.returnRequests = mergeByRevision(data.returnRequests || [], latest.returnRequests || []);
+        next.shipments = mergeByRevision(data.shipments || [], latest.shipments || []);
+        next.adminUsers = mergeByRevision(data.adminUsers, latest.adminUsers);
+        next.siteActivityLogs = mergeByRevision(data.siteActivityLogs || [], latest.siteActivityLogs || []).slice(-5000);
+        next.auditLogs = mergeByRevision(data.auditLogs || [], latest.auditLogs || []).slice(-5000);
+      }
+      const serialized = JSON.stringify(next);
+      await tx.$executeRawUnsafe(
         `INSERT INTO "HumraStoreSnapshot" ("id", "data", "updatedAt")
-         VALUES ('main', to_jsonb($1::text), NOW())
-         ON CONFLICT ("id") DO UPDATE
-         SET "data" = EXCLUDED."data", "updatedAt" = NOW()`,
+         VALUES ('main', CAST($1 AS jsonb), NOW())
+         ON CONFLICT ("id") DO UPDATE SET "data" = EXCLUDED."data", "updatedAt" = NOW()`,
         serialized
       );
-    }
-    usePersistentStoreData(data);
+      return next;
+    });
+    usePersistentStoreData(merged);
   } catch (error) {
     console.warn("savePersistentStoreData error, data kept in local store:", error);
   }

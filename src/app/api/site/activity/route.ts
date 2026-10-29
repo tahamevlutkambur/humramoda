@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { logSiteActivity, SiteActivityType } from "@/lib/server/logger";
+import { getPersistentStoreData, savePersistentStoreData } from "@/lib/server/persistent-store";
+import { getStoreData } from "@/lib/server/store";
 
 const ALLOWED_SITE_EVENTS = new Set<SiteActivityType>([
   "PAGE_VIEW",
@@ -14,6 +16,7 @@ const ALLOWED_SITE_EVENTS = new Set<SiteActivityType>([
 
 export async function POST(req: Request) {
   try {
+    await getPersistentStoreData().catch(() => {});
     const body = await req.json();
     const eventType = body.eventType as SiteActivityType;
 
@@ -21,10 +24,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Geçersiz olay türü." }, { status: 400 });
     }
 
-    const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+    const clientIp = (req.headers.get("x-vercel-forwarded-for") || req.headers.get("x-forwarded-for") || "127.0.0.1").split(",")[0].trim();
     const userAgent = req.headers.get("user-agent") || undefined;
 
-    logSiteActivity({
+    const log = logSiteActivity({
       eventType,
       path: typeof body.path === "string" ? body.path.slice(0, 150) : "/",
       query: typeof body.query === "string" ? body.query.slice(0, 100) : undefined,
@@ -34,6 +37,11 @@ export async function POST(req: Request) {
       ipAddress: clientIp,
       userAgent,
     });
+    const store = getStoreData();
+    store.siteActivityLogs = store.siteActivityLogs || [];
+    store.siteActivityLogs.unshift(log);
+    store.siteActivityLogs = store.siteActivityLogs.slice(0, 5000);
+    await savePersistentStoreData(store);
 
     return NextResponse.json({ success: true });
   } catch (err) {

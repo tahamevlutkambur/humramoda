@@ -26,6 +26,7 @@ interface OrderItem {
 
 interface TrackingData {
   orderNumber: string;
+  trackingToken: string;
   createdAt: string;
   customerName: string;
   customerEmail: string;
@@ -56,7 +57,6 @@ interface ReturnRequestItem {
 
 export default function OrderTrackingPage() {
   const [orderNumber, setOrderNumber] = useState("");
-  const [emailOrPhone, setEmailOrPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<TrackingData | null>(null);
@@ -72,14 +72,13 @@ export default function OrderTrackingPage() {
   async function handleLookup(e: React.FormEvent) {
     e.preventDefault();
     if (!orderNumber.trim()) {
-      setError("Lütfen sipariş numaranızı veya kargo takip numaranızı giriniz.");
+      setError("Lütfen sipariş numaranızı giriniz.");
       return;
     }
 
     setLoading(true);
     setError(null);
 
-    const isEmail = emailOrPhone.includes("@");
 
     try {
       const res = await fetch("/api/tracking/lookup", {
@@ -87,8 +86,6 @@ export default function OrderTrackingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           orderNumber: orderNumber.trim(),
-          email: isEmail && emailOrPhone.trim() ? emailOrPhone.trim() : undefined,
-          phone: !isEmail && emailOrPhone.trim() ? emailOrPhone.trim() : undefined,
         }),
       });
 
@@ -122,7 +119,8 @@ export default function OrderTrackingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           orderNumber: data.orderNumber,
-          customerEmail: emailOrPhone.includes("@") ? emailOrPhone.trim() : data.customerEmail,
+          customerEmail: "",
+          trackingToken: data.trackingToken,
           reason: returnReason.trim(),
           customerNotes: returnNotes.trim(),
           items: data.items.map((it) => ({
@@ -158,6 +156,25 @@ export default function OrderTrackingPage() {
       setSubmittingReturn(false);
     }
   }
+
+  React.useEffect(() => {
+    if (!data || typeof document === "undefined") return;
+    const refresh = async () => {
+      if (document.visibilityState !== "visible") return;
+      try {
+        const response = await fetch("/api/tracking/lookup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify({ orderNumber: data.orderNumber }),
+        });
+        const result = await response.json();
+        if (response.ok && result.tracking) setData(result.tracking);
+      } catch { /* next refresh will retry */ }
+    };
+    const timer = window.setInterval(refresh, 5000);
+    return () => window.clearInterval(timer);
+  }, [data?.orderNumber]);
 
   // 3 Net İlerleme Aşaması
   const isShipped =
@@ -262,39 +279,6 @@ export default function OrderTrackingPage() {
                   outline: "none",
                 }}
               />
-            </div>
-
-            <div>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  marginBottom: "0.35rem",
-                  color: "#333",
-                }}
-              >
-                E-posta veya Telefon (Opsiyonel)
-              </label>
-              <input
-                type="text"
-                placeholder="Varsa e-posta veya telefon numaranız"
-                value={emailOrPhone}
-                onChange={(e) => setEmailOrPhone(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "0.75rem 1rem",
-                  border: "1px solid #CCC",
-                  borderRadius: "3px",
-                  fontSize: "14px",
-                  outline: "none",
-                }}
-              />
-              <span style={{ fontSize: "11px", color: "#888", marginTop: "4px", display: "block" }}>
-                * Güvenliğiniz gereği sipariş detayları yalnızca doğrulanmış iletişim bilgisi ile gösterilir.
-              </span>
             </div>
 
             {error && (

@@ -323,6 +323,7 @@ export interface AppStoreData {
   returnRequests?: ReturnRequest[];
   notifications?: CustomerNotification[];
   auditLogs?: any[];
+  siteActivityLogs?: any[];
 }
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -2179,6 +2180,40 @@ export function updateOrderOperationalStatus(
       order.cancelledAt = new Date().toISOString();
     }
     order.operationalStatus = "CANCELLED";
+    store.returnRequests = store.returnRequests || [];
+    if (!store.returnRequests.some((request) => request.orderId === order.id && request.requestType === "CANCEL")) {
+      const now = new Date().toISOString();
+      store.returnRequests.unshift({
+        id: `ret-cancel-${crypto.randomBytes(6).toString("hex")}`,
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        customerEmail: order.customerEmail,
+        customerPhone: order.customerPhone,
+        requestType: "CANCEL",
+        items: order.items.map((item) => ({
+          id: `ritem-${crypto.randomBytes(4).toString("hex")}`,
+          orderItemId: item.id,
+          productId: item.productId,
+          productName: item.productName,
+          variantSku: item.sku,
+          colorName: item.colorName,
+          sizeName: item.sizeName,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          totalPrice: item.totalPrice,
+          reason: "Sipariş iptal edildi",
+        })),
+        requestedAmount: order.totalAmount,
+        refundedAmount: 0,
+        status: "REQUESTED",
+        reason: "Sipariş iptal edildi",
+        restockDecision: "PENDING",
+        isRestocked: false,
+        actualRefundVerified: false,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
   }
 
   order.updatedAt = new Date().toISOString();

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import {
   verifyCustomerTrackingAccess,
   getMaskedOrderTrackingView,
+  createOrderTrackingToken,
 } from "@/lib/server/shipping";
 import { getReturnRequestsByOrderId } from "@/lib/server/returns";
 import { getPersistentStoreData } from "@/lib/server/persistent-store";
@@ -9,6 +10,7 @@ import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
 import { getStoreData } from "@/lib/server/store";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function POST(req: Request) {
   try {
@@ -61,7 +63,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      tracking: trackingData,
+      tracking: { ...trackingData, trackingToken: createOrderTrackingToken(order) },
       returnRequests: returnRequests.map((r) => ({
         id: r.id,
         status: r.status,
