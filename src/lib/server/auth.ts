@@ -3,10 +3,8 @@ import crypto from "crypto";
 export const ADMIN_COOKIE_NAME = "hm_admin_session";
 export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24; // 24 saat
 
-export const KNOWN_DEFAULT_PASSWORDS = new Set(["Eyup.Humra2026", "Humra2026!"]);
-export const KNOWN_DEFAULT_HASHES = new Set([
-  "d88ba6be78528ec28154bf691409d940:86958fabec9d64e85df791df088d1ed9b96e2f9124b5212238913a802175b5d88c96363d2a21d91f9c88bd2809ba8ca68f8f14c4b8f51e056e3a0bf53b843066",
-]);
+export const KNOWN_DEFAULT_PASSWORDS = new Set(["Humra2026!"]);
+export const KNOWN_DEFAULT_HASHES = new Set<string>();
 
 /**
  * Güvenli imzalama anahtarı sağlayıcısı.

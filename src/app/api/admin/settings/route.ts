@@ -8,6 +8,8 @@ import {
 } from "@/lib/server/store";
 import { getPersistentStoreData, savePersistentStoreData } from "@/lib/server/persistent-store";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: Request) {
   const auth = await requireAdminRole(req, ["ADMIN"]);
   if (auth.errorResponse) {

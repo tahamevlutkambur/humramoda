@@ -21,8 +21,8 @@ export function WhatsAppButton({
     return null;
   }
 
-  // Numarayı sadece rakam kalacak şekilde temizle (varsayılan: 905305270072)
-  const rawNumber = phoneNumber && phoneNumber.trim().length > 0 ? phoneNumber : "905305270072";
+  // Numarayı sadece rakam kalacak şekilde temizle (varsayılan: 905427994428)
+  const rawNumber = phoneNumber && phoneNumber.trim().length > 0 ? phoneNumber : "905427994428";
   const cleanPhone = rawNumber.replace(/[^0-9]/g, "");
   const encodedMessage = encodeURIComponent(message);
   const href = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;

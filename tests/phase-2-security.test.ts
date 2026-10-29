@@ -79,6 +79,12 @@ describe("Faz 2: Admin Kimlik Doğrulama, STAFF/ADMIN Yetkileri, CSRF ve Oturum 
       // 3. Giriş yapan hiçbir kullanıcı artık sahte 'admin-master' kimliği almamalı
       expect(res1.user).toBeUndefined();
       expect(res2.user).toBeUndefined();
+
+      // 4. Meşru yönetici kullanıcısı (humramoda@eyup.com / Eyup.Humra2026) başarıyla giriş yapabilmeli
+      const adminLogin = authenticateAdmin("humramoda@eyup.com", "Eyup.Humra2026");
+      expect(adminLogin.error).toBeUndefined();
+      expect(adminLogin.user).toBeDefined();
+      expect(adminLogin.user?.role).toBe("ADMIN");
     });
 
     it("devre dışı bırakılmış (isActive: false) bir yönetici doğru şifre girse dahi engellenmeli", () => {

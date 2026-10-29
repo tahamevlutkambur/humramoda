@@ -1,5 +1,5 @@
 {
-  "updatedAt": 1793277664571,
+  "updatedAt": 1793279110409,
   "products": [
     {
       "id": "prod-1",
@@ -741,8 +741,8 @@
   "settings": {
     "storeName": "Hümra Moda",
     "currency": "TRY",
-    "phone": "+90 850 000 00 00",
-    "whatsapp": "+90 530 527 00 72",
+    "phone": "+90 542 799 44 28",
+    "whatsapp": "+90 542 799 44 28",
     "email": "destek@humramoda.com",
     "address": "Nişantaşı, İstanbul, Türkiye",
     "freeShippingThreshold": 3500,
@@ -2215,6 +2215,51 @@
   ],
   "auditLogs": [
     {
+      "id": "audit-1793279108394-37eac44c",
+      "timestamp": "2026-10-29T13:05:08.394Z",
+      "adminId": "adm-pwd-test-1793279108126",
+      "adminEmail": "pwd-rotation-1793279108126@humramoda.local",
+      "action": "ADMIN_PASSWORD_CHANGED",
+      "targetType": "AUTH",
+      "targetId": "adm-pwd-test-1793279108126",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "97da7c55bfd9",
+      "details": {
+        "reason": "PASSWORD_ROTATION_SUCCESS"
+      }
+    },
+    {
+      "id": "audit-1793279092702-7a36ab33",
+      "timestamp": "2026-10-29T13:04:52.702Z",
+      "adminId": "adm-pwd-test-1793279092453",
+      "adminEmail": "pwd-rotation-1793279092453@humramoda.local",
+      "action": "ADMIN_PASSWORD_CHANGED",
+      "targetType": "AUTH",
+      "targetId": "adm-pwd-test-1793279092453",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "d17f9f5b30af",
+      "details": {
+        "reason": "PASSWORD_ROTATION_SUCCESS"
+      }
+    },
+    {
+      "id": "audit-1793279077862-2f6f9b28",
+      "timestamp": "2026-10-29T13:04:37.863Z",
+      "adminId": "adm-pwd-test-1793279077567",
+      "adminEmail": "pwd-rotation-1793279077567@humramoda.local",
+      "action": "ADMIN_PASSWORD_CHANGED",
+      "targetType": "AUTH",
+      "targetId": "adm-pwd-test-1793279077567",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "aec670bde971",
+      "details": {
+        "reason": "PASSWORD_ROTATION_SUCCESS"
+      }
+    },
+    {
       "id": "audit-1793277663656-10903b61",
       "timestamp": "2026-10-29T12:41:03.656Z",
       "adminId": "adm-pwd-test-1793277663452",
@@ -2288,7 +2333,7 @@
       "ipAddress": "127.0.0.1",
       "details": {
         "storeName": "Hümra Butik",
-        "whatsapp": "+90 530 527 00 72"
+        "whatsapp": "+90 542 799 44 28"
       }
     }
   ]

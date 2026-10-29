@@ -394,8 +394,8 @@ const DEFAULT_HOMEPAGE_CONTENT: HomepageContent = {
 const DEFAULT_SETTINGS: StoreSettings = {
   storeName: "Hümra Butik & Moda",
   currency: "TRY",
-  phone: "+90 850 000 00 00",
-  whatsapp: "+90 530 527 00 72",
+  phone: "+90 542 799 44 28",
+  whatsapp: "+90 542 799 44 28",
   email: "destek@humrabutik.com",
   address: "Nişantaşı, İstanbul, Türkiye",
   freeShippingThreshold: 3500,

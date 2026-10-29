@@ -130,10 +130,14 @@ export async function getPersistentStoreData(): Promise<AppStoreData> {
         }
       }
 
-      // WhatsApp numarasını ve mağaza ayarlarını senkronize et
-      if (localData.settings?.whatsapp && dbData.settings?.whatsapp !== localData.settings.whatsapp) {
+      // WhatsApp ve telefon numarasını senkronize et
+      if (
+        (localData.settings?.whatsapp && dbData.settings?.whatsapp !== localData.settings.whatsapp) ||
+        (localData.settings?.phone && dbData.settings?.phone !== localData.settings.phone)
+      ) {
         dbData.settings = dbData.settings || {};
-        dbData.settings.whatsapp = localData.settings.whatsapp;
+        if (localData.settings?.whatsapp) dbData.settings.whatsapp = localData.settings.whatsapp;
+        if (localData.settings?.phone) dbData.settings.phone = localData.settings.phone;
         dbData.updatedAt = Date.now();
         await savePersistentStoreData(dbData).catch(() => {});
       }
