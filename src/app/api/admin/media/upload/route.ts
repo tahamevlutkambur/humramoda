@@ -1,13 +1,18 @@
 import { NextResponse } from "next/server";
-import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
+import { getAuthenticatedAdmin, verifySameOrigin } from "@/lib/server/session-guard";
 import { processAndSaveUpload } from "@/lib/server/media";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
-  const session = await getAuthenticatedAdmin();
+  const session = await getAuthenticatedAdmin(req);
   if (!session) {
     return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
+  }
+
+  const csrf = verifySameOrigin(req);
+  if (!csrf.valid) {
+    return NextResponse.json({ error: csrf.error }, { status: 403 });
   }
 
   try {

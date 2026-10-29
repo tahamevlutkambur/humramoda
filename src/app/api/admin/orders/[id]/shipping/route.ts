@@ -1,17 +1,25 @@
 import { NextResponse } from "next/server";
-import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
+import { getAuthenticatedAdmin, verifySameOrigin } from "@/lib/server/session-guard";
 import {
   createShipment,
   updateTrackingInfo,
   CarrierCode,
   ShippingStatus,
 } from "@/lib/server/shipping";
+import { getStoreData } from "@/lib/server/store";
+import { getPersistentStoreData, savePersistentStoreData } from "@/lib/server/persistent-store";
+import { getClientIp } from "@/lib/server/auth";
 
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getAuthenticatedAdmin();
+  const csrf = verifySameOrigin(req);
+  if (!csrf.valid) {
+    return NextResponse.json({ error: csrf.error }, { status: 403 });
+  }
+
+  const session = await getAuthenticatedAdmin(req);
   if (!session) {
     return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
   }
@@ -19,13 +27,14 @@ export async function POST(
   const { id } = await params;
 
   try {
+    await getPersistentStoreData().catch(() => {});
     const body = await req.json();
     const carrier = (body.carrier || "yurtici") as CarrierCode;
     const trackingNumber = body.trackingNumber?.trim();
     const customTrackingUrl = body.customTrackingUrl?.trim();
     const method = body.method as "MANUAL" | "API_INTEGRATED" | undefined;
 
-    const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+    const clientIp = getClientIp(req);
 
     const result = createShipment({
       orderId: id,
@@ -47,6 +56,8 @@ export async function POST(
       );
     }
 
+    await savePersistentStoreData(getStoreData()).catch(() => {});
+
     return NextResponse.json({
       success: true,
       shipment: result.shipment,
@@ -66,7 +77,12 @@ export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getAuthenticatedAdmin();
+  const csrf = verifySameOrigin(req);
+  if (!csrf.valid) {
+    return NextResponse.json({ error: csrf.error }, { status: 403 });
+  }
+
+  const session = await getAuthenticatedAdmin(req);
   if (!session) {
     return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
   }
@@ -74,6 +90,7 @@ export async function PUT(
   const { id } = await params;
 
   try {
+    await getPersistentStoreData().catch(() => {});
     const body = await req.json();
     const carrier = (body.carrier || "yurtici") as CarrierCode;
     const trackingNumber = body.trackingNumber?.trim();
@@ -87,7 +104,7 @@ export async function PUT(
       );
     }
 
-    const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+    const clientIp = getClientIp(req);
 
     const result = updateTrackingInfo({
       orderId: id,
@@ -105,6 +122,8 @@ export async function PUT(
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
+
+    await savePersistentStoreData(getStoreData()).catch(() => {});
 
     return NextResponse.json({
       success: true,

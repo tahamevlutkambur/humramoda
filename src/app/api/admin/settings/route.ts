@@ -1,23 +1,33 @@
 import { NextResponse } from "next/server";
-import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
-import { getStoreData, getStoreSettings, updateStoreSettings } from "@/lib/server/store";
+import { requireAdminRole, verifySameOrigin } from "@/lib/server/session-guard";
+import {
+  getStoreData,
+  getStoreSettings,
+  updateStoreSettings,
+  sanitizeStoreSettingsForClient,
+} from "@/lib/server/store";
 import { getPersistentStoreData, savePersistentStoreData } from "@/lib/server/persistent-store";
 
 export async function GET(req: Request) {
-  const session = await getAuthenticatedAdmin(req);
-  if (!session) {
-    return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
+  const auth = await requireAdminRole(req, ["ADMIN"]);
+  if (auth.errorResponse) {
+    return auth.errorResponse;
   }
 
   await getPersistentStoreData().catch(() => {});
-  const settings = getStoreSettings();
+  const settings = sanitizeStoreSettingsForClient(getStoreSettings());
   return NextResponse.json({ settings });
 }
 
 export async function PUT(req: Request) {
-  const session = await getAuthenticatedAdmin(req);
-  if (!session) {
-    return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
+  const auth = await requireAdminRole(req, ["ADMIN"]);
+  if (auth.errorResponse) {
+    return auth.errorResponse;
+  }
+
+  const csrf = verifySameOrigin(req);
+  if (!csrf.valid) {
+    return NextResponse.json({ error: csrf.error }, { status: 403 });
   }
 
   try {
@@ -25,7 +35,10 @@ export async function PUT(req: Request) {
     const body = await req.json();
     const updated = updateStoreSettings(body);
     await savePersistentStoreData(getStoreData()).catch(() => {});
-    return NextResponse.json({ success: true, settings: updated });
+    return NextResponse.json({
+      success: true,
+      settings: sanitizeStoreSettingsForClient(updated),
+    });
   } catch (err) {
     console.error("Update store settings error:", err);
     return NextResponse.json({ error: "Sunucu hatası oluştu." }, { status: 500 });

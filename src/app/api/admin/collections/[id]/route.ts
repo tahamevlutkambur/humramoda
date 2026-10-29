@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
-import { updateStoreCollection, deleteStoreCollection } from "@/lib/server/store";
+import { requireAdminRole, verifySameOrigin } from "@/lib/server/session-guard";
+import { updateStoreCollection, deleteStoreCollection, getStoreData } from "@/lib/server/store";
 import { logAdminAudit } from "@/lib/server/logger";
 import { revalidatePath } from "next/cache";
+import { getPersistentStoreData, savePersistentStoreData } from "@/lib/server/persistent-store";
 
 interface RouteParams {
   params: Promise<{
@@ -11,12 +12,20 @@ interface RouteParams {
 }
 
 export async function PUT(req: Request, { params }: RouteParams) {
-  const session = await getAuthenticatedAdmin();
-  if (!session) {
-    return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
+  const auth = await requireAdminRole(req, ["ADMIN", "STAFF"]);
+  if (auth.errorResponse) {
+    return auth.errorResponse;
   }
 
+  const csrf = verifySameOrigin(req);
+  if (!csrf.valid) {
+    return NextResponse.json({ error: csrf.error }, { status: 403 });
+  }
+
+  const session = auth.session;
+
   try {
+    await getPersistentStoreData().catch(() => {});
     const { id } = await params;
     const body = await req.json();
 
@@ -24,6 +33,8 @@ export async function PUT(req: Request, { params }: RouteParams) {
     if (error || !collection) {
       return NextResponse.json({ error: error || "Koleksiyon güncellenemedi." }, { status: 400 });
     }
+
+    await savePersistentStoreData(getStoreData()).catch(() => {});
 
     logAdminAudit({
       adminId: session.userId,
@@ -52,34 +63,49 @@ export async function PUT(req: Request, { params }: RouteParams) {
 }
 
 export async function DELETE(req: Request, { params }: RouteParams) {
-  const session = await getAuthenticatedAdmin();
-  if (!session) {
-    return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
+  const auth = await requireAdminRole(req, ["ADMIN"]);
+  if (auth.errorResponse) {
+    return auth.errorResponse;
   }
 
-  const { id } = await params;
-  const deleted = deleteStoreCollection(id);
-  if (!deleted) {
-    return NextResponse.json({ error: "Koleksiyon bulunamadı." }, { status: 404 });
+  const csrf = verifySameOrigin(req);
+  if (!csrf.valid) {
+    return NextResponse.json({ error: csrf.error }, { status: 403 });
   }
 
-  logAdminAudit({
-    adminId: session.userId,
-    adminEmail: session.email,
-    action: "COLLECTION_UPDATED",
-    targetType: "COLLECTION",
-    targetId: id,
-    result: "SUCCESS",
-    details: { id, action: "DELETED" },
-  });
+  const session = auth.session;
 
   try {
-    revalidatePath("/admin/koleksiyonlar");
-    revalidatePath("/");
-    revalidatePath("/urunler");
-  } catch {
-    // Revalidation is best effort
-  }
+    await getPersistentStoreData().catch(() => {});
+    const { id } = await params;
+    const deleted = deleteStoreCollection(id);
+    if (!deleted) {
+      return NextResponse.json({ error: "Koleksiyon bulunamadı." }, { status: 404 });
+    }
 
-  return NextResponse.json({ success: true });
+    await savePersistentStoreData(getStoreData()).catch(() => {});
+
+    logAdminAudit({
+      adminId: session.userId,
+      adminEmail: session.email,
+      action: "COLLECTION_UPDATED",
+      targetType: "COLLECTION",
+      targetId: id,
+      result: "SUCCESS",
+      details: { id, action: "DELETED" },
+    });
+
+    try {
+      revalidatePath("/admin/koleksiyonlar");
+      revalidatePath("/");
+      revalidatePath("/urunler");
+    } catch {
+      // Revalidation is best effort
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("Delete collection error:", err);
+    return NextResponse.json({ error: "Sunucu hatası oluştu." }, { status: 500 });
+  }
 }

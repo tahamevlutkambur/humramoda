@@ -1,12 +1,19 @@
 import React from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getStoreData } from "@/lib/server/store";
 import { formatCurrency } from "@/lib/formatters";
+import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default function AdminDashboardPage() {
+export default async function AdminDashboardPage() {
+  const session = await getAuthenticatedAdmin();
+  if (!session) {
+    redirect("/admin/login?from=/admin");
+  }
+
   const store = getStoreData();
   const products = store.products;
   const categories = store.categories;

@@ -1,12 +1,19 @@
 import { NextResponse } from "next/server";
-import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
+import { getAuthenticatedAdmin, verifySameOrigin } from "@/lib/server/session-guard";
 import { addTrackingEvent, ShippingStatus } from "@/lib/server/shipping";
+import { getStoreData } from "@/lib/server/store";
+import { getPersistentStoreData, savePersistentStoreData } from "@/lib/server/persistent-store";
 
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getAuthenticatedAdmin();
+  const csrf = verifySameOrigin(req);
+  if (!csrf.valid) {
+    return NextResponse.json({ error: csrf.error }, { status: 403 });
+  }
+
+  const session = await getAuthenticatedAdmin(req);
   if (!session) {
     return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
   }
@@ -14,6 +21,7 @@ export async function POST(
   const { id } = await params;
 
   try {
+    await getPersistentStoreData().catch(() => {});
     const body = await req.json();
     const status = body.status as ShippingStatus;
     const description = body.description?.trim();
@@ -36,6 +44,8 @@ export async function POST(
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
+
+    await savePersistentStoreData(getStoreData()).catch(() => {});
 
     return NextResponse.json({
       success: true,

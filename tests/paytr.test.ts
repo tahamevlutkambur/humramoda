@@ -28,6 +28,7 @@ import {
   verifyPayTRCallbackHash,
   formatPayTRBasket,
   processPayTRCallback,
+  getPayTRConfig,
 } from "../src/lib/server/paytr";
 import {
   createPendingOrder,
@@ -268,13 +269,38 @@ describe("Faz 5: PayTR Ödeme Entegrasyonu ve Güvenlik Denetimleri", () => {
       orderKurus = orderRes.order!.totalKurus;
     });
 
-    it("geçerli imzalı başarılı callback siparişi PAID yapar ve stoku tam bir kez düşer", () => {
-      const simHash = `sim_hash_${testOrderNumber}_1`;
+    it("sahte sim_hash_ öneki ile gönderilen callback'i kesinlikle reddeder ve siparişi PAID yapmaz", () => {
+      const fakeSimHash = `sim_hash_${testOrderNumber}_1`;
       const res = processPayTRCallback({
         merchantOid: testOrderNumber,
         status: "success",
         totalAmount: orderKurus,
-        hash: simHash,
+        hash: fakeSimHash,
+      });
+
+      expect(res.ok).toBe(false);
+      expect(res.httpStatus).toBe(400);
+      expect(res.statusText).toContain("bad hash");
+
+      const unchanged = getOrderById(testOrderNumber);
+      expect(unchanged?.paymentStatus).toBe("PENDING");
+      expect(unchanged?.stockDeducted).toBe(false);
+    });
+
+    it("geçerli imzalı başarılı callback siparişi PAID yapar ve stoku tam bir kez düşer", () => {
+      const cfg = getPayTRConfig();
+      const validHash = computePayTRCallbackHash({
+        merchantOid: testOrderNumber,
+        status: "success",
+        totalAmount: orderKurus,
+        merchantSalt: cfg.merchantSalt,
+        merchantKey: cfg.merchantKey,
+      });
+      const res = processPayTRCallback({
+        merchantOid: testOrderNumber,
+        status: "success",
+        totalAmount: orderKurus,
+        hash: validHash,
       });
 
       expect(res.ok).toBe(true);
@@ -294,14 +320,21 @@ describe("Faz 5: PayTR Ödeme Entegrasyonu ve Güvenlik Denetimleri", () => {
     });
 
     it("idempotency: aynı başarılı callback ikinci kez geldiğinde stok tekrar düşülmez ve anında OK yanıtı döner", () => {
-      const simHash = `sim_hash_${testOrderNumber}_2`;
+      const cfg = getPayTRConfig();
+      const validHash = computePayTRCallbackHash({
+        merchantOid: testOrderNumber,
+        status: "success",
+        totalAmount: orderKurus,
+        merchantSalt: cfg.merchantSalt,
+        merchantKey: cfg.merchantKey,
+      });
 
       // 1. Çağrı
       const res1 = processPayTRCallback({
         merchantOid: testOrderNumber,
         status: "success",
         totalAmount: orderKurus,
-        hash: simHash,
+        hash: validHash,
       });
       expect(res1.ok).toBe(true);
       expect(res1.statusText).toBe("OK");
@@ -314,7 +347,7 @@ describe("Faz 5: PayTR Ödeme Entegrasyonu ve Güvenlik Denetimleri", () => {
         merchantOid: testOrderNumber,
         status: "success",
         totalAmount: orderKurus,
-        hash: simHash,
+        hash: validHash,
       });
 
       expect(res2.ok).toBe(true);
@@ -329,14 +362,21 @@ describe("Faz 5: PayTR Ödeme Entegrasyonu ve Güvenlik Denetimleri", () => {
     });
 
     it("tutar uyuşmazlığında callback reddedilir ve sipariş ödenmiş sayılmaz", () => {
-      const simHash = `sim_hash_${testOrderNumber}_mismatch`;
+      const cfg = getPayTRConfig();
       const tamperedKurus = orderKurus + 10000; // 100 TL fazla gönderildi
+      const validHashForTamperedAmount = computePayTRCallbackHash({
+        merchantOid: testOrderNumber,
+        status: "success",
+        totalAmount: tamperedKurus,
+        merchantSalt: cfg.merchantSalt,
+        merchantKey: cfg.merchantKey,
+      });
 
       const res = processPayTRCallback({
         merchantOid: testOrderNumber,
         status: "success",
         totalAmount: tamperedKurus,
-        hash: simHash,
+        hash: validHashForTamperedAmount,
       });
 
       expect(res.ok).toBe(false);
@@ -349,11 +389,21 @@ describe("Faz 5: PayTR Ödeme Entegrasyonu ve Güvenlik Denetimleri", () => {
     });
 
     it("bilinmeyen sipariş referansı geldiğinde callback reddedilir", () => {
-      const res = processPayTRCallback({
-        merchantOid: "HM-TANIMSIZ-9999",
+      const cfg = getPayTRConfig();
+      const unknownOid = "HM-TANIMSIZ-9999";
+      const validHash = computePayTRCallbackHash({
+        merchantOid: unknownOid,
         status: "success",
         totalAmount: 50000,
-        hash: "sim_hash_unknown",
+        merchantSalt: cfg.merchantSalt,
+        merchantKey: cfg.merchantKey,
+      });
+
+      const res = processPayTRCallback({
+        merchantOid: unknownOid,
+        status: "success",
+        totalAmount: 50000,
+        hash: validHash,
       });
 
       expect(res.ok).toBe(false);
@@ -362,12 +412,19 @@ describe("Faz 5: PayTR Ödeme Entegrasyonu ve Güvenlik Denetimleri", () => {
     });
 
     it("başarısız callback siparişi FAILED yapar ve operasyonel durumu CANCELLED olarak işaretler", () => {
-      const simHash = `sim_hash_${testOrderNumber}_fail`;
+      const cfg = getPayTRConfig();
+      const validFailHash = computePayTRCallbackHash({
+        merchantOid: testOrderNumber,
+        status: "failed",
+        totalAmount: orderKurus,
+        merchantSalt: cfg.merchantSalt,
+        merchantKey: cfg.merchantKey,
+      });
       const res = processPayTRCallback({
         merchantOid: testOrderNumber,
         status: "failed",
         totalAmount: orderKurus,
-        hash: simHash,
+        hash: validFailHash,
         failedReasonCode: "100",
         failedReasonMsg: "Yetersiz bakiye",
       });

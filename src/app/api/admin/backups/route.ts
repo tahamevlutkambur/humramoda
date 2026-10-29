@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
+import { requireAdminRole, verifySameOrigin } from "@/lib/server/session-guard";
 import { listBackups, createBackup } from "@/lib/server/backup";
+import { getClientIp } from "@/lib/server/auth";
 
-export async function GET() {
-  const session = await getAuthenticatedAdmin();
-  if (!session) {
-    return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
+export async function GET(req: Request) {
+  const auth = await requireAdminRole(req, ["ADMIN"]);
+  if (auth.errorResponse) {
+    return auth.errorResponse;
   }
 
   const backups = listBackups();
@@ -13,15 +14,22 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const session = await getAuthenticatedAdmin();
-  if (!session) {
-    return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
+  const csrf = verifySameOrigin(req);
+  if (!csrf.valid) {
+    return NextResponse.json({ error: csrf.error }, { status: 403 });
   }
+
+  const auth = await requireAdminRole(req, ["ADMIN"]);
+  if (auth.errorResponse) {
+    return auth.errorResponse;
+  }
+
+  const session = auth.session;
 
   try {
     const body = await req.json().catch(() => ({}));
     const description = body.description || undefined;
-    const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+    const clientIp = getClientIp(req);
 
     const { manifest, error } = createBackup("MANUAL", description, {
       adminId: session.userId,

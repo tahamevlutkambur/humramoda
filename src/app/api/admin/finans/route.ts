@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
-import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
+import { requireAdminRole } from "@/lib/server/session-guard";
 import { getFinancialReport } from "@/lib/server/store";
+import { getPersistentStoreData } from "@/lib/server/persistent-store";
 
 export async function GET(req: Request) {
-  const session = await getAuthenticatedAdmin();
-  if (!session) {
-    return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
+  const auth = await requireAdminRole(req, ["ADMIN"]);
+  if (auth.errorResponse) {
+    return auth.errorResponse;
   }
 
+  await getPersistentStoreData().catch(() => {});
   const { searchParams } = new URL(req.url);
   const startDate = searchParams.get("startDate") || undefined;
   const endDate = searchParams.get("endDate") || undefined;

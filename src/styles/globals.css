@@ -335,3 +335,65 @@ button:disabled {
   }
 }
 
+/* -------------------------------------------------------------
+ * WHATSAPP DESTEK HATTI BUTONU
+ * ------------------------------------------------------------- */
+.hm-whatsapp-float {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #25d366;
+  color: #ffffff !important;
+  padding: 10px 18px 10px 14px;
+  border-radius: 9999px;
+  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4), 0 2px 6px rgba(0, 0, 0, 0.1);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.hm-whatsapp-float:hover {
+  background-color: #20ba59;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5), 0 4px 10px rgba(0, 0, 0, 0.15);
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+.hm-whatsapp-float:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.hm-whatsapp-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.hm-whatsapp-label {
+  display: inline-block;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* Mobil cihazlarda mobil alt gezinti barının (bottom nav) hemen üzerinde yerleşim */
+@media (max-width: 1023px) {
+  .hm-whatsapp-float {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 76px);
+    right: 16px;
+    padding: 8px 14px 8px 12px;
+    font-size: 0.8125rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(37, 211, 102, 0.4);
+  }
+}
+
+

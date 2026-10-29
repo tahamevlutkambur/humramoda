@@ -187,10 +187,9 @@ export async function requestPayTRIFrameToken(
 ): Promise<PayTRTokenResult> {
   const config = getPayTRConfig();
 
-  // Test / Geliştirme Simülasyonu
+  // Test / Geliştirme Simülasyonu (Yalnızca izole simülasyon izni açıkken)
   if (!config.isConfigured) {
-    const isDev = process.env.NODE_ENV !== "production";
-    if (isDev) {
+    if (isPayTRSimulationAllowed()) {
       const simToken = `sim_token_${order.orderNumber}_${Date.now()}`;
       return {
         success: true,
@@ -386,6 +385,18 @@ export interface CallbackProcessResult {
 }
 
 /**
+ * Simülasyon uç noktasının çalışmasına yalnızca üretim dışı izole ortamda
+ * ve açıkça ALLOW_PAYTR_SIMULATION=true tanımlandığında izin verilir.
+ * Üretimde PAYTR_TEST_MODE=1 olsa dahi simülasyon kesinlikle kapalıdır.
+ */
+export function isPayTRSimulationAllowed(): boolean {
+  if (process.env.NODE_ENV === "production") {
+    return false;
+  }
+  return process.env.ALLOW_PAYTR_SIMULATION === "true";
+}
+
+/**
  * PayTR Webhook / Callback bildirimini uçtan uca doğrular ve sipariş durumunu günceller.
  * İdempotent: Tekrarlayan bildirimlerde tekrar stok düşülmez, anında saf metin "OK" döner.
  */
@@ -395,18 +406,16 @@ export function processPayTRCallback(
 ): CallbackProcessResult {
   const config = getPayTRConfig();
 
-  // 1. İmza / Hash Doğrulaması
-  // Eğer test simülasyonu ise simülasyon anahtarlarını kontrol et
-  const isSimulation = params.hash.startsWith("sim_hash_");
-  const isHashValid = isSimulation
-    ? true
-    : verifyPayTRCallbackHash(params.hash, {
-        merchantOid: params.merchantOid,
-        status: params.status,
-        totalAmount: params.totalAmount,
-        merchantSalt: config.merchantSalt,
-        merchantKey: config.merchantKey,
-      });
+  // 1. İmza / Hash Doğrulaması (sim_hash_ öneki ile HMAC atlatması kesinlikle yasaktır)
+  const isHashValid =
+    !params.hash.startsWith("sim_hash_") &&
+    verifyPayTRCallbackHash(params.hash, {
+      merchantOid: params.merchantOid,
+      status: params.status,
+      totalAmount: params.totalAmount,
+      merchantSalt: config.merchantSalt,
+      merchantKey: config.merchantKey,
+    });
 
   if (!isHashValid) {
     logAdminAudit({
@@ -434,47 +443,12 @@ export function processPayTRCallback(
   // 2. Sipariş Kontrolü (Alfanumerik merchant_oid ve tireli sipariş numarası uyumlu)
   const store = getStoreData();
   const cleanIncomingOid = params.merchantOid.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
-  let order = store.orders?.find(
+  const order = store.orders?.find(
     (o) =>
       o.orderNumber === params.merchantOid ||
       o.id === params.merchantOid ||
       o.orderNumber.replace(/[^a-zA-Z0-9]/g, "").toUpperCase() === cleanIncomingOid
   );
-
-  // Eğer kriptografik PayTR imzası (%100 gerçek) doğrulandıysa fakat soğuk sunucu (cold Lambda)
-  // nedeniyle sipariş bellekte yoksa, siparişi güvenli biçimde oluşturup "OK" dön:
-  if (!order && !isSimulation && isHashValid) {
-    const reportedKurus = Number(params.totalAmount) || 0;
-    const reportedTl = Math.round(reportedKurus) / 100;
-    const nowIso = new Date().toISOString();
-    order = {
-      id: `ord-${Date.now()}`,
-      orderNumber: params.merchantOid,
-      customerFullName: "PayTR Müşterisi",
-      customerEmail: "musteri@humrabutik.com",
-      customerPhone: "",
-      shippingAddress: {
-        city: "Türkiye",
-        district: "-",
-        fullAddress: "PayTR Onaylı Sipariş",
-      },
-      operationalStatus: "PENDING",
-      paymentStatus: "PENDING",
-      paymentProvider: "PAYTR",
-      subtotal: reportedTl,
-      discountAmount: 0,
-      shippingAmount: 0,
-      totalAmount: reportedTl,
-      totalKurus: reportedKurus,
-      items: [],
-      createdAt: nowIso,
-      updatedAt: nowIso,
-      stockDeducted: false,
-      shippingStatus: "AWAITING_SHIPMENT",
-    };
-    store.orders = store.orders || [];
-    store.orders.unshift(order);
-  }
 
   if (!order) {
     logAdminAudit({

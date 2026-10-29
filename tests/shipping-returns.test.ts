@@ -208,7 +208,8 @@ describe("Faz 6: Kargo, Sipariş Takibi, İade Talepleri ve Bildirimler", () => 
     });
     const trackingNo = shipResult.shipment!.trackingNumber;
 
-    const webhookSecret = process.env.SHIPPING_WEBHOOK_SECRET || "default_test_carrier_secret_2026";
+    const webhookSecret = "synthetic_test_shipping_webhook_secret_2026";
+    process.env.SHIPPING_WEBHOOK_SECRET = webhookSecret;
     const payloadObj = {
       trackingNumber: trackingNo,
       status: "TESLİM EDİLDİ",
@@ -239,6 +240,7 @@ describe("Faz 6: Kargo, Sipariş Takibi, İade Talepleri ve Bildirimler", () => 
 
   // Test 5: Geçersiz webhook reddedilir.
   it("5. Geçersiz imzalı webhook reddedilir", () => {
+    process.env.SHIPPING_WEBHOOK_SECRET = "synthetic_test_shipping_webhook_secret_2026";
     const rawBody = JSON.stringify({
       trackingNumber: "YK123456",
       status: "YOLDA",
@@ -268,7 +270,8 @@ describe("Faz 6: Kargo, Sipariş Takibi, İade Talepleri ve Bildirimler", () => 
     });
     const trackingNo = shipResult.shipment!.trackingNumber;
 
-    const webhookSecret = process.env.SHIPPING_WEBHOOK_SECRET || "default_test_carrier_secret_2026";
+    const webhookSecret = "synthetic_test_shipping_webhook_secret_2026";
+    process.env.SHIPPING_WEBHOOK_SECRET = webhookSecret;
     const payloadObj = {
       trackingNumber: trackingNo,
       status: "DAĞITIMDA",

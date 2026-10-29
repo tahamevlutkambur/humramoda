@@ -1,33 +1,44 @@
 import { NextResponse } from "next/server";
-import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
-import { getAllStoreCollections, createStoreCollection } from "@/lib/server/store";
-
+import { requireAdminRole, verifySameOrigin } from "@/lib/server/session-guard";
+import { getAllStoreCollections, createStoreCollection, getStoreData } from "@/lib/server/store";
 import { logAdminAudit } from "@/lib/server/logger";
 import { revalidatePath } from "next/cache";
+import { getPersistentStoreData, savePersistentStoreData } from "@/lib/server/persistent-store";
 
-export async function GET() {
-  const session = await getAuthenticatedAdmin();
-  if (!session) {
-    return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
+export async function GET(req?: Request) {
+  const auth = await requireAdminRole(req, ["ADMIN", "STAFF"]);
+  if (auth.errorResponse) {
+    return auth.errorResponse;
   }
 
+  await getPersistentStoreData().catch(() => {});
   const collections = getAllStoreCollections();
   return NextResponse.json({ collections });
 }
 
 export async function POST(req: Request) {
-  const session = await getAuthenticatedAdmin();
-  if (!session) {
-    return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
+  const auth = await requireAdminRole(req, ["ADMIN", "STAFF"]);
+  if (auth.errorResponse) {
+    return auth.errorResponse;
   }
 
+  const csrf = verifySameOrigin(req);
+  if (!csrf.valid) {
+    return NextResponse.json({ error: csrf.error }, { status: 403 });
+  }
+
+  const session = auth.session;
+
   try {
+    await getPersistentStoreData().catch(() => {});
     const body = await req.json();
     const { collection, error } = createStoreCollection(body);
 
     if (error || !collection) {
       return NextResponse.json({ error: error || "Koleksiyon oluşturulamadı." }, { status: 400 });
     }
+
+    await savePersistentStoreData(getStoreData()).catch(() => {});
 
     logAdminAudit({
       adminId: session.userId,

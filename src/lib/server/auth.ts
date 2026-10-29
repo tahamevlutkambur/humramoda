@@ -3,6 +3,11 @@ import crypto from "crypto";
 export const ADMIN_COOKIE_NAME = "hm_admin_session";
 export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24; // 24 saat
 
+export const KNOWN_DEFAULT_PASSWORDS = new Set(["Eyup.Humra2026", "Humra2026!"]);
+export const KNOWN_DEFAULT_HASHES = new Set([
+  "d88ba6be78528ec28154bf691409d940:86958fabec9d64e85df791df088d1ed9b96e2f9124b5212238913a802175b5d88c96363d2a21d91f9c88bd2809ba8ca68f8f14c4b8f51e056e3a0bf53b843066",
+]);
+
 /**
  * Güvenli imzalama anahtarı sağlayıcısı.
  * Üretim modunda varsayılan veya zayıf anahtarlarla çalışmayı engeller.
@@ -13,20 +18,23 @@ export function getAuthSecret(): string {
 
   if (isProd) {
     if (
-      secret &&
-      (secret.length < 32 ||
-        secret.includes("replace_in_production") ||
-        secret.includes("ornek_"))
+      !secret ||
+      secret.length < 32 ||
+      secret.includes("replace_in_production") ||
+      secret.includes("ornek_") ||
+      secret.includes("hm_sec_") ||
+      secret.includes("testing_only")
     ) {
       throw new Error(
-        "GÜVENLİK HATASI: Üretim ortamında geçerli ve güçlü (en az 32 karakter) bir AUTH_SECRET çevre değişkeni zorunludur. Zayıf veya varsayılan anahtarlarla sistem başlatılamaz."
+        "GÜVENLİK HATASI: Üretim ortamında geçerli ve güçlü (en az 32 karakter) bir AUTH_SECRET çevre değişkeni zorunludur. Zayıf, eksik veya varsayılan anahtarlarla sistem başlatılamaz."
       );
     }
+    return secret;
   }
 
   return (
     secret ||
-    "hm_sec_9f8b4a72d1e6c38405b19a2f7e4d8c6b1a3e5f70928374650192837465abcde1"
+    "hm_sec_dev_testing_only_not_for_production_use_0123456789abcdef"
   );
 }
 
@@ -163,12 +171,30 @@ export function verifySessionToken(
     const jsonString = Buffer.from(payloadBase64, "base64url").toString("utf-8");
     const payload = JSON.parse(jsonString) as SessionPayload;
 
-    // 1. Süre kontrolü
-    if (Date.now() > payload.exp) {
+    // 1. Tip ve zorunlu alan doğrulaması
+    if (!payload || typeof payload !== "object") return null;
+    if (typeof payload.userId !== "string" || !payload.userId.trim()) return null;
+    if (typeof payload.email !== "string" || !payload.email.includes("@")) return null;
+    if (payload.role !== "ADMIN" && payload.role !== "STAFF" && payload.role !== "CUSTOMER") return null;
+    if (typeof payload.tokenId !== "string" || !payload.tokenId.trim()) return null;
+    if (typeof payload.iat !== "number" || typeof payload.exp !== "number") return null;
+    if (!Number.isFinite(payload.iat) || !Number.isFinite(payload.exp)) return null;
+
+    const now = Date.now();
+
+    // 2. Süre kontrolü
+    if (now > payload.exp) {
+      return null;
+    }
+    if (payload.exp <= payload.iat) {
+      return null;
+    }
+    // Token aşırı uzun süre için verilmişse (max age + 5 dk tolerans) reddet
+    if (payload.exp - payload.iat > SESSION_MAX_AGE_SECONDS * 1000 + 300000) {
       return null;
     }
 
-    // 2. İptal (revocation) kontrolü
+    // 3. İptal (revocation) kontrolü
     if (!options?.ignoreRevocation && payload.tokenId) {
       if (isSessionRevoked(payload.tokenId)) {
         return null;
@@ -179,6 +205,47 @@ export function verifySessionToken(
   } catch {
     return null;
   }
+}
+
+/**
+ * İstemci IP adresini güvenli biçimde çıkarır.
+ * Header spoofing ve enjeksiyonları temizler.
+ */
+export function getClientIp(req: Request): string {
+  try {
+    // 1. Vercel veya Cloudflare güvenilir kenar başlığı (müşteri tarafından taklit edilemez)
+    const cfIp = req.headers.get("cf-connecting-ip");
+    if (cfIp && cfIp.trim()) {
+      const sanitized = cfIp.trim().replace(/[^a-fA-F0-9.:]/g, "");
+      if (sanitized) return sanitized;
+    }
+
+    const vercelIp = req.headers.get("x-vercel-forwarded-for");
+    if (vercelIp && vercelIp.trim()) {
+      const sanitized = vercelIp.split(",")[0].trim().replace(/[^a-fA-F0-9.:]/g, "");
+      if (sanitized) return sanitized;
+    }
+
+    const realIp = req.headers.get("x-real-ip");
+    if (realIp && realIp.trim()) {
+      const sanitized = realIp.trim().replace(/[^a-fA-F0-9.:]/g, "");
+      if (sanitized) return sanitized;
+    }
+
+    const forwardedFor = req.headers.get("x-forwarded-for");
+    if (forwardedFor && forwardedFor.trim()) {
+      const parts = forwardedFor
+        .split(",")
+        .map((s) => s.trim().replace(/[^a-fA-F0-9.:]/g, ""))
+        .filter(Boolean);
+      if (parts.length > 0) {
+        return parts[0];
+      }
+    }
+  } catch {
+    // Hata durumunda varsayılan IP
+  }
+  return "127.0.0.1";
 }
 
 // -------------------------------------------------------------

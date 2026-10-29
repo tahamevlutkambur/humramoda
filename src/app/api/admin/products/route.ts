@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
+import { getAuthenticatedAdmin, verifySameOrigin } from "@/lib/server/session-guard";
 import {
   getAllStoreProducts,
   getAllStoreCategories,
@@ -98,24 +98,24 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const session = await getAuthenticatedAdmin(req);
+  if (!session) {
+    return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
+  }
+
+  const csrf = verifySameOrigin(req);
+  if (!csrf.valid) {
+    return NextResponse.json({ error: csrf.error }, { status: 403, headers: NO_STORE_HEADERS });
+  }
+
   try {
     await getPersistentStoreData().catch(() => {});
     const body = await req.json();
 
-    // Cold-instance snapshot rehydration
+    // Cold-instance snapshot rehydration (Yalnızca doğrulanmış yönetici oturumuyla izin verilir)
     if (body?._entity === "sync_snapshot") {
-      const session = await getAuthenticatedAdmin(req);
-      const currentStore = getStoreData();
-      // Allow authenticated admins anytime, or cold/incomplete instances
-      if (
-        session ||
-        (currentStore.updatedAt || 0) === 0 ||
-        currentStore.products.length === 0 ||
-        currentStore.products.some((p) => !p.media || p.media.length === 0)
-      ) {
-        const synced = syncStoreSnapshot(body);
-        await savePersistentStoreData(synced).catch(() => {});
-      }
+      const synced = syncStoreSnapshot(body, { allowCatalogMutation: true });
+      await savePersistentStoreData(synced).catch(() => {});
       const latest = getStoreData();
       return NextResponse.json(
         {
@@ -129,18 +129,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // Per-product media chunk rehydration
+    // Per-product media chunk rehydration (Yalnızca doğrulanmış yönetici oturumuyla izin verilir)
     if (body?._entity === "sync_product_media") {
-      const session = await getAuthenticatedAdmin(req);
-      const currentStore = getStoreData();
-      if (
-        session ||
-        (currentStore.updatedAt || 0) === 0 ||
-        currentStore.products.some((p) => !p.media || p.media.length === 0)
-      ) {
-        const synced = syncStoreProductMedia(body);
-        await savePersistentStoreData(synced).catch(() => {});
-      }
+      const synced = syncStoreProductMedia(body);
+      await savePersistentStoreData(synced).catch(() => {});
       const latest = getStoreData();
       return NextResponse.json(
         {
@@ -151,13 +143,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const session = await getAuthenticatedAdmin(req);
-    if (!session) {
-      return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
-    }
-
     if (body?._snapshot && typeof body._snapshot === "object") {
-      syncStoreSnapshot(body._snapshot);
+      syncStoreSnapshot(body._snapshot, { allowCatalogMutation: true });
     }
 
     if (body?._entity === "category") {
@@ -235,13 +222,18 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
   }
 
+  const csrf = verifySameOrigin(req);
+  if (!csrf.valid) {
+    return NextResponse.json({ error: csrf.error }, { status: 403, headers: NO_STORE_HEADERS });
+  }
+
   try {
     await getPersistentStoreData().catch(() => {});
     const url = new URL(req.url);
     const body = await req.json();
 
     if (body?._snapshot && typeof body._snapshot === "object") {
-      syncStoreSnapshot(body._snapshot);
+      syncStoreSnapshot(body._snapshot, { allowCatalogMutation: true });
     }
 
     const targetId = String(body?.id || url.searchParams.get("id") || "").trim();
@@ -321,6 +313,11 @@ export async function DELETE(req: Request) {
   const session = await getAuthenticatedAdmin(req);
   if (!session) {
     return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
+  }
+
+  const csrf = verifySameOrigin(req);
+  if (!csrf.valid) {
+    return NextResponse.json({ error: csrf.error }, { status: 403, headers: NO_STORE_HEADERS });
   }
 
   try {

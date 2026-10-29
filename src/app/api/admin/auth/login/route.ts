@@ -7,10 +7,17 @@ import {
   checkLoginRateLimit,
   recordFailedLogin,
   resetLoginRateLimit,
+  getClientIp,
 } from "@/lib/server/auth";
+import { verifySameOrigin } from "@/lib/server/session-guard";
 
 export async function POST(req: Request) {
   try {
+    const csrf = verifySameOrigin(req);
+    if (!csrf.valid) {
+      return NextResponse.json({ error: csrf.error }, { status: 403 });
+    }
+
     const body = await req.json();
     const { email, password } = body;
 
@@ -22,13 +29,21 @@ export async function POST(req: Request) {
     }
 
     const cleanEmail = email.toLowerCase().trim();
+    const clientIp = getClientIp(req);
+    const ipRateKey = `ip:${clientIp}`;
+    const rateLimitKey = `account:${clientIp}:${cleanEmail}`;
 
-    // İstemci kimliği (IP + e-posta)
-    const forwardedFor = req.headers.get("x-forwarded-for");
-    const clientIp = forwardedFor ? forwardedFor.split(",")[0].trim() : "unknown-ip";
-    const rateLimitKey = `${clientIp}:${cleanEmail}`;
+    // 1. Rate Limiting Kontrolü (IP ve Hesap Bazında)
+    const ipCheck = checkLoginRateLimit(ipRateKey);
+    if (!ipCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: `Bu IP adresinden çok fazla hatalı giriş denemesi yapıldı. Lütfen ${ipCheck.waitSeconds} saniye sonra tekrar deneyiniz.`,
+        },
+        { status: 429 }
+      );
+    }
 
-    // 1. Rate Limiting Kontrolü
     const rateCheck = checkLoginRateLimit(rateLimitKey);
     if (!rateCheck.allowed) {
       return NextResponse.json(
@@ -42,6 +57,7 @@ export async function POST(req: Request) {
     // 2. Kimlik Doğrulama
     const { user, error } = authenticateAdmin(cleanEmail, password);
     if (error || !user) {
+      recordFailedLogin(ipRateKey);
       const record = recordFailedLogin(rateLimitKey);
       const remainingMsg = record.isBlocked
         ? "Çok fazla hatalı deneme nedeniyle giriş geçici olarak engellendi."
@@ -54,6 +70,7 @@ export async function POST(req: Request) {
     }
 
     // 3. Başarılı Giriş — Rate Limiti Sıfırla
+    resetLoginRateLimit(ipRateKey);
     resetLoginRateLimit(rateLimitKey);
 
     const token = createSessionToken({

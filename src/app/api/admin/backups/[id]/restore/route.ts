@@ -1,23 +1,30 @@
 import { NextResponse } from "next/server";
-import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
+import { requireAdminRole, verifySameOrigin } from "@/lib/server/session-guard";
 import { restoreBackupById, dryRunRestore } from "@/lib/server/backup";
+import { getClientIp } from "@/lib/server/auth";
 
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getAuthenticatedAdmin();
-  if (!session) {
-    return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
+  const csrf = verifySameOrigin(req);
+  if (!csrf.valid) {
+    return NextResponse.json({ error: csrf.error }, { status: 403 });
   }
 
+  const auth = await requireAdminRole(req, ["ADMIN"]);
+  if (auth.errorResponse) {
+    return auth.errorResponse;
+  }
+
+  const session = auth.session;
   const { id } = await params;
 
   try {
     const body = await req.json().catch(() => ({}));
     const preserveNewerOrders = body.preserveNewerOrders !== false;
     const isDryRun = Boolean(body.dryRun);
-    const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+    const clientIp = getClientIp(req);
 
     if (isDryRun) {
       const dryResult = dryRunRestore(id, preserveNewerOrders);

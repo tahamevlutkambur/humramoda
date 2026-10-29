@@ -12,7 +12,7 @@ import {
   COLLECTIONS,
   FEATURED_VIDEOS,
 } from "../catalog";
-import { hashPassword, verifyPassword } from "./auth";
+import { hashPassword, verifyPassword, KNOWN_DEFAULT_PASSWORDS, KNOWN_DEFAULT_HASHES } from "./auth";
 import { logAdminAudit } from "./logger";
 
 export interface HomepageContent {
@@ -79,6 +79,8 @@ export interface StoreSettings {
     merchantId?: string;
     merchantKey?: string;
     merchantSalt?: string;
+    hasMerchantKey?: boolean;
+    hasMerchantSalt?: boolean;
     testMode?: "0" | "1";
     debugOn?: "0" | "1";
   };
@@ -92,6 +94,7 @@ export interface AdminUser {
   role: "ADMIN" | "STAFF";
   isActive: boolean;
   createdAt: string;
+  tokenVersionTimestamp?: number;
 }
 
 export type OperationalOrderStatus = "CONFIRMED" | "CANCELLED" | "PENDING";
@@ -518,7 +521,7 @@ const DEFAULT_ADMIN_USERS: AdminUser[] = [
     id: "admin-1",
     email: "humramoda@eyup.com",
     fullName: "Hümra Butik & Moda Yöneticisi",
-    passwordHash: "d88ba6be78528ec28154bf691409d940:86958fabec9d64e85df791df088d1ed9b96e2f9124b5212238913a802175b5d88c96363d2a21d91f9c88bd2809ba8ca68f8f14c4b8f51e056e3a0bf53b843066", // Eyup.Humra2026
+    passwordHash: "d88ba6be78528ec28154bf691409d940:86958fabec9d64e85df791df088d1ed9b96e2f9124b5212238913a802175b5d88c96363d2a21d91f9c88bd2809ba8ca68f8f14c4b8f51e056e3a0bf53b843066",
     role: "ADMIN",
     isActive: true,
     createdAt: "2026-10-27T00:00:00.000Z",
@@ -527,7 +530,7 @@ const DEFAULT_ADMIN_USERS: AdminUser[] = [
     id: "admin-2",
     email: "admin@humrabutik.com",
     fullName: "Hümra Butik Yöneticisi",
-    passwordHash: "d88ba6be78528ec28154bf691409d940:86958fabec9d64e85df791df088d1ed9b96e2f9124b5212238913a802175b5d88c96363d2a21d91f9c88bd2809ba8ca68f8f14c4b8f51e056e3a0bf53b843066", // Eyup.Humra2026
+    passwordHash: "d88ba6be78528ec28154bf691409d940:86958fabec9d64e85df791df088d1ed9b96e2f9124b5212238913a802175b5d88c96363d2a21d91f9c88bd2809ba8ca68f8f14c4b8f51e056e3a0bf53b843066",
     role: "ADMIN",
     isActive: true,
     createdAt: "2026-10-27T00:00:00.000Z",
@@ -761,17 +764,24 @@ export function usePersistentStoreData(data: AppStoreData): void {
 
 /**
  * Cold serverless instance rehydration:
- * If a newly spun-up Vercel Lambda container has an older or uninitialized store (updatedAt: 0)
- * and receives a newer verified client/admin snapshot, hydrate the container's store.
+ * GÜVENLİK KURALI (Faz 1): Oturumsuz çağrılarda (allowCatalogMutation !== true)
+ * istemciden gelen snapshot verisi ürün fiyatlarını, indirimleri, stok miktarlarını
+ * veya katalog yapısını KESİNLİKLE değiştiremez.
  */
-export function syncStoreSnapshot(snapshot: {
-  updatedAt?: number;
-  products?: ProductItem[];
-  categories?: CategoryItem[];
-  collections?: CollectionItem[];
-  _mergeOnly?: boolean;
-}): AppStoreData {
+export function syncStoreSnapshot(
+  snapshot: {
+    updatedAt?: number;
+    products?: ProductItem[];
+    categories?: CategoryItem[];
+    collections?: CollectionItem[];
+    _mergeOnly?: boolean;
+  },
+  options?: { allowCatalogMutation?: boolean }
+): AppStoreData {
   const store = getStoreData();
+  if (!options?.allowCatalogMutation) {
+    return store;
+  }
   const incomingTime = typeof snapshot.updatedAt === "number" ? snapshot.updatedAt : 0;
   const currentTime = store.updatedAt || 0;
 
@@ -1776,11 +1786,79 @@ export function getStoreSettings(): StoreSettings {
   return getStoreData().settings;
 }
 
+/**
+ * İstemciye veya yönetim arayüzüne dönülen ayarlarda PayTR merchantKey ve merchantSalt
+ * gibi kriptografik sırları KESİNLİKLE açık metin olarak göndermez.
+ */
+export function sanitizeStoreSettingsForClient(settings: StoreSettings): StoreSettings {
+  const rawPaytr = settings.paytr;
+  const hasMerchantKey = Boolean(
+    (rawPaytr?.merchantKey && rawPaytr.merchantKey.trim().length > 0) ||
+      (process.env.PAYTR_MERCHANT_KEY && process.env.PAYTR_MERCHANT_KEY.trim().length > 0)
+  );
+  const hasMerchantSalt = Boolean(
+    (rawPaytr?.merchantSalt && rawPaytr.merchantSalt.trim().length > 0) ||
+      (process.env.PAYTR_MERCHANT_SALT && process.env.PAYTR_MERCHANT_SALT.trim().length > 0)
+  );
+
+  return {
+    ...settings,
+    paytr: rawPaytr
+      ? {
+          merchantId: rawPaytr.merchantId || "",
+          merchantKey: "",
+          merchantSalt: "",
+          hasMerchantKey,
+          hasMerchantSalt,
+          testMode: rawPaytr.testMode || "1",
+          debugOn: rawPaytr.debugOn || "1",
+        }
+      : {
+          merchantId: "",
+          merchantKey: "",
+          merchantSalt: "",
+          hasMerchantKey,
+          hasMerchantSalt,
+          testMode: "1",
+          debugOn: "1",
+        },
+  };
+}
+
+function isMaskedOrEmptySecret(val?: string): boolean {
+  if (!val) return true;
+  const trimmed = val.trim();
+  if (!trimmed) return true;
+  if (/^[•*]+$/.test(trimmed)) return true;
+  if (trimmed.includes("[GİZLENDİ") || trimmed.includes("REDACTED")) return true;
+  return false;
+}
+
 export function updateStoreSettings(settings: Partial<StoreSettings>): StoreSettings {
   const store = getStoreData();
+  const existingPaytr = store.settings.paytr || {};
+  const incomingPaytr = settings.paytr;
+
+  let mergedPaytr = existingPaytr;
+  if (incomingPaytr) {
+    mergedPaytr = {
+      ...existingPaytr,
+      ...incomingPaytr,
+      merchantKey: isMaskedOrEmptySecret(incomingPaytr.merchantKey)
+        ? existingPaytr.merchantKey
+        : incomingPaytr.merchantKey!.trim(),
+      merchantSalt: isMaskedOrEmptySecret(incomingPaytr.merchantSalt)
+        ? existingPaytr.merchantSalt
+        : incomingPaytr.merchantSalt!.trim(),
+    };
+    delete mergedPaytr.hasMerchantKey;
+    delete mergedPaytr.hasMerchantSalt;
+  }
+
   store.settings = {
     ...store.settings,
     ...settings,
+    ...(incomingPaytr ? { paytr: mergedPaytr } : {}),
   };
   saveStoreData(store);
   return store.settings;
@@ -1875,7 +1953,7 @@ export function deleteStoreCampaign(id: string): boolean {
 export function authenticateAdmin(
   email: string,
   pass: string
-): { user?: Omit<AdminUser, "passwordHash">; error?: string } {
+): { user?: Omit<AdminUser, "passwordHash">; error?: string; requiresPasswordReset?: boolean } {
   const cleanEmail = (email || "").toLowerCase().trim();
   const cleanPass = (pass || "").trim();
 
@@ -1883,50 +1961,27 @@ export function authenticateAdmin(
     return { error: "Lütfen e-posta adresi ve şifrenizi giriniz." };
   }
 
-  // 1. Acil durum / Vercel Environment Variables / Varsayılan yönetici yetkisi
-  const envEmail = (process.env.ADMIN_INITIAL_EMAIL || "").toLowerCase().trim();
-  const validAdminEmails = new Set(
-    [
-      envEmail,
-      "humramoda@eyup.com",
-      "admin@humrabutik.com",
-      "admin@humramoda.com",
-      "admin@humramoda.local",
-      "destek@humrabutik.com",
-    ].filter(Boolean)
-  );
-
-  const validPasswords = [
-    process.env.ADMIN_PASSWORD,
-    process.env.ADMIN_INITIAL_PASSWORD,
-    "Eyup.Humra2026",
-    "Humra2026!",
-  ].filter((p): p is string => Boolean(p && p.length >= 6));
-
-  if (validAdminEmails.has(cleanEmail)) {
-    for (const validPass of validPasswords) {
-      const a = Buffer.from(cleanPass);
-      const b = Buffer.from(validPass);
-      if (a.length === b.length && crypto.timingSafeEqual(a, b)) {
-        return {
-          user: {
-            id: "admin-master",
-            email: cleanEmail,
-            fullName: "Hümra Butik & Moda Yöneticisi",
-            role: "ADMIN",
-            isActive: true,
-            createdAt: new Date().toISOString(),
-          },
-        };
-      }
-    }
+  // Güvenlik Kontrolü: Bilinen varsayılan şifrelerle doğrudan oturum açılamaz
+  if (KNOWN_DEFAULT_PASSWORDS.has(cleanPass)) {
+    return {
+      error: "Varsayılan başlangıç şifresi güvenlik gereği devre dışı bırakılmıştır. Lütfen şifrenizi yenileyiniz.",
+      requiresPasswordReset: true,
+    };
   }
 
-  // 2. Veri deposundaki (store.json) yöneticiler ile scrypt doğrulaması
+  // 1. Veri deposundaki (store.json / PostgreSQL) kayıtlı yöneticiler ile scrypt doğrulaması
   const store = getStoreData();
-  const admin = store.adminUsers.find(
+  const admin = store.adminUsers?.find(
     (u) => u.email.toLowerCase().trim() === cleanEmail && u.isActive
   );
+
+  // Güvenlik Kontrolü: Hesabın hash'i bilinen varsayılan hash ise doğrudan girişe izin verme
+  if (admin && KNOWN_DEFAULT_HASHES.has(admin.passwordHash)) {
+    return {
+      error: "Hesabınız varsayılan başlangıç şifresine sahiptir. Güvenliğiniz için lütfen şifrenizi yenileyiniz.",
+      requiresPasswordReset: true,
+    };
+  }
 
   if (admin && verifyPassword(cleanPass, admin.passwordHash)) {
     const safeUser: Omit<AdminUser, "passwordHash"> = {
@@ -1940,7 +1995,97 @@ export function authenticateAdmin(
     return { user: safeUser };
   }
 
+  // 2. İlk Kurulum (Bootstrap) Yönetici Desteği:
+  // Yalnızca sistemde aktif yönetici kaydı yoksa VE ortam değişkenlerinde
+  // ADMIN_INITIAL_EMAIL ve ADMIN_INITIAL_PASSWORD (en az 8 karakter) açıkça tanımlanmışsa çalışır.
+  const activeAdmins = (store.adminUsers || []).filter((u) => u.isActive);
+  const envEmail = (process.env.ADMIN_INITIAL_EMAIL || "").toLowerCase().trim();
+  const envPassword = process.env.ADMIN_INITIAL_PASSWORD;
+
+  if (
+    activeAdmins.length === 0 &&
+    envEmail &&
+    envPassword &&
+    envPassword.length >= 8 &&
+    !KNOWN_DEFAULT_PASSWORDS.has(envPassword) &&
+    cleanEmail === envEmail
+  ) {
+    const a = Buffer.from(cleanPass);
+    const b = Buffer.from(envPassword);
+    if (a.length === b.length && crypto.timingSafeEqual(a, b)) {
+      const newAdmin: AdminUser = {
+        id: `admin-bootstrap-${Date.now()}`,
+        email: envEmail,
+        fullName: "Sistem Yöneticisi (Bootstrap)",
+        passwordHash: hashPassword(envPassword),
+        role: "ADMIN",
+        isActive: true,
+        createdAt: new Date().toISOString(),
+      };
+      store.adminUsers = [...(store.adminUsers || []), newAdmin];
+      saveStoreData(store);
+
+      return {
+        user: {
+          id: newAdmin.id,
+          email: newAdmin.email,
+          fullName: newAdmin.fullName,
+          role: newAdmin.role,
+          isActive: newAdmin.isActive,
+          createdAt: newAdmin.createdAt,
+        },
+      };
+    }
+  }
+
   return { error: "Geçersiz e-posta adresi veya şifre." };
+}
+
+/**
+ * Yönetici parolasını güvenle günceller ve diğer tüm sunucu örneklerindeki oturumları geçersiz kılar.
+ */
+export function updateAdminPassword(
+  adminId: string,
+  currentPass: string,
+  newPass: string
+): { success: boolean; error?: string } {
+  if (!newPass || newPass.length < 8) {
+    return { success: false, error: "Yeni şifre en az 8 karakter uzunluğunda olmalıdır." };
+  }
+  if (KNOWN_DEFAULT_PASSWORDS.has(newPass)) {
+    return { success: false, error: "Varsayılan veya tahmin edilebilir bir şifre seçilemez." };
+  }
+
+  const store = getStoreData();
+  const admin = store.adminUsers?.find((u) => u.id === adminId || u.email.toLowerCase() === adminId.toLowerCase());
+  if (!admin) {
+    return { success: false, error: "Yönetici hesabı bulunamadı." };
+  }
+
+  // Mevcut şifreyi doğrula (Varsayılan şifreye sahip hesapların da yeni şifreye geçişine izin verilir)
+  const isCurrentValid =
+    verifyPassword(currentPass, admin.passwordHash) ||
+    (KNOWN_DEFAULT_HASHES.has(admin.passwordHash) && KNOWN_DEFAULT_PASSWORDS.has(currentPass));
+
+  if (!isCurrentValid) {
+    return { success: false, error: "Mevcut şifreniz hatalıdır." };
+  }
+
+  admin.passwordHash = hashPassword(newPass);
+  admin.tokenVersionTimestamp = Date.now();
+  saveStoreData(store);
+
+  logAdminAudit({
+    adminId: admin.id,
+    adminEmail: admin.email,
+    action: "ADMIN_PASSWORD_CHANGED",
+    targetType: "AUTH",
+    targetId: admin.id,
+    result: "SUCCESS",
+    details: { reason: "PASSWORD_ROTATION_SUCCESS" },
+  });
+
+  return { success: true };
 }
 
 // -------------------------------------------------------------

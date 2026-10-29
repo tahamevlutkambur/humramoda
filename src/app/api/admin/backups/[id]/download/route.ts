@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
-import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
+import { requireAdminRole } from "@/lib/server/session-guard";
 
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getAuthenticatedAdmin();
-  if (!session) {
-    return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
+  const auth = await requireAdminRole(req, ["ADMIN"]);
+  if (auth.errorResponse) {
+    return auth.errorResponse;
   }
 
   const { id } = await params;

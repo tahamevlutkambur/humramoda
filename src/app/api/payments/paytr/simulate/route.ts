@@ -1,20 +1,21 @@
 import { NextResponse } from "next/server";
-import { processPayTRCallback, getPayTRConfig } from "@/lib/server/paytr";
+import {
+  processPayTRCallback,
+  getPayTRConfig,
+  computePayTRCallbackHash,
+  isPayTRSimulationAllowed,
+} from "@/lib/server/paytr";
 import { getOrderById } from "@/lib/server/store";
 
 /**
  * PayTR Test ve Simülasyon Webhook Tetikleyicisi
- * Yalnızca test ortamında ve geliştirme modunda çalışır.
- * Canlı ortamda (production) PayTR test modu kapalıysa kesinlikle reddedilir.
+ * Yalnızca üretim dışı izole test ortamında ve ALLOW_PAYTR_SIMULATION="true" açıkken çalışır.
+ * Canlı ortamda (production) PAYTR_TEST_MODE=1 olsa dahi kesinlikle reddedilir.
  */
 export async function POST(req: Request) {
-  const config = getPayTRConfig();
-  const isDev = process.env.NODE_ENV !== "production";
-  const isTestMode = config.testMode === "1" || !config.isConfigured;
-
-  if (!isDev && !isTestMode) {
+  if (!isPayTRSimulationAllowed()) {
     return NextResponse.json(
-      { error: "Simülasyon uç noktası canlı ortamda devre dışıdır." },
+      { error: "Simülasyon uç noktası devre dışıdır." },
       { status: 403 }
     );
   }
@@ -35,18 +36,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Sipariş bulunamadı." }, { status: 404 });
     }
 
+    const config = getPayTRConfig();
     const status = action === "success" ? "success" : "failed";
     const totalAmount = order.totalKurus;
 
-    // Simülasyon hash'i
-    const simHash = `sim_hash_${order.orderNumber}_${Date.now()}`;
+    // İzole simülasyon ortamında gerçek HMAC-SHA256 imzası hesapla (sim_hash_ bypass kullanılmaz)
+    const validHash = computePayTRCallbackHash({
+      merchantOid: order.orderNumber,
+      status,
+      totalAmount,
+      merchantSalt: config.merchantSalt,
+      merchantKey: config.merchantKey,
+    });
 
     const callbackResult = processPayTRCallback(
       {
         merchantOid: order.orderNumber,
         status,
         totalAmount,
-        hash: simHash,
+        hash: validHash,
         failedReasonCode: status === "failed" ? "TEST_ERR_01" : undefined,
         failedReasonMsg:
           status === "failed"

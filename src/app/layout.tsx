@@ -5,6 +5,7 @@ import { Header } from "@/components/shell/Header";
 import { Footer } from "@/components/shell/Footer";
 import { AnnouncementBar } from "@/components/shell/AnnouncementBar";
 import { CookieConsent } from "@/components/ui/CookieConsent";
+import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { StoreProviders } from "@/components/providers/StoreProviders";
 import { getStoreData } from "@/lib/server/store";
 import { getPersistentStoreData } from "@/lib/server/persistent-store";
@@ -82,6 +83,7 @@ export default async function RootLayout({
           <Header categories={store.categories} />
           <main style={{ flex: 1 }}>{children}</main>
           <Footer />
+          <WhatsAppButton phoneNumber={store.settings?.whatsapp} />
           <CookieConsent />
         </StoreProviders>
       </body>

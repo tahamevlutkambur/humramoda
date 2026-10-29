@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
+import { requireAdminRole, verifySameOrigin } from "@/lib/server/session-guard";
 import {
   getStoreData,
   getStoreProductById,
@@ -21,9 +21,9 @@ interface RouteParams {
 }
 
 export async function GET(req: Request, { params }: RouteParams) {
-  const session = await getAuthenticatedAdmin(req);
-  if (!session) {
-    return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
+  const auth = await requireAdminRole(req, ["ADMIN", "STAFF"]);
+  if (auth.errorResponse) {
+    return auth.errorResponse;
   }
 
   try {
@@ -56,10 +56,17 @@ export async function GET(req: Request, { params }: RouteParams) {
 }
 
 export async function PUT(req: Request, { params }: RouteParams) {
-  const session = await getAuthenticatedAdmin(req);
-  if (!session) {
-    return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
+  const auth = await requireAdminRole(req, ["ADMIN", "STAFF"]);
+  if (auth.errorResponse) {
+    return auth.errorResponse;
   }
+
+  const csrf = verifySameOrigin(req);
+  if (!csrf.valid) {
+    return NextResponse.json({ error: csrf.error }, { status: 403 });
+  }
+
+  const session = auth.session;
 
   try {
     await getPersistentStoreData().catch(() => {});
@@ -102,10 +109,18 @@ export async function PUT(req: Request, { params }: RouteParams) {
 }
 
 export async function DELETE(req: Request, { params }: RouteParams) {
-  const session = await getAuthenticatedAdmin(req);
-  if (!session) {
-    return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
+  // Ürün silme kritik bir işlemdir; yalnızca ADMIN rolü yapabilir
+  const auth = await requireAdminRole(req, ["ADMIN"]);
+  if (auth.errorResponse) {
+    return auth.errorResponse;
   }
+
+  const csrf = verifySameOrigin(req);
+  if (!csrf.valid) {
+    return NextResponse.json({ error: csrf.error }, { status: 403 });
+  }
+
+  const session = auth.session;
 
   try {
     await getPersistentStoreData().catch(() => {});
@@ -117,25 +132,25 @@ export async function DELETE(req: Request, { params }: RouteParams) {
     }
     await savePersistentStoreData(getStoreData()).catch(() => {});
 
-  logAdminAudit({
-    adminId: session.userId,
-    adminEmail: session.email,
-    action: "PRODUCT_DELETED",
-    targetType: "PRODUCT",
-    targetId: id,
-    result: "SUCCESS",
-    details: { id },
-  });
+    logAdminAudit({
+      adminId: session.userId,
+      adminEmail: session.email,
+      action: "PRODUCT_DELETED",
+      targetType: "PRODUCT",
+      targetId: id,
+      result: "SUCCESS",
+      details: { id },
+    });
 
-  try {
-    revalidatePath("/admin/urunler");
-    revalidatePath("/urunler");
-    revalidatePath("/");
-  } catch {
-    // Revalidation is best effort
-  }
+    try {
+      revalidatePath("/admin/urunler");
+      revalidatePath("/urunler");
+      revalidatePath("/");
+    } catch {
+      // Revalidation is best effort
+    }
 
-  return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true });
   } catch (err) {
     console.error("Delete product error:", err);
     return NextResponse.json({ error: "Ürün silinirken veritabanı hatası oluştu." }, { status: 503 });

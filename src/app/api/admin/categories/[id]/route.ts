@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
+import { requireAdminRole, verifySameOrigin } from "@/lib/server/session-guard";
 import { getStoreData, updateStoreCategory, deleteStoreCategory } from "@/lib/server/store";
 import { logAdminAudit } from "@/lib/server/logger";
 import { revalidatePath } from "next/cache";
@@ -15,9 +15,15 @@ interface RouteParams {
 }
 
 export async function PUT(req: Request, { params }: RouteParams) {
-  const session = await getAuthenticatedAdmin(req);
-  if (!session) {
-    return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
+  const roleCheck = await requireAdminRole(req, ["ADMIN", "STAFF"]);
+  if (roleCheck.errorResponse) {
+    return roleCheck.errorResponse;
+  }
+  const session = roleCheck.session;
+
+  const csrf = verifySameOrigin(req);
+  if (!csrf.valid) {
+    return NextResponse.json({ error: csrf.error }, { status: 403 });
   }
 
   try {
@@ -58,9 +64,15 @@ export async function PUT(req: Request, { params }: RouteParams) {
 }
 
 export async function DELETE(req: Request, { params }: RouteParams) {
-  const session = await getAuthenticatedAdmin(req);
-  if (!session) {
-    return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
+  const roleCheck = await requireAdminRole(req, ["ADMIN"]);
+  if (roleCheck.errorResponse) {
+    return roleCheck.errorResponse;
+  }
+  const session = roleCheck.session;
+
+  const csrf = verifySameOrigin(req);
+  if (!csrf.valid) {
+    return NextResponse.json({ error: csrf.error }, { status: 403 });
   }
 
   try {

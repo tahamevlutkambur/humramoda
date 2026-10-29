@@ -523,7 +523,12 @@ export function SettingsManager({
                 <label className="hm-admin-label">PayTR Mağaza Parolası (Merchant Key)</label>
                 <input
                   type="password"
-                  placeholder="••••••••••••••••"
+                  autoComplete="new-password"
+                  placeholder={
+                    settings.paytr?.hasMerchantKey
+                      ? "•••••••• (Kayıtlı — değiştirmek için yazın)"
+                      : "••••••••••••••••"
+                  }
                   value={settings.paytr?.merchantKey || ""}
                   onChange={(e) =>
                     setSettings({
@@ -539,7 +544,12 @@ export function SettingsManager({
                 <label className="hm-admin-label">PayTR Gizli Anahtar (Merchant Salt)</label>
                 <input
                   type="password"
-                  placeholder="••••••••••••••••"
+                  autoComplete="new-password"
+                  placeholder={
+                    settings.paytr?.hasMerchantSalt
+                      ? "•••••••• (Kayıtlı — değiştirmek için yazın)"
+                      : "••••••••••••••••"
+                  }
                   value={settings.paytr?.merchantSalt || ""}
                   onChange={(e) =>
                     setSettings({

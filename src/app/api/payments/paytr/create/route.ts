@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createPendingOrder, getStoreData, syncStoreSnapshot } from "@/lib/server/store";
+import { createPendingOrder, getStoreData } from "@/lib/server/store";
 import { getPersistentStoreData, savePersistentStoreData } from "@/lib/server/persistent-store";
 import { requestPayTRIFrameToken } from "@/lib/server/paytr";
 import { logAdminAudit, logSiteActivity } from "@/lib/server/logger";
@@ -8,9 +8,8 @@ export async function POST(req: Request) {
   try {
     await getPersistentStoreData().catch(() => {});
     const body = await req.json();
-    if (body?._snapshot && typeof body._snapshot === "object") {
-      syncStoreSnapshot({ ...body._snapshot, _mergeOnly: true });
-    }
+    // GÜVENLİK: İstemciden gönderilebilecek _snapshot veya fiyat/stok verileri kesinlikle yok sayılır.
+    // Checkout fiyatı ve stok yalnızca sunucunun güvenilir kayıtlarından hesaplanır.
     const { customer, items, campaignCode } = body;
 
     const forwardedFor = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip");

@@ -537,14 +537,45 @@ export function verifyAndProcessShippingWebhook(params: {
 }): { success: boolean; error?: string; idempotent?: boolean } {
   const { carrier, rawBody, signature, payload } = params;
 
-  // Webhook imza doğrulaması
-  const webhookSecret = process.env.SHIPPING_WEBHOOK_SECRET || "default_test_carrier_secret_2026";
+  // Webhook imza doğrulaması (Varsayılan sır kabul edilmez; SHIPPING_WEBHOOK_SECRET zorunludur)
+  const webhookSecret = (process.env.SHIPPING_WEBHOOK_SECRET || "").trim();
+  if (
+    !webhookSecret ||
+    webhookSecret === "default_test_carrier_secret_2026" ||
+    webhookSecret.includes("replace_in_production") ||
+    webhookSecret.includes("ornek_")
+  ) {
+    logAdminAudit({
+      adminId: "WEBHOOK",
+      adminEmail: "carrier-webhook@carrier.local",
+      action: "SHIPPING_WEBHOOK_INVALID",
+      targetType: "SHIPPING",
+      result: "FAILED",
+      details: {
+        carrier,
+        trackingNumber: payload.trackingNumber,
+        reason: "SHIPPING_WEBHOOK_SECRET eksik veya güvensiz varsayılan değerde.",
+      },
+    });
+    return {
+      success: false,
+      error: "Kargo webhook gizli anahtarı (SHIPPING_WEBHOOK_SECRET) yapılandırılmamış.",
+    };
+  }
+
   const expectedHash = crypto
     .createHmac("sha256", webhookSecret)
-    .update(rawBody)
+    .update(rawBody, "utf-8")
     .digest("hex");
 
-  if (!signature || signature !== expectedHash) {
+  const sigBuffer = Buffer.from(signature || "", "utf-8");
+  const expectedBuffer = Buffer.from(expectedHash, "utf-8");
+  const isSignatureValid =
+    Boolean(signature) &&
+    sigBuffer.length === expectedBuffer.length &&
+    crypto.timingSafeEqual(sigBuffer, expectedBuffer);
+
+  if (!isSignatureValid) {
     logAdminAudit({
       adminId: "WEBHOOK",
       adminEmail: "carrier-webhook@carrier.local",

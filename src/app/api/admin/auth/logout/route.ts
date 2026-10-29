@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE_NAME, revokeSessionToken } from "@/lib/server/auth";
+import { verifySameOrigin } from "@/lib/server/session-guard";
 
-export async function POST() {
+export async function POST(req: Request) {
+  const csrf = verifySameOrigin(req);
+  if (!csrf.valid) {
+    return NextResponse.json({ error: csrf.error }, { status: 403 });
+  }
+
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(ADMIN_COOKIE_NAME);
 

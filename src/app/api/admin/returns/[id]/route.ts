@@ -1,16 +1,24 @@
 import { NextResponse } from "next/server";
-import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
+import { getAuthenticatedAdmin, verifySameOrigin } from "@/lib/server/session-guard";
 import {
   updateReturnRequestStatus,
   ReturnStatus,
   ReturnRestockDecision,
 } from "@/lib/server/returns";
+import { getStoreData } from "@/lib/server/store";
+import { getPersistentStoreData, savePersistentStoreData } from "@/lib/server/persistent-store";
+import { getClientIp } from "@/lib/server/auth";
 
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getAuthenticatedAdmin();
+  const csrf = verifySameOrigin(req);
+  if (!csrf.valid) {
+    return NextResponse.json({ error: csrf.error }, { status: 403 });
+  }
+
+  const session = await getAuthenticatedAdmin(req);
   if (!session) {
     return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
   }
@@ -18,6 +26,7 @@ export async function PUT(
   const { id } = await params;
 
   try {
+    await getPersistentStoreData().catch(() => { });
     const body = await req.json();
     const newStatus = body.status as ReturnStatus;
     const adminNotes = body.adminNotes;
@@ -29,7 +38,7 @@ export async function PUT(
       return NextResponse.json({ error: "Yeni iade durumu belirtilmelidir." }, { status: 400 });
     }
 
-    const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+    const clientIp = getClientIp(req);
 
     const result = updateReturnRequestStatus({
       returnId: id,
@@ -48,6 +57,8 @@ export async function PUT(
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
+
+    await savePersistentStoreData(getStoreData()).catch(() => { });
 
     return NextResponse.json({
       success: true,
