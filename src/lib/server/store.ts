@@ -457,12 +457,12 @@ const DEFAULT_ORDERS: StoreOrder[] = [
     items: [
       {
         id: "ord-item-1",
-        productId: "prod-1",
-        productName: "Qapitone Garnili Scuba İkili Takım",
-        variantId: "var-prod-1-0",
+        productId: "prod-1793280254862",
+        productName: "Moda Humra – Termal Çorap",
+        variantId: "var-1793280254862-0",
         colorName: "Siyah",
-        sizeName: "1 Beden (36-38)",
-        sku: "HM-SCB-SYH-B1",
+        sizeName: "Standart",
+        sku: "HM-SIY-STD-814",
         unitPrice: 1574.1,
         quantity: 1,
         totalPrice: 1574.1,

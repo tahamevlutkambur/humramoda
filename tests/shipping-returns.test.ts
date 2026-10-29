@@ -78,6 +78,9 @@ describe("Faz 6: Kargo, Sipariş Takibi, İade Talepleri ve Bildirimler", () => 
       saveStoreData(initStore);
     }
 
+    const testProd = getStoreData().products[0];
+    const testVar = testProd.variants[0];
+
     // 1. Ödenmiş ve onaylı sipariş
     const resPaid = createPendingOrder({
       customer: {
@@ -90,8 +93,8 @@ describe("Faz 6: Kargo, Sipariş Takibi, İade Talepleri ve Bildirimler", () => 
       },
       items: [
         {
-          productId: "prod-1",
-          variantId: "var-prod-1-0",
+          productId: testProd.id,
+          variantId: testVar.id,
           quantity: 2,
         },
       ],
@@ -110,8 +113,8 @@ describe("Faz 6: Kargo, Sipariş Takibi, İade Talepleri ve Bildirimler", () => 
       },
       items: [
         {
-          productId: "prod-1",
-          variantId: "var-prod-1-0",
+          productId: testProd.id,
+          variantId: testVar.id,
           quantity: 1,
         },
       ],
@@ -130,8 +133,8 @@ describe("Faz 6: Kargo, Sipariş Takibi, İade Talepleri ve Bildirimler", () => 
       },
       items: [
         {
-          productId: "prod-1",
-          variantId: "var-prod-1-0",
+          productId: testProd.id,
+          variantId: testVar.id,
           quantity: 1,
         },
       ],

@@ -82,15 +82,36 @@ export async function getPersistentStoreData(): Promise<AppStoreData> {
       // Eksik ürünleri koru ve birleştir (merge): Yerelde veya katalogda tanımlı tüm ürünleri veritabanına ekle
       const allKnownProducts = localData.products || [];
       dbData.products = dbData.products || [];
-      const dbProductIds = new Set(dbData.products.map((p) => p.id));
       let merged = false;
+
+      // Eski şablon/sahte ürünleri (prod-1..4) temizle
+      const mockIds = new Set(["prod-1", "prod-2", "prod-3", "prod-4"]);
+      if (dbData.products.some((p) => mockIds.has(p.id))) {
+        dbData.products = dbData.products.filter((p) => !mockIds.has(p.id));
+        merged = true;
+      }
+
+      const dbProductIds = new Set(dbData.products.map((p) => p.id));
       for (const lp of allKnownProducts) {
-        if (!dbProductIds.has(lp.id)) {
+        if (!mockIds.has(lp.id) && !dbProductIds.has(lp.id)) {
           dbData.products.push(lp);
           dbProductIds.add(lp.id);
           merged = true;
         }
       }
+
+      // Kategorileri koru ve birleştir
+      const allKnownCategories = localData.categories || [];
+      dbData.categories = dbData.categories || [];
+      const dbCatIds = new Set(dbData.categories.map((c) => c.id));
+      for (const lc of allKnownCategories) {
+        if (!dbCatIds.has(lc.id)) {
+          dbData.categories.push(lc);
+          dbCatIds.add(lc.id);
+          merged = true;
+        }
+      }
+
       if (merged) {
         dbData.updatedAt = Date.now();
         await savePersistentStoreData(dbData).catch(() => {});
@@ -200,6 +221,10 @@ export async function savePersistentStoreData(data: AppStoreData): Promise<void>
       );
       const latest = rows?.[0]?.data;
       const next: AppStoreData = { ...data };
+      const forbiddenMockIds = new Set(["prod-1", "prod-2", "prod-3", "prod-4"]);
+      if (next.products) {
+        next.products = next.products.filter((p) => !forbiddenMockIds.has(p.id));
+      }
       if (latest) {
         const mergeByRevision = <T extends { id: string; updatedAt?: string; createdAt?: string }>(
           incoming: T[] = [],
