@@ -4,16 +4,20 @@ import { getPersistentStoreData } from "@/lib/server/persistent-store";
 import { requireAdminRole } from "@/lib/server/session-guard";
 import { checkDatabaseConnection } from "@/lib/server/db";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(req: Request) {
   try {
-    await getPersistentStoreData().catch(() => {});
     const auth = await requireAdminRole(req, ["CARRIER", "ADMIN", "STAFF"]);
     if (auth.errorResponse) {
       return auth.errorResponse;
     }
 
-    const store = getStoreData();
-    const orders = store.orders || [];
+    const store = await getPersistentStoreData();
+    const orders = [...(store.orders || [])].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
 
     // Kargo görevlilerinin ihtiyaç duyduğu net liste
     const cargoOrders = orders.map((o) => ({

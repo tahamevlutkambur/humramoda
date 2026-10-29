@@ -60,7 +60,7 @@ export default function CargoDashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/kargo/orders");
+      const res = await fetch("/api/kargo/orders", { cache: "no-store" });
       if (res.status === 401 || res.status === 403) {
         setIsLoggedOut(true);
         setLoading(false);

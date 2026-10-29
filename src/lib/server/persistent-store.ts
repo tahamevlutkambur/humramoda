@@ -2,6 +2,7 @@ import { prisma } from "@/lib/server/db";
 import { PRODUCTS } from "@/lib/catalog";
 import {
   getStoreData,
+  saveStoreData,
   usePersistentStoreData,
   type AppStoreData,
 } from "@/lib/server/store";
@@ -242,6 +243,9 @@ export async function savePersistentStoreData(data: AppStoreData): Promise<void>
           return Array.from(items.values());
         };
         next.orders = mergeByRevision(data.orders, latest.orders);
+        next.orders.sort(
+          (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+        );
         next.returnRequests = mergeByRevision(data.returnRequests || [], latest.returnRequests || []);
         next.shipments = mergeByRevision(data.shipments || [], latest.shipments || []);
         next.adminUsers = mergeByRevision(data.adminUsers, latest.adminUsers);
@@ -258,6 +262,7 @@ export async function savePersistentStoreData(data: AppStoreData): Promise<void>
       return next;
     });
     usePersistentStoreData(merged);
+    saveStoreData(merged);
   } catch (error) {
     console.warn("savePersistentStoreData error, data kept in local store:", error);
   }

@@ -1,17 +1,19 @@
 import { NextResponse } from "next/server";
 import { requireAdminRole } from "@/lib/server/session-guard";
-import { getAllOrders } from "@/lib/server/store";
 import { getPersistentStoreData } from "@/lib/server/persistent-store";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
-export async function GET(req?: Request) {
+export async function GET(req: Request) {
   const auth = await requireAdminRole(req, ["ADMIN", "STAFF"]);
   if (auth.errorResponse) {
     return auth.errorResponse;
   }
 
-  await getPersistentStoreData().catch(() => {});
-  const orders = getAllOrders();
+  const store = await getPersistentStoreData();
+  const orders = [...(store.orders || [])].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
   return NextResponse.json({ orders });
 }

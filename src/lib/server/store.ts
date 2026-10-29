@@ -579,16 +579,16 @@ export function getStoreData(): AppStoreData {
     // Okuma hatası
   }
 
-  if (
-    storeState.inMemoryStore &&
-    fileMtime > 0 &&
-    Math.abs(fileMtime - storeState.lastStoreFileMtime) < 10
-  ) {
-    return storeState.inMemoryStore;
+  // 1. Eğer kalıcı veritabanından (PostgreSQL) yüklenmiş snapshot varsa doğrudan onu döndür!
+  if (storeState.persistentStoreOverride) {
+    return storeState.persistentStoreOverride;
   }
 
-  if (storeState.persistentStoreOverride && fileMtime === 0) {
-    return storeState.persistentStoreOverride;
+  // 2. Eğer bellekte güncel store varsa onu döndür!
+  if (storeState.inMemoryStore) {
+    if (fileMtime === 0 || storeState.lastStoreFileMtime >= fileMtime || Math.abs(fileMtime - storeState.lastStoreFileMtime) < 1000) {
+      return storeState.inMemoryStore;
+    }
   }
 
   let raw: string | null = null;

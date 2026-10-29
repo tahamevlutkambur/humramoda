@@ -3,6 +3,9 @@ import { requireAdminRole } from "@/lib/server/session-guard";
 import { getFinancialReport } from "@/lib/server/store";
 import { getPersistentStoreData } from "@/lib/server/persistent-store";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(req: Request) {
   const auth = await requireAdminRole(req, ["ADMIN"]);
   if (auth.errorResponse) {
