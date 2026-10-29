@@ -279,8 +279,9 @@ describe("Faz 1: Acil Kritik Saldırı Yolları Sentetik Staging Kontrolleri", (
       const checkoutData = await checkoutRes.json();
 
       expect(checkoutRes.status).toBe(200);
-      expect(checkoutData.totalAmount).toBe(truePrice);
-      expect(checkoutData.totalKurus).toBe(Math.round(truePrice * 100));
+      const expectedShipping = store.settings?.shippingFee ?? 150;
+      expect(checkoutData.totalAmount).toBe(truePrice + expectedShipping);
+      expect(checkoutData.totalKurus).toBe(Math.round((truePrice + expectedShipping) * 100));
     } finally {
       fetchSpy.mockRestore();
     }

@@ -1,5 +1,5 @@
 {
-  "updatedAt": 1793310781011,
+  "updatedAt": 1793312993960,
   "products": [
     {
       "id": "prod-1793280254862",
@@ -2149,6 +2149,7 @@
     "whatsapp": "+90 542 799 44 28",
     "email": "destek@humramoda.com",
     "address": "Nişantaşı, İstanbul, Türkiye",
+    "shippingFee": 150,
     "freeShippingThreshold": 3500,
     "defaultSeoTitle": "Hümra Moda — Zamansız Kadın Giyim & Modern Koleksiyonlar",
     "defaultSeoDescription": "Hümra Moda: Seçkin kadın giyim, ikili takımlar ve zamansız koleksiyonlar. Premium kumaş kalitesi ve modern kalıplarla güvenli alışveriş.",
@@ -2913,9 +2914,614 @@
       "idempotencyKey": "ORDER_CANCELLED:HM-20261028-4102:default",
       "sentAt": "2026-10-28T06:09:09.166Z",
       "createdAt": "2026-10-28T06:09:09.166Z"
+    },
+    {
+      "id": "notif-930bfc9d14b4",
+      "orderId": "ord-1793312715804",
+      "orderNumber": "HM-20261029-3067",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_CREATED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Kargoya Verildi - HM-20261029-3067 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p>Harika bir haber! <strong>HM-20261029-3067</strong> numaralı siparişiniz kargoya teslim edilmiştir.</p>\n            <div style=\"background-color: #f9f9f9; padding: 15px; border-radius: 4px; margin: 20px 0;\">\n              <p style=\"margin: 0 0 8px 0;\"><strong>Kargo Firması:</strong> MNG Kargo</p>\n              <p style=\"margin: 0 0 12px 0;\"><strong>Takip Numarası:</strong> MNG464544452</p>\n              <a href=\"https://www.mngkargo.com.tr/gonderitakip?takipNo=MNG464544452\" target=\"_blank\" style=\"display: inline-block; background-color: #141414; color: #fff; padding: 10px 18px; text-decoration: none; border-radius: 4px; font-size: 13px;\">Kargomu Takip Et</a>\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261029-3067 numaralı siparişiniz MNG Kargo firmasına teslim edilmiştir.\nTakip No: MNG464544452\nTakip Bağlantısı: https://www.mngkargo.com.tr/gonderitakip?takipNo=MNG464544452\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_CREATED:HM-20261029-3067:default",
+      "sentAt": "2026-10-29T22:25:15.943Z",
+      "createdAt": "2026-10-29T22:25:15.943Z"
+    },
+    {
+      "id": "notif-821691602c9d",
+      "orderId": "ord-1793312715997",
+      "orderNumber": "HM-20261029-9110",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_CREATED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Kargoya Verildi - HM-20261029-9110 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p>Harika bir haber! <strong>HM-20261029-9110</strong> numaralı siparişiniz kargoya teslim edilmiştir.</p>\n            <div style=\"background-color: #f9f9f9; padding: 15px; border-radius: 4px; margin: 20px 0;\">\n              <p style=\"margin: 0 0 8px 0;\"><strong>Kargo Firması:</strong> Yurtiçi Kargo</p>\n              <p style=\"margin: 0 0 12px 0;\"><strong>Takip Numarası:</strong> YUR139121578</p>\n              <a href=\"https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=YUR139121578\" target=\"_blank\" style=\"display: inline-block; background-color: #141414; color: #fff; padding: 10px 18px; text-decoration: none; border-radius: 4px; font-size: 13px;\">Kargomu Takip Et</a>\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261029-9110 numaralı siparişiniz Yurtiçi Kargo firmasına teslim edilmiştir.\nTakip No: YUR139121578\nTakip Bağlantısı: https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=YUR139121578\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_CREATED:HM-20261029-9110:default",
+      "sentAt": "2026-10-29T22:25:16.143Z",
+      "createdAt": "2026-10-29T22:25:16.143Z"
+    },
+    {
+      "id": "notif-141db2c05b1c",
+      "orderId": "ord-1793312715997",
+      "orderNumber": "HM-20261029-9110",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_DELIVERED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Teslim Edildi - HM-20261029-9110 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261029-9110</strong> numaralı siparişinizin kargo teslimatı tamamlanmıştır.</p>\n            <p>Hümra Moda'yı tercih ettiğiniz için teşekkür eder, keyifli günlerde kullanmanızı dileriz.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261029-9110 numaralı siparişiniz teslim edilmiştir. Ürünlerinizi keyifle kullanmanızı dileriz.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_DELIVERED:HM-20261029-9110:default",
+      "sentAt": "2026-10-29T22:25:16.221Z",
+      "createdAt": "2026-10-29T22:25:16.221Z"
+    },
+    {
+      "id": "notif-f95671389305",
+      "orderId": "ord-1793312716411",
+      "orderNumber": "HM-20261029-7060",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_CREATED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Kargoya Verildi - HM-20261029-7060 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p>Harika bir haber! <strong>HM-20261029-7060</strong> numaralı siparişiniz kargoya teslim edilmiştir.</p>\n            <div style=\"background-color: #f9f9f9; padding: 15px; border-radius: 4px; margin: 20px 0;\">\n              <p style=\"margin: 0 0 8px 0;\"><strong>Kargo Firması:</strong> Aras Kargo</p>\n              <p style=\"margin: 0 0 12px 0;\"><strong>Takip Numarası:</strong> ARA142579835</p>\n              <a href=\"https://kargotakip.araskargo.com.tr/mainpage.aspx?code=ARA142579835\" target=\"_blank\" style=\"display: inline-block; background-color: #141414; color: #fff; padding: 10px 18px; text-decoration: none; border-radius: 4px; font-size: 13px;\">Kargomu Takip Et</a>\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261029-7060 numaralı siparişiniz Aras Kargo firmasına teslim edilmiştir.\nTakip No: ARA142579835\nTakip Bağlantısı: https://kargotakip.araskargo.com.tr/mainpage.aspx?code=ARA142579835\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_CREATED:HM-20261029-7060:default",
+      "sentAt": "2026-10-29T22:25:16.580Z",
+      "createdAt": "2026-10-29T22:25:16.580Z"
+    },
+    {
+      "id": "notif-1dbd637ae937",
+      "orderId": "ord-1793312716411",
+      "orderNumber": "HM-20261029-7060",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_IN_TRANSIT",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Kargoya Verildi - HM-20261029-7060 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p>Harika bir haber! <strong>HM-20261029-7060</strong> numaralı siparişiniz kargoya teslim edilmiştir.</p>\n            <div style=\"background-color: #f9f9f9; padding: 15px; border-radius: 4px; margin: 20px 0;\">\n              <p style=\"margin: 0 0 8px 0;\"><strong>Kargo Firması:</strong> Aras Kargo</p>\n              <p style=\"margin: 0 0 12px 0;\"><strong>Takip Numarası:</strong> ARA142579835</p>\n              <a href=\"https://kargotakip.araskargo.com.tr/mainpage.aspx?code=ARA142579835\" target=\"_blank\" style=\"display: inline-block; background-color: #141414; color: #fff; padding: 10px 18px; text-decoration: none; border-radius: 4px; font-size: 13px;\">Kargomu Takip Et</a>\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261029-7060 numaralı siparişiniz Aras Kargo firmasına teslim edilmiştir.\nTakip No: ARA142579835\nTakip Bağlantısı: https://kargotakip.araskargo.com.tr/mainpage.aspx?code=ARA142579835\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_IN_TRANSIT:HM-20261029-7060:default",
+      "sentAt": "2026-10-29T22:25:16.662Z",
+      "createdAt": "2026-10-29T22:25:16.662Z"
+    },
+    {
+      "id": "notif-10c84f8b31c1",
+      "orderId": "ord-1793312716940",
+      "orderNumber": "HM-20261029-5117",
+      "channel": "EMAIL",
+      "eventType": "RETURN_REQUESTED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "İade Talebiniz Alındı - HM-20261029-5117 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261029-5117</strong> numaralı siparişiniz için oluşturduğunuz iade talebi başarıyla alınmıştır.</p>\n            <p>Talebiniz operasyon ekibimiz tarafından incelendikten sonra kargo iade süreci hakkında bilgilendirileceksiniz.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261029-5117 numaralı siparişinize ait iade talebiniz incelemeye alınmıştır. Yetkililerimiz talebi inceledikten sonra size geri dönüş yapacaktır.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "RETURN_REQUESTED:HM-20261029-5117:default",
+      "sentAt": "2026-10-29T22:25:17.114Z",
+      "createdAt": "2026-10-29T22:25:17.114Z"
+    },
+    {
+      "id": "notif-4db95340f266",
+      "orderId": "ord-1793312716940",
+      "orderNumber": "HM-20261029-5117",
+      "channel": "EMAIL",
+      "eventType": "RETURN_DECISION",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "İade Talebiniz Onaylandı - HM-20261029-5117 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261029-5117</strong> numaralı iade talebiniz <strong>KABUL EDİLMİŞTİR</strong>.</p>\n            <p><strong>Açıklama:</strong> İade onaylandı. Lütfen anlaşmalı Yurtiçi Kargo kodumuz ile gönderiniz.</p>\n            <p>Ürünü orijinal ambalajında ve faturasıyla birlikte anlaşmalı kargo kodumuz ile gönderebilirsiniz.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261029-5117 numaralı siparişinize ait iade talebiniz onaylanmıştır.\nAçıklama: İade onaylandı. Lütfen anlaşmalı Yurtiçi Kargo kodumuz ile gönderiniz.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "RETURN_DECISION:HM-20261029-5117:default",
+      "sentAt": "2026-10-29T22:25:17.249Z",
+      "createdAt": "2026-10-29T22:25:17.249Z"
+    },
+    {
+      "id": "notif-b1939cf6ba0d",
+      "orderId": "ord-1793312717411",
+      "orderNumber": "HM-20261029-9431",
+      "channel": "EMAIL",
+      "eventType": "RETURN_REQUESTED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "İade Talebiniz Alındı - HM-20261029-9431 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261029-9431</strong> numaralı siparişiniz için oluşturduğunuz iade talebi başarıyla alınmıştır.</p>\n            <p>Talebiniz operasyon ekibimiz tarafından incelendikten sonra kargo iade süreci hakkında bilgilendirileceksiniz.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261029-9431 numaralı siparişinize ait iade talebiniz incelemeye alınmıştır. Yetkililerimiz talebi inceledikten sonra size geri dönüş yapacaktır.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "RETURN_REQUESTED:HM-20261029-9431:default",
+      "sentAt": "2026-10-29T22:25:17.566Z",
+      "createdAt": "2026-10-29T22:25:17.566Z"
+    },
+    {
+      "id": "notif-7f3ae36fe9f9",
+      "orderId": "ord-1793312717411",
+      "orderNumber": "HM-20261029-9431",
+      "channel": "EMAIL",
+      "eventType": "REFUND_CONFIRMED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Para İadeniz Gerçekleştirildi - HM-20261029-9431 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261029-9431</strong> numaralı siparişiniz için onaylanan <strong>800 ₺</strong> para iadesi bankanıza iletilmiştir.</p>\n            <p>Bankanızın işlem sürelerine bağlı olarak tutar 2-7 iş günü içinde hesabınıza yansıyacaktır.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261029-9431 numaralı siparişiniz için 800 ₺ tutarındaki para iadesi bankanıza iletilmiştir.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "REFUND_CONFIRMED:HM-20261029-9431:default",
+      "sentAt": "2026-10-29T22:25:17.652Z",
+      "createdAt": "2026-10-29T22:25:17.652Z"
+    },
+    {
+      "id": "notif-dc9a8292dacb",
+      "orderId": "ord-1793312717755",
+      "orderNumber": "HM-20261029-3280",
+      "channel": "EMAIL",
+      "eventType": "ORDER_CREATED",
+      "recipient": "invalid-email-format",
+      "subject": "Siparişiniz Alındı - HM-20261029-3280 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Test Müşteri</strong>,</p>\n            <p><strong>HM-20261029-3280</strong> numaralı siparişiniz başarıyla alınmıştır.</p>\n            \n            <p>Siparişiniz hazırlandığında ve kargoya verildiğinde sizi bilgilendireceğiz.</p>\n            <div style=\"margin-top: 30px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 15px;\">\n              Bu e-posta Hümra Moda sipariş bildirim sisteminden otomatik olarak gönderilmiştir.\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Test Müşteri,\n\nHM-20261029-3280 numaralı siparişiniz başarıyla alınmıştır. Toplam Tutar: \n\nÖdeme ve hazırlık sürecini takip etmek için web sitemizi ziyaret edebilirsiniz.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "ORDER_CREATED:HM-20261029-3280:default",
+      "sentAt": "2026-10-29T22:25:17.857Z",
+      "createdAt": "2026-10-29T22:25:17.857Z"
+    },
+    {
+      "id": "notif-0e7071dfaafd",
+      "orderId": "ord-1793312717908",
+      "orderNumber": "HM-20261029-2208",
+      "channel": "EMAIL",
+      "eventType": "PAYMENT_CONFIRMED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Ödemeniz Onaylandı - HM-20261029-2208 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261029-2208</strong> numaralı siparişinizin ödemesi PayTR güvencesiyle başarıyla onaylanmıştır.</p>\n            <p>Ürünleriniz özenle hazırlanarak en kısa sürede kargoya teslim edilecektir.</p>\n            <div style=\"margin-top: 30px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 15px;\">\n              Hümra Moda Müşteri Hizmetleri\n            </div>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261029-2208 numaralı siparişinizin ödemesi başarıyla onaylanmıştır. Siparişiniz paketleme departmanımıza iletilmiştir.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "PAYMENT_CONFIRMED:HM-20261029-2208:unit-test-key",
+      "sentAt": "2026-10-29T22:25:18.018Z",
+      "createdAt": "2026-10-29T22:25:18.018Z"
+    },
+    {
+      "id": "notif-08720ca05c5e",
+      "orderId": "ord-1793312718175",
+      "orderNumber": "HM-20261029-5480",
+      "channel": "EMAIL",
+      "eventType": "SHIPMENT_DELIVERED",
+      "recipient": "ayse.yilmaz@example.com",
+      "subject": "Siparişiniz Teslim Edildi - HM-20261029-5480 | Hümra Moda",
+      "contentHtml": "\n          <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1c1c1c; padding: 20px; border: 1px solid #eaeaea;\">\n            <div style=\"border-bottom: 2px solid #141414; padding-bottom: 12px; margin-bottom: 20px;\">\n              <h2 style=\"margin: 0; letter-spacing: 2px; font-weight: 500;\">HÜMRA MODA</h2>\n            </div>\n            <p>Sayın <strong>Ayşe Yılmaz</strong>,</p>\n            <p><strong>HM-20261029-5480</strong> numaralı siparişinizin kargo teslimatı tamamlanmıştır.</p>\n            <p>Hümra Moda'yı tercih ettiğiniz için teşekkür eder, keyifli günlerde kullanmanızı dileriz.</p>\n          </div>\n        ",
+      "contentText": "Sayın Ayşe Yılmaz,\n\nHM-20261029-5480 numaralı siparişiniz teslim edilmiştir. Ürünlerinizi keyifle kullanmanızı dileriz.\n\nHümra Moda",
+      "status": "SENT",
+      "idempotencyKey": "SHIPMENT_DELIVERED:HM-20261029-5480:default",
+      "sentAt": "2026-10-29T22:25:18.381Z",
+      "createdAt": "2026-10-29T22:25:18.381Z"
     }
   ],
   "auditLogs": [
+    {
+      "id": "audit-1793312772961-2e608c5c",
+      "timestamp": "2026-10-29T22:26:12.961Z",
+      "adminId": "adm-pwd-test-1793312772766",
+      "adminEmail": "pwd-rotation-1793312772766@humramoda.local",
+      "action": "ADMIN_PASSWORD_CHANGED",
+      "targetType": "AUTH",
+      "targetId": "adm-pwd-test-1793312772766",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "7a2e44904d6a",
+      "details": {
+        "reason": "PASSWORD_ROTATION_SUCCESS"
+      }
+    },
+    {
+      "id": "audit-1793312721148-b53923e2",
+      "timestamp": "2026-10-29T22:25:21.148Z",
+      "adminId": "adm-pwd-test-1793312720858",
+      "adminEmail": "pwd-rotation-1793312720858@humramoda.local",
+      "action": "ADMIN_PASSWORD_CHANGED",
+      "targetType": "AUTH",
+      "targetId": "adm-pwd-test-1793312720858",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "b190999a622d",
+      "details": {
+        "reason": "PASSWORD_ROTATION_SUCCESS"
+      }
+    },
+    {
+      "id": "audit-1793312718319-03f5df05",
+      "timestamp": "2026-10-29T22:25:18.319Z",
+      "adminId": "ADMIN",
+      "adminEmail": "admin@humramoda.local",
+      "action": "SHIPPING_TRACKING_UPDATED",
+      "targetType": "SHIPPING",
+      "targetId": "shp-126ab91b4fcd",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "d6653f0f2d1d",
+      "details": {
+        "orderId": "ord-1793312718175",
+        "orderNumber": "HM-20261029-5480",
+        "carrier": "hepsijet",
+        "trackingNumber": "HJ123456789",
+        "status": "SHIPPED"
+      }
+    },
+    {
+      "id": "audit-1793312718042-6dbde310",
+      "timestamp": "2026-10-29T22:25:18.042Z",
+      "adminId": "NOTIFIER",
+      "adminEmail": "notifications@humramoda.local",
+      "action": "NOTIFICATION_SENT",
+      "targetType": "NOTIFICATION",
+      "targetId": "notif-0e7071dfaafd",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "ea00223e26ea",
+      "details": {
+        "orderId": "ord-1793312717908",
+        "orderNumber": "HM-20261029-2208",
+        "recipient": "ayse.yilmaz@example.com",
+        "eventType": "PAYMENT_CONFIRMED",
+        "isLiveSmtpConfigured": false
+      }
+    },
+    {
+      "id": "audit-1793312717881-2fdbaad1",
+      "timestamp": "2026-10-29T22:25:17.881Z",
+      "adminId": "NOTIFIER",
+      "adminEmail": "notifications@humramoda.local",
+      "action": "NOTIFICATION_SENT",
+      "targetType": "NOTIFICATION",
+      "targetId": "notif-dc9a8292dacb",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "2d33c7bb2166",
+      "details": {
+        "orderId": "ord-1793312717755",
+        "orderNumber": "HM-20261029-3280",
+        "recipient": "invalid-email-format",
+        "eventType": "ORDER_CREATED",
+        "isLiveSmtpConfigured": false
+      }
+    },
+    {
+      "id": "audit-1793312717727-5ad36422",
+      "timestamp": "2026-10-29T22:25:17.727Z",
+      "adminId": "ADMIN",
+      "adminEmail": "admin@humramoda.local",
+      "action": "RETURN_STATUS_UPDATED",
+      "targetType": "RETURN",
+      "targetId": "ret-ebf7bc905273",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "383647ecb05c",
+      "details": {
+        "fromStatus": "REQUESTED",
+        "toStatus": "REFUND_COMPLETED",
+        "restockDecision": "PENDING",
+        "actualRefundVerified": true
+      }
+    },
+    {
+      "id": "audit-1793312717675-bc2ecb58",
+      "timestamp": "2026-10-29T22:25:17.675Z",
+      "adminId": "NOTIFIER",
+      "adminEmail": "notifications@humramoda.local",
+      "action": "NOTIFICATION_SENT",
+      "targetType": "NOTIFICATION",
+      "targetId": "notif-7f3ae36fe9f9",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "8a23c53ff8c1",
+      "details": {
+        "orderId": "ord-1793312717411",
+        "orderNumber": "HM-20261029-9431",
+        "recipient": "ayse.yilmaz@example.com",
+        "eventType": "REFUND_CONFIRMED",
+        "isLiveSmtpConfigured": false
+      }
+    },
+    {
+      "id": "audit-1793312717625-36cfc04a",
+      "timestamp": "2026-10-29T22:25:17.625Z",
+      "adminId": "ADMIN",
+      "adminEmail": "admin@humramoda.local",
+      "action": "RETURN_REFUND_VERIFIED",
+      "targetType": "RETURN",
+      "targetId": "ret-ebf7bc905273",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "fb90b5070ca4",
+      "details": {
+        "refundedAmount": 800,
+        "transactionRef": "PAYTR_TEST_REFUND_TX_9876",
+        "orderId": "ord-1793312717411"
+      }
+    },
+    {
+      "id": "audit-1793312717592-0a13aa32",
+      "timestamp": "2026-10-29T22:25:17.593Z",
+      "adminId": "NOTIFIER",
+      "adminEmail": "notifications@humramoda.local",
+      "action": "NOTIFICATION_SENT",
+      "targetType": "NOTIFICATION",
+      "targetId": "notif-b1939cf6ba0d",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "92d3bd7e8aab",
+      "details": {
+        "orderId": "ord-1793312717411",
+        "orderNumber": "HM-20261029-9431",
+        "recipient": "ayse.yilmaz@example.com",
+        "eventType": "RETURN_REQUESTED",
+        "isLiveSmtpConfigured": false
+      }
+    },
+    {
+      "id": "audit-1793312717543-3626e88c",
+      "timestamp": "2026-10-29T22:25:17.543Z",
+      "adminId": "CUSTOMER",
+      "adminEmail": "ayse.yilmaz@example.com",
+      "action": "RETURN_REQUEST_CREATED",
+      "targetType": "RETURN",
+      "targetId": "ret-ebf7bc905273",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "451ea0924f3a",
+      "details": {
+        "orderId": "ord-1793312717411",
+        "orderNumber": "HM-20261029-9431",
+        "itemCount": 1,
+        "requestedAmount": 800,
+        "reason": "Vazgeçtim"
+      }
+    },
+    {
+      "id": "audit-1793312717281-eb8df657",
+      "timestamp": "2026-10-29T22:25:17.281Z",
+      "adminId": "NOTIFIER",
+      "adminEmail": "notifications@humramoda.local",
+      "action": "NOTIFICATION_SENT",
+      "targetType": "NOTIFICATION",
+      "targetId": "notif-4db95340f266",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "a48f65b9102f",
+      "details": {
+        "orderId": "ord-1793312716940",
+        "orderNumber": "HM-20261029-5117",
+        "recipient": "ayse.yilmaz@example.com",
+        "eventType": "RETURN_DECISION",
+        "isLiveSmtpConfigured": false
+      }
+    },
+    {
+      "id": "audit-1793312717215-8bd7f883",
+      "timestamp": "2026-10-29T22:25:17.216Z",
+      "adminId": "ADMIN",
+      "adminEmail": "admin@humramoda.local",
+      "action": "RETURN_STATUS_UPDATED",
+      "targetType": "RETURN",
+      "targetId": "ret-74541441f8ab",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "fe0f6c27244e",
+      "details": {
+        "fromStatus": "REQUESTED",
+        "toStatus": "APPROVED",
+        "restockDecision": "PENDING",
+        "actualRefundVerified": false
+      }
+    },
+    {
+      "id": "audit-1793312717152-690a2026",
+      "timestamp": "2026-10-29T22:25:17.152Z",
+      "adminId": "NOTIFIER",
+      "adminEmail": "notifications@humramoda.local",
+      "action": "NOTIFICATION_SENT",
+      "targetType": "NOTIFICATION",
+      "targetId": "notif-10c84f8b31c1",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "12270e2206bf",
+      "details": {
+        "orderId": "ord-1793312716940",
+        "orderNumber": "HM-20261029-5117",
+        "recipient": "ayse.yilmaz@example.com",
+        "eventType": "RETURN_REQUESTED",
+        "isLiveSmtpConfigured": false
+      }
+    },
+    {
+      "id": "audit-1793312717086-3c5dd162",
+      "timestamp": "2026-10-29T22:25:17.086Z",
+      "adminId": "CUSTOMER",
+      "adminEmail": "ayse.yilmaz@example.com",
+      "action": "RETURN_REQUEST_CREATED",
+      "targetType": "RETURN",
+      "targetId": "ret-74541441f8ab",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "183757117385",
+      "details": {
+        "orderId": "ord-1793312716940",
+        "orderNumber": "HM-20261029-5117",
+        "itemCount": 1,
+        "requestedAmount": 800,
+        "reason": "Beden Uymadı"
+      }
+    },
+    {
+      "id": "audit-1793312716686-b5c1b890",
+      "timestamp": "2026-10-29T22:25:16.686Z",
+      "adminId": "NOTIFIER",
+      "adminEmail": "notifications@humramoda.local",
+      "action": "NOTIFICATION_SENT",
+      "targetType": "NOTIFICATION",
+      "targetId": "notif-1dbd637ae937",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "5fb96dbfd388",
+      "details": {
+        "orderId": "ord-1793312716411",
+        "orderNumber": "HM-20261029-7060",
+        "recipient": "ayse.yilmaz@example.com",
+        "eventType": "SHIPMENT_IN_TRANSIT",
+        "isLiveSmtpConfigured": false
+      }
+    },
+    {
+      "id": "audit-1793312716604-081fafe5",
+      "timestamp": "2026-10-29T22:25:16.604Z",
+      "adminId": "NOTIFIER",
+      "adminEmail": "notifications@humramoda.local",
+      "action": "NOTIFICATION_SENT",
+      "targetType": "NOTIFICATION",
+      "targetId": "notif-f95671389305",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "7c7f0915ef9e",
+      "details": {
+        "orderId": "ord-1793312716411",
+        "orderNumber": "HM-20261029-7060",
+        "recipient": "ayse.yilmaz@example.com",
+        "eventType": "SHIPMENT_CREATED",
+        "isLiveSmtpConfigured": false
+      }
+    },
+    {
+      "id": "audit-1793312716556-8fe628de",
+      "timestamp": "2026-10-29T22:25:16.556Z",
+      "adminId": "SYSTEM",
+      "adminEmail": "system@humramoda.local",
+      "action": "SHIPPING_SHIPMENT_CREATED",
+      "targetType": "SHIPPING",
+      "targetId": "shp-3500077d735a",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "f48043ca7fb5",
+      "details": {
+        "orderId": "ord-1793312716411",
+        "orderNumber": "HM-20261029-7060",
+        "carrier": "aras",
+        "trackingNumber": "ARA142579835",
+        "method": "API_INTEGRATED",
+        "isSimulated": true
+      }
+    },
+    {
+      "id": "audit-1793312716374-17e21fe5",
+      "timestamp": "2026-10-29T22:25:16.374Z",
+      "adminId": "WEBHOOK",
+      "adminEmail": "carrier-webhook@carrier.local",
+      "action": "SHIPPING_WEBHOOK_INVALID",
+      "targetType": "SHIPPING",
+      "result": "FAILED",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "9095b47b2efd",
+      "details": {
+        "carrier": "yurtici",
+        "trackingNumber": "YK123456",
+        "providedSignature": "[SAĞLANDI]"
+      }
+    },
+    {
+      "id": "audit-1793312716246-a3cf9c15",
+      "timestamp": "2026-10-29T22:25:16.246Z",
+      "adminId": "NOTIFIER",
+      "adminEmail": "notifications@humramoda.local",
+      "action": "NOTIFICATION_SENT",
+      "targetType": "NOTIFICATION",
+      "targetId": "notif-141db2c05b1c",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "4952deb389ae",
+      "details": {
+        "orderId": "ord-1793312715997",
+        "orderNumber": "HM-20261029-9110",
+        "recipient": "ayse.yilmaz@example.com",
+        "eventType": "SHIPMENT_DELIVERED",
+        "isLiveSmtpConfigured": false
+      }
+    },
+    {
+      "id": "audit-1793312716166-5f123e24",
+      "timestamp": "2026-10-29T22:25:16.166Z",
+      "adminId": "NOTIFIER",
+      "adminEmail": "notifications@humramoda.local",
+      "action": "NOTIFICATION_SENT",
+      "targetType": "NOTIFICATION",
+      "targetId": "notif-821691602c9d",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "c9479f3dd9a9",
+      "details": {
+        "orderId": "ord-1793312715997",
+        "orderNumber": "HM-20261029-9110",
+        "recipient": "ayse.yilmaz@example.com",
+        "eventType": "SHIPMENT_CREATED",
+        "isLiveSmtpConfigured": false
+      }
+    },
+    {
+      "id": "audit-1793312716118-1cf3bcff",
+      "timestamp": "2026-10-29T22:25:16.118Z",
+      "adminId": "SYSTEM",
+      "adminEmail": "system@humramoda.local",
+      "action": "SHIPPING_SHIPMENT_CREATED",
+      "targetType": "SHIPPING",
+      "targetId": "shp-bbd59e36d871",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "04013cbfd649",
+      "details": {
+        "orderId": "ord-1793312715997",
+        "orderNumber": "HM-20261029-9110",
+        "carrier": "yurtici",
+        "trackingNumber": "YUR139121578",
+        "method": "API_INTEGRATED",
+        "isSimulated": true
+      }
+    },
+    {
+      "id": "audit-1793312715970-2dd34aaf",
+      "timestamp": "2026-10-29T22:25:15.970Z",
+      "adminId": "NOTIFIER",
+      "adminEmail": "notifications@humramoda.local",
+      "action": "NOTIFICATION_SENT",
+      "targetType": "NOTIFICATION",
+      "targetId": "notif-930bfc9d14b4",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "999b4b199b4b",
+      "details": {
+        "orderId": "ord-1793312715804",
+        "orderNumber": "HM-20261029-3067",
+        "recipient": "ayse.yilmaz@example.com",
+        "eventType": "SHIPMENT_CREATED",
+        "isLiveSmtpConfigured": false
+      }
+    },
+    {
+      "id": "audit-1793312715921-ce647ef8",
+      "timestamp": "2026-10-29T22:25:15.921Z",
+      "adminId": "SYSTEM",
+      "adminEmail": "system@humramoda.local",
+      "action": "SHIPPING_SHIPMENT_CREATED",
+      "targetType": "SHIPPING",
+      "targetId": "shp-c60cda408ffd",
+      "result": "SUCCESS",
+      "ipAddress": "127.0.0.1",
+      "correlationId": "6b8ccbec098a",
+      "details": {
+        "orderId": "ord-1793312715804",
+        "orderNumber": "HM-20261029-3067",
+        "carrier": "mng",
+        "trackingNumber": "MNG464544452",
+        "method": "API_INTEGRATED",
+        "isSimulated": true
+      }
+    },
     {
       "id": "audit-1793310780345-af12f3e8",
       "timestamp": "2026-10-29T21:53:00.345Z",

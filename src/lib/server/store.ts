@@ -62,6 +62,7 @@ export interface StoreSettings {
   whatsapp: string;
   email: string;
   address: string;
+  shippingFee?: number;
   freeShippingThreshold: number;
   defaultSeoTitle: string;
   defaultSeoDescription: string;
@@ -400,6 +401,7 @@ const DEFAULT_SETTINGS: StoreSettings = {
   whatsapp: "+90 542 799 44 28",
   email: "destek@humrabutik.com",
   address: "Nişantaşı, İstanbul, Türkiye",
+  shippingFee: 150,
   freeShippingThreshold: 3500,
   defaultSeoTitle: "Hümra Butik — Zamansız Kadın Giyim & Modern Koleksiyonlar",
   defaultSeoDescription:
@@ -2575,10 +2577,9 @@ export function createPendingOrder(input: CreateOrderInput): {
     }
   }
 
-  // 4. Kargo Ücreti
-  const freeShippingThreshold = store.settings?.freeShippingThreshold || 3500;
-  const eligibleAmount = subtotal - discountAmount;
-  const shippingAmount = eligibleAmount >= freeShippingThreshold ? 0 : 0;
+  // 4. Kargo Ücreti: Sepette ürün varsa sabit 150 TL kargo ücreti (ister 1 ister 10 ürün)
+  const shippingFeeSetting = typeof store.settings?.shippingFee === "number" ? store.settings.shippingFee : 150;
+  const shippingAmount = validatedItems.length > 0 ? shippingFeeSetting : 0;
 
   const totalAmount = Math.max(0, subtotal - discountAmount + shippingAmount);
   const totalKurus = Math.round(totalAmount * 100);

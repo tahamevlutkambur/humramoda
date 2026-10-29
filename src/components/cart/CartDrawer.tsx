@@ -443,14 +443,12 @@ export function CartDrawer() {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "baseline",
-                marginBottom: "var(--hm-space-4)",
+                marginBottom: "0.375rem",
               }}
             >
               <span
                 style={{
                   fontSize: "var(--hm-text-xs)",
-                  letterSpacing: "var(--hm-tracking-wider)",
-                  textTransform: "uppercase",
                   color: "var(--hm-color-text-secondary)",
                 }}
               >
@@ -459,12 +457,73 @@ export function CartDrawer() {
               <span
                 className="tabular-nums"
                 style={{
-                  fontSize: "var(--hm-text-lg)",
+                  fontSize: "var(--hm-text-sm)",
                   fontWeight: 600,
                   color: "var(--hm-color-text-main)",
                 }}
               >
                 {formatCurrency(subtotal)}
+              </span>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+                marginBottom: "0.625rem",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "var(--hm-text-xs)",
+                  color: "var(--hm-color-text-secondary)",
+                }}
+              >
+                Kargo Ücreti
+              </span>
+              <span
+                className="tabular-nums"
+                style={{
+                  fontSize: "var(--hm-text-sm)",
+                  fontWeight: 600,
+                  color: "var(--hm-color-text-main)",
+                }}
+              >
+                {formatCurrency(150)}
+              </span>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+                marginBottom: "var(--hm-space-4)",
+                borderTop: "1px dashed var(--hm-color-border-subtle)",
+                paddingTop: "0.5rem",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "var(--hm-text-xs)",
+                  letterSpacing: "var(--hm-tracking-wider)",
+                  textTransform: "uppercase",
+                  fontWeight: 700,
+                  color: "var(--hm-color-text-main)",
+                }}
+              >
+                Genel Toplam
+              </span>
+              <span
+                className="tabular-nums"
+                style={{
+                  fontSize: "var(--hm-text-lg)",
+                  fontWeight: 700,
+                  color: "var(--hm-color-text-main)",
+                }}
+              >
+                {formatCurrency(subtotal + 150)}
               </span>
             </div>
 

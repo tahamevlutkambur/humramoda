@@ -9,7 +9,7 @@ interface AnnouncementBarProps {
 }
 
 export function AnnouncementBar({
-  text = "Tüm Türkiye'ye 3.500 ₺ Üzeri Ücretsiz Kargo & Hızlı Teslimat",
+  text = "Tüm Türkiye'ye Hızlı Teslimat · Sabit 150 ₺ Kargo",
   isActive = true,
 }: AnnouncementBarProps) {
   const pathname = usePathname();

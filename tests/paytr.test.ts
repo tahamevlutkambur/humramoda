@@ -170,7 +170,8 @@ describe("Faz 5: PayTR Ödeme Entegrasyonu ve Güvenlik Denetimleri", () => {
       const firstVariant = firstProduct.variants[0];
 
       const expectedUnitPrice = firstProduct.discountPrice ?? firstProduct.basePrice;
-      const expectedTotal = expectedUnitPrice * 2;
+      const expectedShipping = store.settings?.shippingFee ?? 150;
+      const expectedTotal = expectedUnitPrice * 2 + expectedShipping;
       const expectedKurus = Math.round(expectedTotal * 100);
 
       const res = createPendingOrder({

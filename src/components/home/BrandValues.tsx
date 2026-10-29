@@ -14,8 +14,8 @@ const VALUES = [
     ),
   },
   {
-    title: "3.500 ₺ Üzeri Ücretsiz Kargo",
-    description: "Tüm Türkiye'ye hızlı ve sigortalı teslimat ile siparişiniz güvenle kapınızda.",
+    title: "150 ₺ Sabit Kargo",
+    description: "Tüm Türkiye'ye 150 ₺ sabit kargo ücreti ile hızlı ve güvenli teslimat.",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3">
         <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />

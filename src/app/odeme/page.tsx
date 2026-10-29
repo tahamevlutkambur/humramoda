@@ -53,7 +53,7 @@ export default function CheckoutPage() {
   // Kargo ve Toplam Hesaplama
   const discount = appliedCampaign ? appliedCampaign.discountAmount : 0;
   const eligibleAmount = Math.max(0, subtotal - discount);
-  const shippingFee = eligibleAmount >= freeShippingThreshold ? 0 : 0; // Hümra Moda kargo politikası
+  const shippingFee = items.length > 0 ? 150 : 0; // Sabit 150 TL kargo ücreti
   const totalAmount = Math.max(0, eligibleAmount + shippingFee);
 
   const handleInputChange = (
@@ -638,7 +638,7 @@ export default function CheckoutPage() {
 
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8125rem", color: "#4A5568", marginBottom: "0.75rem" }}>
                     <span>Kargo Ücreti</span>
-                    <span style={{ color: "#38A169", fontWeight: 600 }}>Ücretsiz Kargo</span>
+                    <span style={{ fontWeight: 600, color: "#1A202C" }} className="tabular-nums">{formatCurrency(shippingFee)}</span>
                   </div>
 
                   <div
