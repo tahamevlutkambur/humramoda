@@ -25,43 +25,35 @@ export async function POST(req: Request) {
       );
     }
 
-    // 1. Yönetici oturumu açıksa siparişi doğrudan sorgulama kolaylığı sağla
-    const adminSession = await getAuthenticatedAdmin(req);
-    if (adminSession) {
-      const store = getStoreData();
-      const cleanOrderNumber = orderNumber.toUpperCase();
-      const order = store.orders?.find(
-        (o) =>
-          o.orderNumber.toUpperCase() === cleanOrderNumber ||
-          o.id.toUpperCase() === cleanOrderNumber ||
-          (o.trackingNumber && o.trackingNumber.toUpperCase() === cleanOrderNumber)
-      );
-      if (order) {
-        return NextResponse.json({
-          success: true,
-          tracking: getMaskedOrderTrackingView(order),
-          returnRequests: getReturnRequestsByOrderId(order.id),
-        });
-      }
-    }
+    const store = getStoreData();
+    const cleanOrderNumber = orderNumber.toUpperCase();
+    const order = store.orders?.find(
+      (o) =>
+        o.orderNumber.toUpperCase() === cleanOrderNumber ||
+        o.id.toUpperCase() === cleanOrderNumber ||
+        (o.trackingNumber && o.trackingNumber.toUpperCase() === cleanOrderNumber)
+    );
 
-    if (!email && !phone) {
+    if (!order) {
       return NextResponse.json(
-        { error: "Sipariş detaylarınızı görüntülemek için lütfen siparişte kullandığınız e-posta adresinizi veya telefon numaranızı giriniz." },
-        { status: 400 }
-      );
-    }
-
-    const { authorized, order, error } = verifyCustomerTrackingAccess(orderNumber, {
-      email,
-      phone,
-    });
-
-    if (!authorized || !order) {
-      return NextResponse.json(
-        { error: error || "Belirtilen bilgilere ait bir sipariş bulunamadı veya doğrulama başarısız." },
+        { error: "Belirtilen sipariş numarasına ait bir sipariş bulunamadı." },
         { status: 404 }
       );
+    }
+
+    // Telefon veya e-posta girilmişse ek doğrulama yap (girilmemişse direkt maskelenmiş takip verisini sun)
+    if (email || phone) {
+      const { authorized, error } = verifyCustomerTrackingAccess(orderNumber, {
+        email,
+        phone,
+      });
+
+      if (!authorized) {
+        return NextResponse.json(
+          { error: error || "Sipariş numarası ile girilen iletişim bilgileri eşleşmedi." },
+          { status: 401 }
+        );
+      }
     }
 
     const trackingData = getMaskedOrderTrackingView(order);

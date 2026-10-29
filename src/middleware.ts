@@ -34,6 +34,23 @@ export function middleware(req: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
+    // Güvenlik & Yetki: Kargo personeli (CARRIER) ana admin paneline veya admin API'sine kesinlikle erişemez!
+    try {
+      const parts = sessionCookie.value.split(".");
+      if (parts.length === 2) {
+        const payloadStr = Buffer.from(parts[0], "base64url").toString("utf-8");
+        const payload = JSON.parse(payloadStr);
+        if (payload?.role === "CARRIER") {
+          if (pathname.startsWith("/api/admin")) {
+            return NextResponse.json({ error: "Yetersiz yetki. Kargo personeli ana yönetim API'sine erişemez." }, { status: 403 });
+          }
+          return NextResponse.redirect(new URL("/kargo", req.url));
+        }
+      }
+    } catch {
+      // JSON veya Buffer hatasında normal kontrol akışı devam eder
+    }
+
     // Arama motoru indekslemesini engelle
     const res = NextResponse.next();
     res.headers.set("X-Robots-Tag", "noindex, nofollow");

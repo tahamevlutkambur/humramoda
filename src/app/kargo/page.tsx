@@ -290,13 +290,6 @@ export default function CargoDashboardPage() {
               🔄 Yenile
             </button>
 
-            <Link
-              href="/admin"
-              style={{ padding: "0.45rem 0.85rem", backgroundColor: "#1E293B", border: "1px solid #334155", borderRadius: "6px", color: "#E2E8F0", fontSize: "0.8125rem", textDecoration: "none" }}
-            >
-              Ana Panel ↗
-            </Link>
-
             <button
               onClick={handleLogout}
               style={{ padding: "0.45rem 0.85rem", backgroundColor: "#EF4444", border: "none", borderRadius: "6px", color: "#FFFFFF", fontSize: "0.8125rem", fontWeight: 600, cursor: "pointer" }}
@@ -593,3 +586,4 @@ export default function CargoDashboardPage() {
     </div>
   );
 }
+

@@ -276,11 +276,11 @@ export default function OrderTrackingPage() {
                   color: "#333",
                 }}
               >
-                E-posta Adresi veya Telefon Numarası
+                E-posta veya Telefon (Opsiyonel)
               </label>
               <input
                 type="text"
-                placeholder="Siparişte kullandığınız e-posta veya telefon"
+                placeholder="Varsa e-posta veya telefon numaranız"
                 value={emailOrPhone}
                 onChange={(e) => setEmailOrPhone(e.target.value)}
                 style={{

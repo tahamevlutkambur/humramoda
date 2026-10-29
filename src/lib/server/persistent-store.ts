@@ -117,13 +117,21 @@ export async function getPersistentStoreData(): Promise<AppStoreData> {
       // Siparişleri koru ve çift yönlü birleştir (merge)
       if (Array.isArray(localData.orders) && localData.orders.length > 0) {
         dbData.orders = dbData.orders || [];
-        const dbOrderKeys = new Set(dbData.orders.map((o) => o.id || o.orderNumber));
         let ordersMerged = false;
         for (const lo of localData.orders) {
           const key = lo.id || lo.orderNumber;
-          if (!dbOrderKeys.has(key)) {
+          const existingInDb = dbData.orders.find((o) => (o.id || o.orderNumber) === key);
+          if (!existingInDb) {
             dbData.orders.unshift(lo);
             ordersMerged = true;
+          } else {
+            // En güncel durumu koru
+            const loTime = new Date(lo.updatedAt || lo.createdAt || 0).getTime();
+            const dbTime = new Date(existingInDb.updatedAt || existingInDb.createdAt || 0).getTime();
+            if (loTime > dbTime) {
+              Object.assign(existingInDb, lo);
+              ordersMerged = true;
+            }
           }
         }
         if (ordersMerged) {
@@ -184,13 +192,22 @@ export async function savePersistentStoreData(data: AppStoreData): Promise<void>
     }
 
     const serialized = JSON.stringify(data);
-    await prisma.$executeRawUnsafe(
-      `INSERT INTO "HumraStoreSnapshot" ("id", "data", "updatedAt")
-       VALUES ('main', $1::jsonb, NOW())
-       ON CONFLICT ("id") DO UPDATE
-       SET "data" = EXCLUDED."data", "updatedAt" = NOW()`,
-      serialized
-    );
+    try {
+      await prisma.$executeRaw`
+        INSERT INTO "HumraStoreSnapshot" ("id", "data", "updatedAt")
+        VALUES ('main', CAST(${serialized} AS jsonb), NOW())
+        ON CONFLICT ("id") DO UPDATE
+        SET "data" = EXCLUDED."data", "updatedAt" = NOW()
+      `;
+    } catch {
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO "HumraStoreSnapshot" ("id", "data", "updatedAt")
+         VALUES ('main', to_jsonb($1::text), NOW())
+         ON CONFLICT ("id") DO UPDATE
+         SET "data" = EXCLUDED."data", "updatedAt" = NOW()`,
+        serialized
+      );
+    }
     usePersistentStoreData(data);
   } catch (error) {
     console.warn("savePersistentStoreData error, data kept in local store:", error);

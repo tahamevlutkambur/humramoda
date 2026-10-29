@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getStoreData } from "@/lib/server/store";
 import { getPersistentStoreData } from "@/lib/server/persistent-store";
 import { requireAdminRole } from "@/lib/server/session-guard";
+import { checkDatabaseConnection } from "@/lib/server/db";
 
 export async function GET(req: Request) {
   try {
@@ -64,6 +65,7 @@ export async function GET(req: Request) {
         role: auth.session.role,
         fullName: auth.session.fullName,
       },
+      db: await checkDatabaseConnection(),
     });
   } catch (err) {
     console.error("Kargo orders list error:", err);
