@@ -80,7 +80,7 @@ export async function getPersistentStoreData(): Promise<AppStoreData> {
       const dbData = rows[0].data;
 
       // Eksik ürünleri koru ve birleştir (merge): Yerelde veya katalogda tanımlı tüm ürünleri veritabanına ekle
-      const allKnownProducts = [...(localData.products || []), ...PRODUCTS];
+      const allKnownProducts = localData.products || [];
       dbData.products = dbData.products || [];
       const dbProductIds = new Set(dbData.products.map((p) => p.id));
       let merged = false;

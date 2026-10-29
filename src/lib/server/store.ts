@@ -791,7 +791,7 @@ export function syncStoreSnapshot(
     collections?: CollectionItem[];
     _mergeOnly?: boolean;
   },
-  options?: { allowCatalogMutation?: boolean }
+  options?: { allowCatalogMutation?: boolean; force?: boolean }
 ): AppStoreData {
   const store = getStoreData();
   if (!options?.allowCatalogMutation) {
@@ -808,11 +808,17 @@ export function syncStoreSnapshot(
       return !sp || !sp.media || sp.media.length === 0;
     });
 
+  const incomingProdCount = Array.isArray(snapshot.products) ? snapshot.products.length : 0;
+  const incomingCatCount = Array.isArray(snapshot.categories) ? snapshot.categories.length : 0;
+
   if (
+    options?.force ||
     incomingTime >= currentTime ||
     snapshot._mergeOnly ||
     store.products.length === 0 ||
-    hasMissingMediaOnServer
+    hasMissingMediaOnServer ||
+    incomingProdCount >= store.products.length ||
+    incomingCatCount >= store.categories.length
   ) {
     if (Array.isArray(snapshot.products) && snapshot.products.length > 0) {
       const existingById = new Map(store.products.map((p) => [p.id, p]));
@@ -853,9 +859,8 @@ export function syncStoreSnapshot(
     if (Array.isArray(snapshot.collections) && snapshot.collections.length > 0) {
       store.collections = snapshot.collections;
     }
-    if (incomingTime > currentTime) {
-      store.updatedAt = incomingTime;
-    }
+    store.updatedAt = Math.max(Date.now(), incomingTime, currentTime + 1);
+    saveStoreData(store);
     usePersistentStoreData(store);
   }
   return store;

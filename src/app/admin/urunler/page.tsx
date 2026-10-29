@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ProductItem, PRODUCTS } from "@/lib/catalog";
+import { ProductItem } from "@/lib/catalog";
 import { formatCurrency } from "@/lib/formatters";
 import {
   getClientStoreSnapshot,
@@ -17,7 +17,7 @@ import {
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<ProductItem[]>(() => {
     const snap = getClientStoreSnapshot();
-    return snap && snap.products && snap.products.length > 0 ? snap.products : PRODUCTS;
+    return snap && snap.products ? snap.products : [];
   });
   const [isLoading, setIsLoading] = useState<boolean>(() => {
     const snap = getClientStoreSnapshot();

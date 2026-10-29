@@ -494,12 +494,26 @@ export async function fetchSharedStore(force = false): Promise<ClientStoreSnapsh
 
       // If local snapshot is newer OR server container is missing products/photos that local has,
       // merge keeping local photos intact and warm up the server in chunks!
-      if (localSnap && (localTime > serverTime || serverMissingMediaOrProducts)) {
+      const localProdCount = localSnap?.products?.length || 0;
+      const localCatCount = localSnap?.categories?.length || 0;
+      const serverProdCount = serverProducts.length;
+      const serverCatCount = Array.isArray(data.categories) ? data.categories.length : 0;
+
+      if (
+        localSnap &&
+        (localProdCount > serverProdCount ||
+          localCatCount > serverCatCount ||
+          localTime > serverTime ||
+          serverMissingMediaOrProducts)
+      ) {
         const mergedWithServer: ClientStoreSnapshot = {
-          updatedAt: Math.max(localTime, serverTime),
-          products: mergeTwoProductLists(localSnap.products, serverProducts),
+          updatedAt: Math.max(Date.now(), localTime, serverTime),
+          products:
+            localProdCount >= serverProdCount
+              ? localSnap.products
+              : mergeTwoProductLists(localSnap.products, serverProducts),
           categories:
-            localSnap.categories?.length >= (data.categories?.length || 0)
+            localCatCount >= serverCatCount
               ? localSnap.categories
               : data.categories,
           collections:
