@@ -14,9 +14,9 @@ export const revalidate = 0;
 // Ziyaretçiler doğrudan CDN'den yıldırım hızında yanıt alır, sunucusuz fonksiyona yük binmez.
 // Yönetici ürün güncellediğinde revalidatePath('/api/catalog') ile CDN anında yenilenir.
 const EDGE_CACHE_HEADERS = {
-  "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
-  "CDN-Cache-Control": "public, s-maxage=120",
-  "Vercel-CDN-Cache-Control": "public, s-maxage=120",
+  "Cache-Control": "public, max-age=0, s-maxage=5, stale-while-revalidate=15",
+  "CDN-Cache-Control": "public, s-maxage=5",
+  "Vercel-CDN-Cache-Control": "public, s-maxage=5",
 };
 
 export async function GET() {

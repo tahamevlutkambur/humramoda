@@ -56,16 +56,34 @@ export function CatalogView({
   );
 
   const [products, setProducts] = useState<ProductItem[]>(() => {
+    if (Array.isArray(initialProducts) && initialProducts.length > 0) {
+      return filterSnapshotProducts(initialProducts);
+    }
     const snap = getClientStoreSnapshot();
     if (snap && snap.products.length > 0) {
       return filterSnapshotProducts(snap.products);
     }
-    return initialProducts;
+    return [];
   });
   const [categories, setCategories] = useState<CategoryItem[]>(() => {
+    if (Array.isArray(initialCategories) && initialCategories.length > 0) {
+      return initialCategories;
+    }
     const snap = getClientStoreSnapshot();
-    return snap && snap.categories.length > 0 ? snap.categories : initialCategories;
+    return snap && snap.categories.length > 0 ? snap.categories : [];
   });
+
+  useEffect(() => {
+    if (Array.isArray(initialProducts) && initialProducts.length > 0) {
+      setProducts(filterSnapshotProducts(initialProducts));
+    }
+  }, [initialProducts, filterSnapshotProducts]);
+
+  useEffect(() => {
+    if (Array.isArray(initialCategories) && initialCategories.length > 0) {
+      setCategories(initialCategories);
+    }
+  }, [initialCategories]);
   const [title, setTitle] = useState<string>(initialTitle);
   const [description, setDescription] = useState<string | undefined>(initialDescription);
   const [sortOption, setSortOption] = useState<"newest" | "price-asc" | "price-desc">("newest");

@@ -429,8 +429,8 @@ export async function syncSnapshotToServerInChunks(
  * that would spawn separate cold serverless Lambda containers on Vercel.
  */
 export async function fetchSharedStore(force = false): Promise<ClientStoreSnapshot> {
-  // Bellek içi önbellek: Son 30 saniye içinde çekildiyse gereksiz Origin Transfer yapma
-  if (!force && memorySnapshot && Date.now() - lastNetworkFetchTime < 30_000) {
+  // Bellek içi önbellek: Son 5 saniye içinde çekildiyse aynı render döngüsünde mükerrer çağrıyı önle
+  if (!force && memorySnapshot && Date.now() - lastNetworkFetchTime < 5_000) {
     return memorySnapshot;
   }
 
@@ -474,66 +474,23 @@ export async function fetchSharedStore(force = false): Promise<ClientStoreSnapsh
 
       lastNetworkFetchTime = Date.now();
       const data = await res.json();
-      const serverTime = typeof data.updatedAt === "number" ? data.updatedAt : 0;
-      const localTime = localSnap?.updatedAt || 0;
+      const serverTime = typeof data.updatedAt === "number" ? data.updatedAt : Date.now();
       const serverProducts: ProductItem[] = Array.isArray(data.products) ? data.products : [];
 
-      const serverMissingMediaOrProducts =
-        Boolean(localSnap) &&
-        (localSnap!.products || []).some((lp) => {
-          const sp = serverProducts.find(
-            (s) =>
-              s.id === lp.id ||
-              (s.slug && lp.slug && s.slug.toLowerCase() === lp.slug.toLowerCase())
-          );
-          if (!sp) return true;
-          if (lp.media && lp.media.length > 0 && (!sp.media || sp.media.length === 0)) {
-            return true;
-          }
-          return false;
-        });
-
-      // If local snapshot is newer OR server container is missing products/photos that local has,
-      // merge keeping local photos intact and warm up the server in chunks!
-      const localProdCount = localSnap?.products?.length || 0;
-      const localCatCount = localSnap?.categories?.length || 0;
-      const serverProdCount = serverProducts.length;
-      const serverCatCount = Array.isArray(data.categories) ? data.categories.length : 0;
-
-      if (
-        localSnap &&
-        (localProdCount > serverProdCount ||
-          localCatCount > serverCatCount ||
-          localTime > serverTime ||
-          serverMissingMediaOrProducts)
-      ) {
-        const mergedWithServer: ClientStoreSnapshot = {
-          updatedAt: Math.max(Date.now(), localTime, serverTime),
-          products:
-            localProdCount >= serverProdCount
-              ? localSnap.products
-              : mergeTwoProductLists(localSnap.products, serverProducts),
-          categories:
-            localCatCount >= serverCatCount
-              ? localSnap.categories
-              : data.categories,
-          collections:
-            localSnap.collections?.length > 0
-              ? localSnap.collections
-              : data.collections || COLLECTIONS,
-        };
-        memorySnapshot = mergedWithServer;
-        idbCachedSnapshot = mergedWithServer;
-        writeSnapshotToLocalStorageSafe(mergedWithServer);
-        void saveToIndexedDB(mergedWithServer);
-        notifyListeners(mergedWithServer);
-        void syncSnapshotToServerInChunks(mergedWithServer);
-        return mergedWithServer;
+      let finalProducts: ProductItem[];
+      if (serverProducts.length > 0) {
+        // Sunucu güncel ürün listesini başarıyla döndürdü - sunucu ana kaynaktır!
+        // Eğer yerel bellekte görseller varsa görselleri koruyarak birleştir
+        finalProducts = localSnap?.products?.length
+          ? mergeTwoProductLists(serverProducts, localSnap.products)
+          : serverProducts;
+      } else {
+        finalProducts = localSnap?.products || PRODUCTS;
       }
 
       const nextSnapshot: ClientStoreSnapshot = {
         updatedAt: serverTime,
-        products: Array.isArray(data.products) ? data.products : localSnap?.products || PRODUCTS,
+        products: finalProducts,
         categories:
           Array.isArray(data.categories) && data.categories.length > 0
             ? data.categories
@@ -544,13 +501,12 @@ export async function fetchSharedStore(force = false): Promise<ClientStoreSnapsh
             : localSnap?.collections || COLLECTIONS,
       };
 
-      if (serverTime > 0) {
-        return saveClientStoreSnapshot(nextSnapshot);
-      } else {
-        memorySnapshot = nextSnapshot;
-        notifyListeners(nextSnapshot);
-        return nextSnapshot;
-      }
+      memorySnapshot = nextSnapshot;
+      idbCachedSnapshot = nextSnapshot;
+      writeSnapshotToLocalStorageSafe(nextSnapshot);
+      void saveToIndexedDB(nextSnapshot);
+      notifyListeners(nextSnapshot);
+      return nextSnapshot;
     } catch {
       if (localSnap) {
         notifyListeners(localSnap);

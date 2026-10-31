@@ -663,13 +663,11 @@ export function getStoreData(): AppStoreData {
         ? parsed.adminUsers
         : DEFAULT_ADMIN_USERS;
 
-    const isColdVercelBundle = Boolean(process.env.VERCEL && activeFile === STORE_FILE);
     const data: AppStoreData = {
-      updatedAt: isColdVercelBundle
-        ? 0
-        : typeof parsed.updatedAt === "number"
-        ? parsed.updatedAt
-        : 0,
+      updatedAt:
+        typeof parsed.updatedAt === "number" && parsed.updatedAt > 0
+          ? parsed.updatedAt
+          : Date.now(),
       products:
         parsed.products !== undefined && Array.isArray(parsed.products) && parsed.products.length > 0
           ? parsed.products

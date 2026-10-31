@@ -26,12 +26,21 @@ export function Header({ categories: propCategories }: HeaderProps = {}) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [categories, setCategories] = useState<CategoryItem[]>(() => {
+    if (propCategories && propCategories.length > 0) {
+      return propCategories;
+    }
     const snap = getClientStoreSnapshot();
     if (snap && snap.categories.length > 0) {
       return snap.categories;
     }
-    return propCategories && propCategories.length > 0 ? propCategories : getAllCategories();
+    return getAllCategories();
   });
+
+  React.useEffect(() => {
+    if (propCategories && propCategories.length > 0) {
+      setCategories(propCategories);
+    }
+  }, [propCategories]);
 
   React.useEffect(() => {
     if (pathname?.startsWith("/admin")) return;

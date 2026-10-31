@@ -17,14 +17,22 @@ interface CategoryTilesProps {
 
 export function CategoryTiles({ initialCategories }: CategoryTilesProps) {
   const [categories, setCategories] = useState<CategoryItem[]>(() => {
+    if (initialCategories && initialCategories.length > 0) {
+      return [...initialCategories].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+    }
     const snap = getClientStoreSnapshot();
     if (snap && snap.categories.length > 0) {
       return [...snap.categories].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
     }
-    return initialCategories && initialCategories.length > 0
-      ? initialCategories
-      : getAllCategories();
+    return getAllCategories();
   });
+
+  useEffect(() => {
+    if (initialCategories && initialCategories.length > 0) {
+      const sorted = [...initialCategories].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+      setCategories(sorted);
+    }
+  }, [initialCategories]);
 
   useEffect(() => {
     const applyCategories = (cats?: CategoryItem[]) => {

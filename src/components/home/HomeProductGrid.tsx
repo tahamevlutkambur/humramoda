@@ -16,9 +16,18 @@ interface HomeProductGridProps {
 
 export function HomeProductGrid({ initialProducts, mode }: HomeProductGridProps) {
   const [products, setProducts] = useState<ProductItem[]>(() => {
+    if (Array.isArray(initialProducts) && initialProducts.length > 0) {
+      return initialProducts;
+    }
     const snap = getClientStoreSnapshot();
-    return snap && snap.products.length > 0 ? snap.products : initialProducts;
+    return snap && snap.products.length > 0 ? snap.products : [];
   });
+
+  useEffect(() => {
+    if (Array.isArray(initialProducts) && initialProducts.length > 0) {
+      setProducts(initialProducts);
+    }
+  }, [initialProducts]);
 
   useEffect(() => {
     const unsubscribe = subscribeStoreChanges((snap) => {
