@@ -31,6 +31,7 @@ function revalidateAllStorePaths(slug?: string, id?: string) {
   try {
     revalidatePath("/");
     revalidatePath("/urunler");
+    revalidatePath("/api/catalog");
     revalidatePath("/admin/urunler");
     revalidatePath("/admin/urunler/yeni");
     revalidatePath("/admin/kategoriler");

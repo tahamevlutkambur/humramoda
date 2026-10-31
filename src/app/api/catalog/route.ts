@@ -9,10 +9,14 @@ import { getPersistentStoreData } from "@/lib/server/persistent-store";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const NO_STORE_HEADERS = {
-  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-  Pragma: "no-cache",
-  Expires: "0",
+// Vercel Edge CDN Önbellekleme:
+// Fast Origin Transfer kotasının (10 GB) tükenmesini önlemek için katalog Edge CDN'de önbelleğe alınır.
+// Ziyaretçiler doğrudan CDN'den yıldırım hızında yanıt alır, sunucusuz fonksiyona yük binmez.
+// Yönetici ürün güncellediğinde revalidatePath('/api/catalog') ile CDN anında yenilenir.
+const EDGE_CACHE_HEADERS = {
+  "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+  "CDN-Cache-Control": "public, s-maxage=120",
+  "Vercel-CDN-Cache-Control": "public, s-maxage=120",
 };
 
 export async function GET() {
@@ -31,7 +35,7 @@ export async function GET() {
         featuredVideos: store.featuredVideos,
         homepageContent: store.homepageContent,
       },
-      { headers: NO_STORE_HEADERS }
+      { headers: EDGE_CACHE_HEADERS }
     );
   } catch (err) {
     console.error("Public catalog API error:", err);
@@ -43,7 +47,7 @@ export async function GET() {
         categories: getAllStoreCategories(),
         collections: store.collections,
       },
-      { headers: NO_STORE_HEADERS }
+      { headers: EDGE_CACHE_HEADERS }
     );
   }
 }

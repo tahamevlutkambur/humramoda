@@ -23,6 +23,7 @@ const IDB_STORE = "snapshots";
 let memorySnapshot: ClientStoreSnapshot | null = null;
 let idbCachedSnapshot: ClientStoreSnapshot | null = null;
 let inFlightPromise: Promise<ClientStoreSnapshot> | null = null;
+let lastNetworkFetchTime = 0;
 const listeners = new Set<(snapshot: ClientStoreSnapshot) => void>();
 
 function notifyListeners(snapshot: ClientStoreSnapshot) {
@@ -428,6 +429,11 @@ export async function syncSnapshotToServerInChunks(
  * that would spawn separate cold serverless Lambda containers on Vercel.
  */
 export async function fetchSharedStore(force = false): Promise<ClientStoreSnapshot> {
+  // Bellek içi önbellek: Son 30 saniye içinde çekildiyse gereksiz Origin Transfer yapma
+  if (!force && memorySnapshot && Date.now() - lastNetworkFetchTime < 30_000) {
+    return memorySnapshot;
+  }
+
   if (inFlightPromise && !force) {
     return inFlightPromise;
   }
@@ -456,22 +462,17 @@ export async function fetchSharedStore(force = false): Promise<ClientStoreSnapsh
     }
 
     try {
-      let res = await fetch("/api/catalog", {
-        cache: "no-store",
-        headers: { "Cache-Control": "no-cache" },
-      });
+      let res = await fetch("/api/catalog");
 
       if (!res.ok) {
-        res = await fetch("/api/admin/products?public=1", {
-          cache: "no-store",
-          headers: { "Cache-Control": "no-cache" },
-        });
+        res = await fetch("/api/admin/products?public=1");
       }
 
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`);
       }
 
+      lastNetworkFetchTime = Date.now();
       const data = await res.json();
       const serverTime = typeof data.updatedAt === "number" ? data.updatedAt : 0;
       const localTime = localSnap?.updatedAt || 0;
