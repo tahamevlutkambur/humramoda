@@ -685,7 +685,6 @@ export function ProductEditor({
         collections,
         products: initialProduct ? [initialProduct] : [],
       };
-      const compactSnapshot = getCompactSnapshotForRequest(rawSnapshot, targetUpdateId);
 
       // Recompress any heavy existing base64 images & avoid duplicating thumbnailUrl in JSON
       const compactMedia = await Promise.all(
@@ -699,9 +698,10 @@ export function ProductEditor({
         })
       );
 
+      // Yalnızca düzenlenen ürünün verilerini gönder, diğer ürünlerin snapshot'ını
+      // isteğe ekleyip istek boyutunu 4.5MB Vercel sınırına yaklaştırma veya diğer ürünlerin görsellerini budama!
       const payload = {
         ...(isNew ? {} : { id: targetUpdateId }),
-        _snapshot: compactSnapshot,
         title: title.trim(),
         slug: slug.trim() || undefined,
         description,

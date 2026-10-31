@@ -163,6 +163,13 @@ export function createBackup(
       fileName,
     };
 
+    // Kalıcı depolama: Vercel serverless konteynerleri kapansa bile yedek manifestosu store snapshot'ında saklanır
+    storeData.backups = storeData.backups || [];
+    storeData.backups.unshift(manifest);
+    if (storeData.backups.length > 30) {
+      storeData.backups = storeData.backups.slice(0, 30);
+    }
+
     if (adminInfo) {
       logAdminAudit({
         adminId: adminInfo.adminId,
@@ -253,6 +260,20 @@ export function listBackups(): BackupManifest[] {
         }
       }
     }
+
+    // Kalıcı depodaki (store.backups) manifestoları da ekle
+    try {
+      const store = getStoreData();
+      if (Array.isArray(store.backups)) {
+        for (const item of store.backups) {
+          const manifest = item?.id ? item : item?.manifest;
+          if (manifest?.id && !seenIds.has(manifest.id)) {
+            manifests.push(manifest);
+            seenIds.add(manifest.id);
+          }
+        }
+      }
+    } catch {}
 
     return manifests.sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()

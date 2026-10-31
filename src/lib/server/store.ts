@@ -322,6 +322,7 @@ export interface AppStoreData {
   campaigns: CampaignItem[];
   adminUsers: AdminUser[];
   orders: StoreOrder[];
+  backups?: any[];
   shipments?: ShipmentRecord[];
   returnRequests?: ReturnRequest[];
   notifications?: CustomerNotification[];
