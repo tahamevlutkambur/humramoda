@@ -8,6 +8,7 @@ import { useCart } from "@/context/CartContext";
 import { useFavorites } from "@/context/FavoritesContext";
 import { Button } from "../ui/Button";
 import { Badge } from "../ui/Badge";
+import { event as trackMetaEvent } from "@/lib/meta-pixel";
 
 interface ProductBuyBoxProps {
   product: ProductItem;
@@ -84,6 +85,13 @@ export function ProductBuyBox({
   const handleAddToCart = () => {
     if (!selectedSize || isOutOfStock) return;
     addItem(product, selectedColor, selectedSize, quantity);
+    trackMetaEvent("AddToCart", {
+      content_name: product.title,
+      content_ids: [product.id],
+      content_type: "product",
+      value: currentPrice * quantity,
+      currency: "TRY",
+    });
   };
 
   const toggleAccordion = (key: string) => {

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { Plus_Jakarta_Sans, Playfair_Display } from "next/font/google";
 import "@/styles/globals.css";
 import { Header } from "@/components/shell/Header";
@@ -7,6 +8,7 @@ import { AnnouncementBar } from "@/components/shell/AnnouncementBar";
 import { CookieConsent } from "@/components/ui/CookieConsent";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { StoreProviders } from "@/components/providers/StoreProviders";
+import { MetaPixel } from "@/components/analytics/MetaPixel";
 import { getStoreData } from "@/lib/server/store";
 import { getPersistentStoreData } from "@/lib/server/persistent-store";
 
@@ -167,6 +169,9 @@ export default async function RootLayout({
         />
       </head>
       <body>
+        <Suspense fallback={null}>
+          <MetaPixel />
+        </Suspense>
         <StoreProviders freeShippingThreshold={freeShippingThreshold}>
           <AnnouncementBar
             text={announcement.text}

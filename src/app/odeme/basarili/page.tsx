@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { formatCurrency } from "@/lib/formatters";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
+import { event as trackMetaEvent } from "@/lib/meta-pixel";
 
 interface OrderPublicData {
   orderNumber: string;
@@ -39,6 +40,7 @@ function SuccessContent() {
   const [order, setOrder] = useState<OrderPublicData | null>(null);
   const [loading, setLoading] = useState(true);
   const [pollCount, setPollCount] = useState(0);
+  const hasTrackedPurchase = useRef(false);
 
   const fetchStatus = React.useCallback(async () => {
     if (!orderNumber) {
@@ -53,6 +55,15 @@ function SuccessContent() {
         setOrder(data.order);
         if (data.order.paymentStatus === "PAID") {
           clearCart();
+          if (!hasTrackedPurchase.current) {
+            hasTrackedPurchase.current = true;
+            trackMetaEvent("Purchase", {
+              value: data.order.totalAmount,
+              currency: "TRY",
+              content_name: data.order.orderNumber,
+              num_items: data.order.itemCount,
+            });
+          }
         }
       }
     } catch (err) {

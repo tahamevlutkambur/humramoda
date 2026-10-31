@@ -58,7 +58,7 @@ export async function GET(req: Request) {
   }
 
   try {
-    await getPersistentStoreData().catch(() => {});
+    await getPersistentStoreData().catch(() => { });
     const store = getStoreData();
     const products = getAllStoreProducts();
     const categories = getAllStoreCategories();
@@ -110,13 +110,13 @@ export async function POST(req: Request) {
   }
 
   try {
-    await getPersistentStoreData().catch(() => {});
+    await getPersistentStoreData().catch(() => { });
     const body = await req.json();
 
     // Cold-instance snapshot rehydration (Yalnızca doğrulanmış yönetici oturumuyla izin verilir)
     if (body?._entity === "sync_snapshot") {
-      const synced = syncStoreSnapshot(body, { allowCatalogMutation: true, force: true });
-      await savePersistentStoreData(synced).catch(() => {});
+      const synced = syncStoreSnapshot(body, { allowCatalogMutation: true });
+      await savePersistentStoreData(synced).catch(() => { });
       const latest = getStoreData();
       return NextResponse.json(
         {
@@ -133,7 +133,7 @@ export async function POST(req: Request) {
     // Per-product media chunk rehydration (Yalnızca doğrulanmış yönetici oturumuyla izin verilir)
     if (body?._entity === "sync_product_media") {
       const synced = syncStoreProductMedia(body);
-      await savePersistentStoreData(synced).catch(() => {});
+      await savePersistentStoreData(synced).catch(() => { });
       const latest = getStoreData();
       return NextResponse.json(
         {
@@ -154,7 +154,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: error || "Kategori oluşturulamadı." }, { status: 400 });
       }
       const updatedStore = getStoreData();
-      await savePersistentStoreData(updatedStore).catch(() => {});
+      await savePersistentStoreData(updatedStore).catch(() => { });
 
       logAdminAudit({
         adminId: session.userId,
@@ -186,7 +186,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: error || "Ürün oluşturulamadı." }, { status: 400 });
     }
     const updatedStore = getStoreData();
-    await savePersistentStoreData(updatedStore).catch(() => {});
+    await savePersistentStoreData(updatedStore).catch(() => { });
 
     logAdminAudit({
       adminId: session.userId,
@@ -229,7 +229,7 @@ export async function PUT(req: Request) {
   }
 
   try {
-    await getPersistentStoreData().catch(() => {});
+    await getPersistentStoreData().catch(() => { });
     const url = new URL(req.url);
     const body = await req.json();
 
@@ -249,7 +249,7 @@ export async function PUT(req: Request) {
         return NextResponse.json({ error: error || "Kategori güncellenemedi." }, { status: 400 });
       }
       const updatedStore = getStoreData();
-      await savePersistentStoreData(updatedStore).catch(() => {});
+      await savePersistentStoreData(updatedStore).catch(() => { });
 
       logAdminAudit({
         adminId: session.userId,
@@ -280,7 +280,7 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: error || "Ürün güncellenemedi." }, { status: 400 });
     }
     const updatedStore = getStoreData();
-    await savePersistentStoreData(updatedStore).catch(() => {});
+    await savePersistentStoreData(updatedStore).catch(() => { });
 
     logAdminAudit({
       adminId: session.userId,
@@ -322,7 +322,7 @@ export async function DELETE(req: Request) {
   }
 
   try {
-    await getPersistentStoreData().catch(() => {});
+    await getPersistentStoreData().catch(() => { });
     const url = new URL(req.url);
     let targetId = url.searchParams.get("id") || "";
     let entity = url.searchParams.get("entity") || "product";
@@ -349,7 +349,7 @@ export async function DELETE(req: Request) {
         return NextResponse.json({ error: "Kategori bulunamadı veya silinemedi." }, { status: 404 });
       }
       const updatedStore = getStoreData();
-      await savePersistentStoreData(updatedStore).catch(() => {});
+      await savePersistentStoreData(updatedStore).catch(() => { });
 
       logAdminAudit({
         adminId: session.userId,
@@ -379,7 +379,7 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "Silinecek ürün bulunamadı." }, { status: 404 });
     }
     const updatedStore = getStoreData();
-    await savePersistentStoreData(updatedStore).catch(() => {});
+    await savePersistentStoreData(updatedStore).catch(() => { });
 
     logAdminAudit({
       adminId: session.userId,

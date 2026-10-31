@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/context/CartContext";
 import { formatCurrency } from "@/lib/formatters";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
+import { event as trackMetaEvent } from "@/lib/meta-pixel";
 
 interface CustomerFormData {
   fullName: string;
@@ -55,6 +56,20 @@ export default function CheckoutPage() {
   const eligibleAmount = Math.max(0, subtotal - discount);
   const shippingFee = items.length > 0 ? 150 : 0; // Sabit 150 TL kargo ücreti
   const totalAmount = Math.max(0, eligibleAmount + shippingFee);
+
+  const hasTrackedCheckout = useRef(false);
+  useEffect(() => {
+    if (items.length > 0 && !hasTrackedCheckout.current) {
+      hasTrackedCheckout.current = true;
+      trackMetaEvent("InitiateCheckout", {
+        value: totalAmount,
+        currency: "TRY",
+        num_items: items.reduce((acc, i) => acc + i.quantity, 0),
+        content_ids: items.map((i) => i.product.id),
+        content_type: "product",
+      });
+    }
+  }, [items, totalAmount]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
