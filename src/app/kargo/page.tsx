@@ -29,6 +29,8 @@ interface CargoOrder {
   customerNotes?: string;
   operationalStatus: string;
   paymentStatus: string;
+  paymentProvider?: string;
+  totalAmount?: number;
   shippingStatus: "AWAITING_SHIPMENT" | "SHIPPED" | "IN_TRANSIT" | "DELIVERED" | string;
   carrier?: string;
   carrierName?: string;
@@ -457,6 +459,11 @@ export default function CargoDashboardPage() {
                         ) : (
                           <span style={{ backgroundColor: "#FEF3C7", color: "#92400E", padding: "0.2rem 0.6rem", borderRadius: "999px", fontSize: "0.75rem", fontWeight: 700 }}>
                             ⏳ Kargolanacak (Bekliyor)
+                          </span>
+                        )}
+                        {order.paymentProvider === "CASH_ON_DELIVERY" && (
+                          <span style={{ backgroundColor: "#FEF3C7", color: "#92400E", border: "1px solid #F59E0B", padding: "0.2rem 0.6rem", borderRadius: "999px", fontSize: "0.75rem", fontWeight: 700 }}>
+                            💵 Kapıda Ödeme (Tahsilat: {order.totalAmount ? `${order.totalAmount} ₺` : "Belirtilmedi"})
                           </span>
                         )}
                       </div>

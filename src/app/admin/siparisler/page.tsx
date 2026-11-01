@@ -73,7 +73,7 @@ export default function AdminOrdersPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "CONFIRMED" | "CANCELLED" | "PENDING">("ALL");
-  const [paymentFilter, setPaymentFilter] = useState<"ALL" | "PAID" | "PENDING" | "FAILED">("ALL");
+  const [paymentFilter, setPaymentFilter] = useState<"ALL" | "PAID" | "PENDING" | "FAILED" | "CASH_ON_DELIVERY">("ALL");
   const [shippingFilter, setShippingFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -288,6 +288,7 @@ export default function AdminOrdersPage() {
     if (statusFilter !== "ALL" && o.operationalStatus !== statusFilter) return false;
     if (paymentFilter !== "ALL") {
       if (paymentFilter === "PAID" && o.paymentStatus !== "PAID") return false;
+      if (paymentFilter === "CASH_ON_DELIVERY" && o.paymentProvider !== "CASH_ON_DELIVERY") return false;
       if (
         paymentFilter === "PENDING" &&
         o.paymentStatus !== "PENDING" &&
@@ -400,12 +401,13 @@ export default function AdminOrdersPage() {
         <div>
           <select
             value={paymentFilter}
-            onChange={(e) => setPaymentFilter(e.target.value as "ALL" | "PAID" | "PENDING" | "FAILED")}
+            onChange={(e) => setPaymentFilter(e.target.value as "ALL" | "PAID" | "PENDING" | "FAILED" | "CASH_ON_DELIVERY")}
             className="hm-admin-select"
             style={{ fontSize: "0.875rem" }}
           >
             <option value="ALL">Tüm Ödemeler</option>
             <option value="PAID">Ödendi (PayTR)</option>
+            <option value="CASH_ON_DELIVERY">Kapıda Ödeme</option>
             <option value="PENDING">Ödeme Bekliyor</option>
             <option value="FAILED">Ödeme Başarısız</option>
           </select>
@@ -493,6 +495,8 @@ export default function AdminOrdersPage() {
                         className={`hm-admin-badge ${
                           order.paymentStatus === "PAID"
                             ? "hm-admin-badge-success"
+                            : order.paymentProvider === "CASH_ON_DELIVERY"
+                            ? "hm-admin-badge-info"
                             : order.paymentStatus === "FAILED"
                             ? "hm-admin-badge-danger"
                             : "hm-admin-badge-warning"
@@ -500,6 +504,8 @@ export default function AdminOrdersPage() {
                       >
                         {order.paymentStatus === "PAID"
                           ? "ÖDENDİ • PAYTR"
+                          : order.paymentProvider === "CASH_ON_DELIVERY"
+                          ? "KAPIDA ÖDEME"
                           : order.paymentStatus === "FAILED"
                           ? "BAŞARISIZ"
                           : "BEKLİYOR"}

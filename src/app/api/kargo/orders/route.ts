@@ -40,6 +40,8 @@ export async function GET(req: Request) {
       customerNotes: o.customerNotes || "",
       operationalStatus: o.operationalStatus,
       paymentStatus: o.paymentStatus,
+      paymentProvider: o.paymentProvider || "PAYTR",
+      totalAmount: o.totalAmount,
       shippingStatus: o.shippingStatus || "AWAITING_SHIPMENT",
       carrier: o.carrier || "YURTICI",
       carrierName: o.carrierName || "Yurtiçi Kargo",

@@ -53,7 +53,9 @@ function SuccessContent() {
       const data = await res.json();
       if (res.ok && data.order) {
         setOrder(data.order);
-        if (data.order.paymentStatus === "PAID") {
+        const isPaid = data.order.paymentStatus === "PAID";
+        const isCod = data.order.paymentProvider === "CASH_ON_DELIVERY";
+        if (isPaid || isCod) {
           clearCart();
           if (!hasTrackedPurchase.current) {
             hasTrackedPurchase.current = true;
@@ -77,9 +79,9 @@ function SuccessContent() {
     fetchStatus();
   }, [fetchStatus]);
 
-  // Callback biraz gecikirse birkaç kez polling yap
+  // Callback biraz gecikirse birkaç kez polling yap (yalnızca PayTR için)
   useEffect(() => {
-    if (order && order.paymentStatus === "PENDING" && pollCount < 5) {
+    if (order && order.paymentStatus === "PENDING" && order.paymentProvider !== "CASH_ON_DELIVERY" && pollCount < 5) {
       const timer = setTimeout(() => {
         setPollCount((prev) => prev + 1);
         fetchStatus();
@@ -127,7 +129,8 @@ function SuccessContent() {
     );
   }
 
-  const isPending = order.paymentStatus === "PENDING";
+  const isCod = order.paymentProvider === "CASH_ON_DELIVERY";
+  const isPending = order.paymentStatus === "PENDING" && !isCod;
   const isFailed = order.paymentStatus === "FAILED";
 
   return (
@@ -248,7 +251,7 @@ function SuccessContent() {
                   marginBottom: "0.5rem",
                 }}
               >
-                Ödeme ve Sipariş Onaylandı
+                {isCod ? "Kapıda Ödemeli Sipariş Onaylandı" : "Ödeme ve Sipariş Onaylandı"}
               </span>
               <h1
                 style={{
@@ -261,8 +264,7 @@ function SuccessContent() {
                 Teşekkür Ederiz, Siparişiniz Alındı!
               </h1>
               <p style={{ color: "#718096", fontSize: "0.875rem", lineHeight: 1.6, marginBottom: "2rem" }}>
-                Sayın <strong>{order.customerName}</strong>, siparişiniz başarıyla oluşturuldu ve atölyemize iletildi.
-                Kargonuz yola çıktığında bilgilendirme yapılacaktır.
+                Sayın <strong>{order.customerName}</strong>, {isCod ? `siparişiniz başarıyla oluşturuldu ve kargolanmak üzere atölyemize iletildi. Toplam ${formatCurrency(order.totalAmount)} tutarındaki ödemenizi paketiniz ulaştığında kargo görevlisine nakit veya kartla yapabilirsiniz.` : "siparişiniz başarıyla oluşturuldu ve atölyemize iletildi. Kargonuz yola çıktığında bilgilendirme yapılacaktır."}
               </p>
 
               {/* Sipariş Özet Kartı */}
@@ -301,7 +303,9 @@ function SuccessContent() {
                   }}
                 >
                   <span style={{ fontSize: "0.8125rem", color: "#718096" }}>Ödeme Yöntemi</span>
-                  <span style={{ fontWeight: 600, color: "#1A202C" }}>PayTR (3D Secure)</span>
+                  <span style={{ fontWeight: 600, color: "#1A202C" }}>
+                    {isCod ? "Kapıda Nakit / Kartla Ödeme" : "PayTR (3D Secure)"}
+                  </span>
                 </div>
 
                 <div

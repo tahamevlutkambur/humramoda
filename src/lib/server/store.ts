@@ -2631,6 +2631,52 @@ export function createPendingOrder(input: CreateOrderInput): {
 }
 
 /**
+ * Kapıda ödeme ile verilen siparişi oluşturur, onaylar ve stoklarını atomik olarak düşer.
+ */
+export function createCashOnDeliveryOrder(input: CreateOrderInput): {
+  success: boolean;
+  order?: StoreOrder;
+  error?: string;
+} {
+  const store = getStoreData();
+  const result = createPendingOrder(input);
+  if (!result.success || !result.order) {
+    return result;
+  }
+
+  const order = result.order;
+  const now = new Date().toISOString();
+
+  order.paymentProvider = "CASH_ON_DELIVERY";
+  order.paymentStatus = "PENDING";
+  order.operationalStatus = "CONFIRMED";
+  order.confirmedAt = now;
+  order.updatedAt = now;
+  order.shippingStatus = "AWAITING_SHIPMENT";
+
+  // Atomik stok düşümü
+  if (!order.stockDeducted) {
+    for (const item of order.items) {
+      for (const p of store.products) {
+        const v = p.variants.find(
+          (variant) =>
+            variant.id === item.variantId ||
+            variant.sku.toUpperCase() === item.sku.toUpperCase()
+        );
+        if (v) {
+          v.stockQuantity = Math.max(0, v.stockQuantity - item.quantity);
+          break;
+        }
+      }
+    }
+    order.stockDeducted = true;
+  }
+
+  saveStoreData(store);
+  return { success: true, order };
+}
+
+/**
  * Müşterinin sipariş durumunu güvenle denetlemesini sağlar (hassas verileri maskeler).
  */
 export function getOrderPublicStatus(orderNumberOrId: string) {

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { formatCurrency } from "@/lib/formatters";
 import { Container } from "@/components/ui/Container";
@@ -21,7 +22,9 @@ interface CustomerFormData {
 }
 
 export default function CheckoutPage() {
-  const { items, subtotal, freeShippingThreshold } = useCart();
+  const router = useRouter();
+  const { items, subtotal, clearCart, freeShippingThreshold } = useCart();
+  const [paymentMethod, setPaymentMethod] = useState<"PAYTR" | "CASH_ON_DELIVERY">("PAYTR");
   const [formData, setFormData] = useState<CustomerFormData>({
     fullName: "",
     email: "",
@@ -163,6 +166,24 @@ export default function CheckoutPage() {
         }),
         campaignCode: appliedCampaign?.code,
       };
+
+      if (paymentMethod === "CASH_ON_DELIVERY") {
+        const res = await fetch("/api/payments/cash-on-delivery/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(orderPayload),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || "Kapıda ödeme siparişi oluşturulamadı.");
+        }
+
+        clearCart();
+        router.push(`/odeme/basarili?orderNumber=${encodeURIComponent(data.orderNumber)}`);
+        return;
+      }
 
       const res = await fetch("/api/payments/paytr/create", {
         method: "POST",
@@ -507,6 +528,80 @@ export default function CheckoutPage() {
                     />
                   </div>
 
+                  {/* Ödeme Yöntemi Seçimi */}
+                  <div style={{ marginTop: "1.25rem", marginBottom: "0.5rem" }}>
+                    <label style={{ display: "block", fontSize: "0.875rem", fontWeight: 700, color: "#1A202C", marginBottom: "0.5rem" }}>
+                      Ödeme Yöntemi *
+                    </label>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+                      {/* 1. Kredi / Banka Kartı */}
+                      <label
+                        onClick={() => setPaymentMethod("PAYTR")}
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: "0.6rem",
+                          padding: "0.875rem",
+                          borderRadius: "8px",
+                          border: paymentMethod === "PAYTR" ? "2px solid #8B2635" : "1px solid #E2E8F0",
+                          backgroundColor: paymentMethod === "PAYTR" ? "rgba(139, 38, 53, 0.05)" : "#FFFFFF",
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value="PAYTR"
+                          checked={paymentMethod === "PAYTR"}
+                          onChange={() => setPaymentMethod("PAYTR")}
+                          style={{ marginTop: "3px", accentColor: "#8B2635", width: "16px", height: "16px" }}
+                        />
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: "0.875rem", color: "#1A202C" }}>
+                            💳 Kredi Kartı
+                          </div>
+                          <div style={{ fontSize: "0.75rem", color: "#718096", marginTop: "2px" }}>
+                            PayTR 256-Bit SSL
+                          </div>
+                        </div>
+                      </label>
+
+                      {/* 2. Kapıda Ödeme */}
+                      <label
+                        onClick={() => setPaymentMethod("CASH_ON_DELIVERY")}
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: "0.6rem",
+                          padding: "0.875rem",
+                          borderRadius: "8px",
+                          border: paymentMethod === "CASH_ON_DELIVERY" ? "2px solid #8B2635" : "1px solid #E2E8F0",
+                          backgroundColor: paymentMethod === "CASH_ON_DELIVERY" ? "rgba(139, 38, 53, 0.05)" : "#FFFFFF",
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value="CASH_ON_DELIVERY"
+                          checked={paymentMethod === "CASH_ON_DELIVERY"}
+                          onChange={() => setPaymentMethod("CASH_ON_DELIVERY")}
+                          style={{ marginTop: "3px", accentColor: "#8B2635", width: "16px", height: "16px" }}
+                        />
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: "0.875rem", color: "#1A202C" }}>
+                            📦 Kapıda Ödeme
+                          </div>
+                          <div style={{ fontSize: "0.75rem", color: "#718096", marginTop: "2px" }}>
+                            Nakit veya Kartla
+                          </div>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+
                   <div style={{ marginTop: "1rem" }}>
                     <Button
                       type="submit"
@@ -515,7 +610,11 @@ export default function CheckoutPage() {
                       fullWidth
                       disabled={submitting}
                     >
-                      {submitting ? "Ödeme Formu Hazırlanıyor..." : "🔒 Güvenli Ödemeye Geç"}
+                      {submitting
+                        ? "Sipariş Hazırlanıyor..."
+                        : paymentMethod === "CASH_ON_DELIVERY"
+                        ? "✅ Kapıda Ödemeli Siparişi Onayla"
+                        : "🔒 Güvenli Ödemeye Geç"}
                     </Button>
                   </div>
                 </div>
