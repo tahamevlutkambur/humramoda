@@ -11,6 +11,7 @@ import {
   fetchSharedStore,
   subscribeStoreChanges,
   getCompactSnapshotForRequest,
+  syncSnapshotToServerInChunks,
   safeParseJsonResponse,
 } from "@/lib/client-store-sync";
 
@@ -27,6 +28,51 @@ export default function AdminProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<string | null>(null);
+
+  const handleExportCatalog = () => {
+    const snap = getClientStoreSnapshot();
+    if (!snap || !snap.products || snap.products.length === 0) {
+      alert("İndirilecek ürün veya katalog bulunamadı.");
+      return;
+    }
+    const fullStoreData = {
+      updatedAt: Date.now(),
+      products: snap.products || [],
+      categories: snap.categories || [],
+      collections: snap.collections || [],
+    };
+    const jsonStr = JSON.stringify(fullStoreData, null, 2);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `store-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleSyncToServer = async () => {
+    const snap = getClientStoreSnapshot();
+    if (!snap) {
+      alert("Yerel veri bulunamadı.");
+      return;
+    }
+    setIsSyncing(true);
+    setSyncStatus("Canlıya eşitleniyor...");
+    try {
+      await syncSnapshotToServerInChunks(snap);
+      setSyncStatus("Canlı sunucuya başarıyla eşitlendi!");
+      setTimeout(() => setSyncStatus(null), 3000);
+    } catch {
+      setSyncStatus("Eşitleme sırasında hata oluştu.");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = subscribeStoreChanges((snap) => {
@@ -151,9 +197,33 @@ export default function AdminProductsPage() {
           </p>
         </div>
 
-        <Link href="/admin/urunler/yeni" className="hm-admin-btn hm-admin-btn-primary">
-          <span>+ Yeni Ürün Ekle</span>
-        </Link>
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
+          {syncStatus && (
+            <span style={{ fontSize: "0.8125rem", color: syncStatus.includes("hata") ? "#E53E3E" : "#38A169", fontWeight: 600 }}>
+              {syncStatus}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={handleExportCatalog}
+            className="hm-admin-btn hm-admin-btn-secondary"
+            title="Mevcut tüm ürün ve kategorileri tek tıkla JSON dosyası olarak bilgisayarına indir"
+          >
+            <span>📥 Kataloğu İndir (JSON)</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleSyncToServer}
+            disabled={isSyncing}
+            className="hm-admin-btn hm-admin-btn-secondary"
+            title="Tarayıcındaki tüm yeni ürünleri sunucuya eşitle"
+          >
+            <span>{isSyncing ? "⏳ Eşitleniyor..." : "🔄 Canlıya Eşitle"}</span>
+          </button>
+          <Link href="/admin/urunler/yeni" className="hm-admin-btn hm-admin-btn-primary">
+            <span>+ Yeni Ürün Ekle</span>
+          </Link>
+        </div>
       </div>
 
       {/* Arama & Filtre Çubuğu */}

@@ -115,8 +115,9 @@ export async function POST(req: Request) {
 
     // Cold-instance snapshot rehydration (Yalnızca doğrulanmış yönetici oturumuyla izin verilir)
     if (body?._entity === "sync_snapshot") {
-      const synced = syncStoreSnapshot(body, { allowCatalogMutation: true });
+      const synced = syncStoreSnapshot(body, { allowCatalogMutation: true, force: true });
       await savePersistentStoreData(synced).catch(() => { });
+      revalidateAllStorePaths();
       const latest = getStoreData();
       return NextResponse.json(
         {

@@ -112,6 +112,33 @@ function mergeTwoProductLists(
   return merged;
 }
 
+function mergeTwoCategoryLists(
+  primaryList: CategoryItem[],
+  secondaryList: CategoryItem[]
+): CategoryItem[] {
+  const seenIds = new Set<string>();
+  const seenSlugs = new Set<string>();
+  const merged: CategoryItem[] = [];
+
+  for (const c of primaryList || []) {
+    if (c.id) seenIds.add(c.id);
+    if (c.slug) seenSlugs.add(c.slug.toLowerCase());
+    merged.push(c);
+  }
+
+  for (const c of secondaryList || []) {
+    const hasId = c.id && seenIds.has(c.id);
+    const hasSlug = c.slug && seenSlugs.has(c.slug.toLowerCase());
+    if (!hasId && !hasSlug) {
+      merged.push(c);
+      if (c.id) seenIds.add(c.id);
+      if (c.slug) seenSlugs.add(c.slug.toLowerCase());
+    }
+  }
+
+  return merged;
+}
+
 // IndexedDB helper for large catalogs (base64 images > 5MB)
 export function saveToIndexedDB(snapshot: ClientStoreSnapshot): Promise<void> {
   idbCachedSnapshot = snapshot;
@@ -488,13 +515,19 @@ export async function fetchSharedStore(force = false): Promise<ClientStoreSnapsh
         finalProducts = localSnap?.products || PRODUCTS;
       }
 
+      let finalCategories: CategoryItem[];
+      if (Array.isArray(data.categories) && data.categories.length > 0) {
+        finalCategories = localSnap?.categories?.length
+          ? mergeTwoCategoryLists(data.categories, localSnap.categories)
+          : data.categories;
+      } else {
+        finalCategories = localSnap?.categories || CATEGORIES;
+      }
+
       const nextSnapshot: ClientStoreSnapshot = {
         updatedAt: serverTime,
         products: finalProducts,
-        categories:
-          Array.isArray(data.categories) && data.categories.length > 0
-            ? data.categories
-            : localSnap?.categories || CATEGORIES,
+        categories: finalCategories,
         collections:
           Array.isArray(data.collections) && data.collections.length > 0
             ? data.collections
