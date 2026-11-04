@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useFavorites } from "@/context/FavoritesContext";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { getAllCategories, CategoryItem } from "@/lib/catalog";
 
 interface MobileNavProps {
@@ -23,6 +24,7 @@ export function MobileNav({
   const pathname = usePathname();
   const { totalCount: cartCount, openCart } = useCart();
   const { totalCount: favCount } = useFavorites();
+  const { customer } = useCustomerAuth();
   const categories = propCategories && propCategories.length > 0 ? propCategories : getAllCategories();
 
   if (pathname?.startsWith("/admin")) {
@@ -187,6 +189,57 @@ export function MobileNav({
             >
               📦 Sipariş ve Kargo Takibi
             </Link>
+
+            {/* Müşteri Hesabı Linkleri */}
+            {customer ? (
+              <>
+                <Link
+                  href="/hesabim"
+                  onClick={onCloseMenu}
+                  style={{
+                    padding: "0.875rem 0",
+                    fontSize: "var(--hm-text-sm)",
+                    letterSpacing: "var(--hm-tracking-wide)",
+                    textTransform: "uppercase",
+                    color: "var(--hm-color-text-main)",
+                    fontWeight: 600,
+                    borderBottom: "1px solid var(--hm-color-border-subtle)",
+                  }}
+                >
+                  👤 Hesabım ({customer.fullName})
+                </Link>
+                <Link
+                  href="/hesabim?tab=orders"
+                  onClick={onCloseMenu}
+                  style={{
+                    padding: "0.875rem 0",
+                    fontSize: "var(--hm-text-sm)",
+                    letterSpacing: "var(--hm-tracking-wide)",
+                    textTransform: "uppercase",
+                    color: "var(--hm-color-text-secondary)",
+                    borderBottom: "1px solid var(--hm-color-border-subtle)",
+                  }}
+                >
+                  📦 Siparişlerim
+                </Link>
+              </>
+            ) : (
+              <Link
+                href="/giris"
+                onClick={onCloseMenu}
+                style={{
+                  padding: "0.875rem 0",
+                  fontSize: "var(--hm-text-sm)",
+                  letterSpacing: "var(--hm-tracking-wide)",
+                  textTransform: "uppercase",
+                  color: "var(--hm-color-text-main)",
+                  fontWeight: 600,
+                  borderBottom: "1px solid var(--hm-color-border-subtle)",
+                }}
+              >
+                👤 Giriş Yap / Üye Ol
+              </Link>
+            )}
 
             <Link
               href="/iade-degisim"

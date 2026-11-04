@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Container } from "../ui/Container";
 import { useCart } from "@/context/CartContext";
 import { useFavorites } from "@/context/FavoritesContext";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { SearchDrawer } from "../search/SearchDrawer";
 import { MobileNav } from "./MobileNav";
 import { getAllCategories, CategoryItem } from "@/lib/catalog";
@@ -23,6 +24,7 @@ export function Header({ categories: propCategories }: HeaderProps = {}) {
   const pathname = usePathname();
   const { totalCount: cartCount, openCart } = useCart();
   const { totalCount: favCount } = useFavorites();
+  const { customer } = useCustomerAuth();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [categories, setCategories] = useState<CategoryItem[]>(() => {
@@ -233,6 +235,24 @@ export function Header({ categories: propCategories }: HeaderProps = {}) {
                   <path d="M12.89 1.45l8 4A2 2 0 0 1 22 7.24v9.53a2 2 0 0 1-1.11 1.79l-8 4a2 2 0 0 1-1.78 0l-8-4A2 2 0 0 1 2 16.76V7.24a2 2 0 0 1 1.11-1.79l8-4a2 2 0 0 1 1.78 0z" />
                   <polyline points="2.32 6.16 12 11 21.68 6.16" />
                   <line x1="12" y1="22.76" x2="12" y2="11" />
+                </svg>
+              </Link>
+
+              {/* Müşteri Hesabı / Giriş */}
+              <Link
+                href={customer ? "/hesabim" : "/giris"}
+                aria-label={customer ? "Hesabım" : "Giriş Yap"}
+                title={customer ? `Hesabım: ${customer.fullName}` : "Giriş Yap / Üye Ol"}
+                style={{
+                  padding: "0.25rem",
+                  color: "var(--hm-color-text-main)",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
                 </svg>
               </Link>
 

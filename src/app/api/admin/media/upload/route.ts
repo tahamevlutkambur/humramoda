@@ -17,26 +17,58 @@ export async function POST(req: Request) {
 
   try {
     const formData = await req.formData();
-    const file = (formData.get("file") || formData.get("image") || formData.get("media")) as File | null;
+    const filesArray = formData.getAll("files") as File[];
+    const singleFile = (formData.get("file") || formData.get("image") || formData.get("media")) as File | null;
 
-    if (!file) {
+    let candidateFiles: File[] = [];
+    if (filesArray && filesArray.length > 0) {
+      candidateFiles = filesArray.filter((f) => f && typeof f.size === "number" && f.size > 0);
+    }
+    if (candidateFiles.length === 0 && singleFile && typeof singleFile.size === "number" && singleFile.size > 0) {
+      candidateFiles = [singleFile];
+    }
+
+    if (candidateFiles.length === 0) {
       return NextResponse.json({ error: "Yüklenecek dosya seçilmedi." }, { status: 400 });
     }
 
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const uploadedMediaList = [];
+    const errors: string[] = [];
 
-    const { result, error } = await processAndSaveUpload(
-      buffer,
-      file.name,
-      file.type || "application/octet-stream"
-    );
+    for (const file of candidateFiles) {
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
 
-    if (error || !result) {
-      return NextResponse.json({ error: error || "Dosya yüklenemedi." }, { status: 400 });
+        const { result, error } = await processAndSaveUpload(
+          buffer,
+          file.name,
+          file.type || "application/octet-stream"
+        );
+
+        if (error || !result) {
+          errors.push(`${file.name}: ${error || "Dosya yüklenemedi."}`);
+        } else {
+          uploadedMediaList.push(result);
+        }
+      } catch (fErr) {
+        errors.push(`${file.name}: ${fErr instanceof Error ? fErr.message : "Yükleme sırasında hata oluştu."}`);
+      }
     }
 
-    return NextResponse.json({ success: true, media: result });
+    if (uploadedMediaList.length === 0) {
+      return NextResponse.json(
+        { error: errors.join(" | ") || "Hiçbir dosya yüklenemedi." },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      media: uploadedMediaList[0],
+      mediaList: uploadedMediaList,
+      errors: errors.length > 0 ? errors : undefined,
+    });
   } catch (err) {
     console.error("Media upload error:", err);
     return NextResponse.json({ error: "Yükleme sırasında sunucu hatası oluştu." }, { status: 500 });

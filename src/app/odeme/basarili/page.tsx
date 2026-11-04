@@ -34,7 +34,8 @@ interface OrderPublicData {
 
 function SuccessContent() {
   const searchParams = useSearchParams();
-  const orderNumber = searchParams.get("orderNumber");
+  const orderNumber = searchParams.get("orderNumber") || searchParams.get("orderId");
+  const accessToken = searchParams.get("accessToken");
   const { clearCart } = useCart();
 
   const [order, setOrder] = useState<OrderPublicData | null>(null);
@@ -49,7 +50,11 @@ function SuccessContent() {
     }
 
     try {
-      const res = await fetch(`/api/payments/order-status?orderNumber=${encodeURIComponent(orderNumber)}`);
+      if (!accessToken) {
+        setLoading(false);
+        return;
+      }
+      const res = await fetch(`/api/payments/order-status?orderNumber=${encodeURIComponent(orderNumber)}&accessToken=${encodeURIComponent(accessToken)}`, { cache: "no-store" });
       const data = await res.json();
       if (res.ok && data.order) {
         setOrder(data.order);
@@ -57,14 +62,29 @@ function SuccessContent() {
         const isCod = data.order.paymentProvider === "CASH_ON_DELIVERY";
         if (isPaid || isCod) {
           clearCart();
-          if (!hasTrackedPurchase.current) {
+          const purchaseKey = `hm_purchase_${data.order.orderNumber}`;
+          let alreadyTracked = false;
+          try {
+            alreadyTracked = window.localStorage.getItem(purchaseKey) === "1";
+          } catch {
+            // Storage unavailable: component-level guard below still avoids repeat polls.
+          }
+          if (!hasTrackedPurchase.current && !alreadyTracked) {
             hasTrackedPurchase.current = true;
             trackMetaEvent("Purchase", {
               value: data.order.totalAmount,
               currency: "TRY",
               content_name: data.order.orderNumber,
               num_items: data.order.itemCount,
+              payment_type: isCod ? "cash_on_delivery" : "online",
             });
+            try {
+              window.localStorage.setItem(purchaseKey, "1");
+            } catch {
+              // Component-level guard remains active when browser storage is unavailable.
+            }
+          } else {
+            hasTrackedPurchase.current = true;
           }
         }
       }
@@ -73,7 +93,7 @@ function SuccessContent() {
     } finally {
       setLoading(false);
     }
-  }, [orderNumber, clearCart]);
+  }, [orderNumber, accessToken, clearCart]);
 
   useEffect(() => {
     fetchStatus();

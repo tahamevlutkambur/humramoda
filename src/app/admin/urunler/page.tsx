@@ -14,6 +14,7 @@ import {
   syncSnapshotToServerInChunks,
   safeParseJsonResponse,
 } from "@/lib/client-store-sync";
+import { MissingMediaRestorationDeck } from "@/components/admin/MissingMediaRestorationDeck";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<ProductItem[]>(() => {
@@ -26,6 +27,8 @@ export default function AdminProductsPage() {
   });
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<"all" | "missing_media" | "out_of_stock">("all");
+  const [viewMode, setViewMode] = useState<"table" | "restoration">("table");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -146,8 +149,28 @@ export default function AdminProductsPage() {
     }
   };
 
+  const missingMediaCount = useMemo(() => {
+    return products.filter((p) => !p.media || p.media.length === 0).length;
+  }, [products]);
+
+  const outOfStockCount = useMemo(() => {
+    return products.filter((p) => {
+      const total = p.variants?.reduce((sum, v) => sum + (v.stockQuantity || 0), 0) ?? 0;
+      return total === 0;
+    }).length;
+  }, [products]);
+
   const filteredProducts = useMemo(() => {
     let list = [...products];
+
+    if (filterStatus === "missing_media") {
+      list = list.filter((p) => !p.media || p.media.length === 0);
+    } else if (filterStatus === "out_of_stock") {
+      list = list.filter((p) => {
+        const total = p.variants?.reduce((sum, v) => sum + (v.stockQuantity || 0), 0) ?? 0;
+        return total === 0;
+      });
+    }
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
@@ -164,7 +187,7 @@ export default function AdminProductsPage() {
     }
 
     return list;
-  }, [products, searchQuery, selectedCategory]);
+  }, [products, searchQuery, selectedCategory, filterStatus]);
 
   const categories = useMemo(() => {
     const map = new Map<string, string>();
@@ -238,21 +261,101 @@ export default function AdminProductsPage() {
           justifyContent: "space-between",
         }}
       >
-        <div style={{ display: "flex", gap: "0.75rem", flex: 1, minWidth: "260px" }}>
+        <div style={{ display: "flex", gap: "0.75rem", flex: 1, minWidth: "260px", flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={() => {
+                setFilterStatus("all");
+                setViewMode("table");
+              }}
+              className={`hm-admin-btn ${filterStatus === "all" ? "hm-admin-btn-primary" : "hm-admin-btn-secondary"}`}
+              style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem" }}
+            >
+              Tümü ({products.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setFilterStatus("missing_media");
+                setViewMode("restoration");
+              }}
+              className={`hm-admin-btn ${filterStatus === "missing_media" ? "hm-admin-btn-primary" : "hm-admin-btn-secondary"}`}
+              style={{
+                fontSize: "0.75rem",
+                padding: "0.35rem 0.65rem",
+                backgroundColor: filterStatus === "missing_media" ? "#C53030" : "#FFF5F5",
+                color: filterStatus === "missing_media" ? "#FFF" : "#C53030",
+                borderColor: "#FEB2B2",
+                fontWeight: 600,
+              }}
+            >
+              ⚠️ Görseli Eksik ({missingMediaCount})
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setFilterStatus("out_of_stock");
+                setViewMode("table");
+              }}
+              className={`hm-admin-btn ${filterStatus === "out_of_stock" ? "hm-admin-btn-primary" : "hm-admin-btn-secondary"}`}
+              style={{ fontSize: "0.75rem", padding: "0.35rem 0.65rem" }}
+            >
+              Tükenen ({outOfStockCount})
+            </button>
+          </div>
+
+          {filterStatus === "missing_media" && (
+            <div style={{ display: "flex", gap: "0.25rem", borderLeft: "1px solid #CBD5E0", paddingLeft: "0.5rem" }}>
+              <button
+                type="button"
+                onClick={() => setViewMode("restoration")}
+                style={{
+                  padding: "0.3rem 0.6rem",
+                  fontSize: "0.75rem",
+                  borderRadius: "4px",
+                  border: "none",
+                  backgroundColor: viewMode === "restoration" ? "#1A202C" : "#EDF2F7",
+                  color: viewMode === "restoration" ? "#FFF" : "#4A5568",
+                  fontWeight: viewMode === "restoration" ? 600 : 500,
+                  cursor: "pointer",
+                }}
+              >
+                🎨 Restorasyon Masası
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("table")}
+                style={{
+                  padding: "0.3rem 0.6rem",
+                  fontSize: "0.75rem",
+                  borderRadius: "4px",
+                  border: "none",
+                  backgroundColor: viewMode === "table" ? "#1A202C" : "#EDF2F7",
+                  color: viewMode === "table" ? "#FFF" : "#4A5568",
+                  fontWeight: viewMode === "table" ? 600 : 500,
+                  cursor: "pointer",
+                }}
+              >
+                📋 Tablo Görünümü
+              </button>
+            </div>
+          )}
+
           <input
             type="text"
             placeholder="Ürün adı, slug veya SKU ile ara..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="hm-admin-input"
-            style={{ maxWidth: "360px" }}
+            style={{ maxWidth: "280px" }}
           />
 
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="hm-admin-select"
-            style={{ maxWidth: "200px" }}
+            style={{ maxWidth: "180px" }}
           >
             <option value="all">Tüm Kategoriler</option>
             {categories.map(([slug, name]) => (
@@ -268,33 +371,41 @@ export default function AdminProductsPage() {
         </span>
       </div>
 
-      {/* Ürün Tablosu */}
-      <div className="hm-admin-card" style={{ overflow: "hidden" }}>
-        {isLoading ? (
-          <div style={{ padding: "3rem", textAlign: "center", color: "#718096" }}>
-            Ürünler yükleniyor...
-          </div>
-        ) : filteredProducts.length === 0 ? (
-          <div style={{ padding: "3rem", textAlign: "center", color: "#718096" }}>
-            Kriterlere uygun ürün bulunamadı.
-          </div>
-        ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table className="hm-admin-table">
-              <thead>
-                <tr>
-                  <th style={{ width: "60px" }}>Görsel</th>
-                  <th>Ürün Başlığı &amp; Kategori</th>
-                  <th>Fiyat Bilgisi</th>
-                  <th>Renkler</th>
-                  <th>Toplam Stok</th>
-                  <th>Rozet</th>
-                  <th style={{ textAlign: "right" }}>İşlemler</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredProducts.map((product) => {
-                  const firstImage = product.media[0];
+      {/* Eksik Görsel Restorasyon Masası veya Standart Tablo */}
+      {filterStatus === "missing_media" && viewMode === "restoration" ? (
+        <MissingMediaRestorationDeck
+          products={filteredProducts}
+          onProductUpdated={(updated) =>
+            setProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)))
+          }
+        />
+      ) : (
+        <div className="hm-admin-card" style={{ overflow: "hidden" }}>
+          {isLoading ? (
+            <div style={{ padding: "3rem", textAlign: "center", color: "#718096" }}>
+              Ürünler yükleniyor...
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div style={{ padding: "3rem", textAlign: "center", color: "#718096" }}>
+              Kriterlere uygun ürün bulunamadı.
+            </div>
+          ) : (
+            <div style={{ overflowX: "auto" }}>
+              <table className="hm-admin-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: "60px" }}>Görsel</th>
+                    <th>Ürün Başlığı &amp; Kategori</th>
+                    <th>Fiyat Bilgisi</th>
+                    <th>Renkler</th>
+                    <th>Toplam Stok</th>
+                    <th>Rozet</th>
+                    <th style={{ textAlign: "right" }}>İşlemler</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredProducts.map((product) => {
+                    const firstImage = product.media[0];
                   const totalStock = product.variants.reduce(
                     (acc, v) => acc + v.stockQuantity,
                     0
@@ -315,7 +426,7 @@ export default function AdminProductsPage() {
                             overflow: "hidden",
                           }}
                         >
-                          {firstImage && (
+                          {firstImage ? (
                             <Image
                               src={firstImage.thumbnailUrl || firstImage.url}
                               alt={product.title}
@@ -324,6 +435,22 @@ export default function AdminProductsPage() {
                               sizes="48px"
                               style={{ objectFit: "cover" }}
                             />
+                          ) : (
+                            <div
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: "16px",
+                                backgroundColor: "#FEF3C7",
+                                color: "#D97706",
+                              }}
+                              title="Görsel eksik! Yüklemek için tıklayın."
+                            >
+                              📷
+                            </div>
                           )}
                         </div>
                       </td>
@@ -344,6 +471,27 @@ export default function AdminProductsPage() {
                           <span style={{ fontSize: "0.75rem", color: "#718096", marginTop: "2px" }}>
                             {product.categoryName} • <code style={{ fontSize: "0.6875rem" }}>/urun/{product.slug}</code>
                           </span>
+                          {product.media.length === 0 && (
+                            <div style={{ marginTop: "4px" }}>
+                              <Link
+                                href={`/admin/urunler/${encodeURIComponent(product.id)}`}
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                  fontSize: "11px",
+                                  fontWeight: 600,
+                                  color: "#B45309",
+                                  backgroundColor: "#FEF3C7",
+                                  padding: "2px 6px",
+                                  borderRadius: "4px",
+                                  textDecoration: "none",
+                                }}
+                              >
+                                ⚠️ Görsel Eksik — Hemen Fotoğraf Ekle
+                              </Link>
+                            </div>
+                          )}
                         </div>
                       </td>
 
@@ -455,6 +603,7 @@ export default function AdminProductsPage() {
           </div>
         )}
       </div>
+      )}
     </div>
   );
 }

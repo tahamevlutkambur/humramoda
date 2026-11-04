@@ -51,6 +51,7 @@ interface EditableMedia {
   altText: string;
   isThumbnail: boolean;
   displayOrder: number;
+  hash?: string;
 }
 
 export function ProductEditor({
@@ -333,6 +334,11 @@ export function ProductEditor({
 
   const [activeMediaColorTab, setActiveMediaColorTab] = useState<string>("all");
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [draggedMediaIdx, setDraggedMediaIdx] = useState<number | null>(null);
+  const [uploadQueue, setUploadQueue] = useState<
+    Array<{ name: string; size: number; status: "pending" | "uploading" | "done" | "error"; error?: string }>
+  >([]);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -548,22 +554,35 @@ export function ProductEditor({
     );
   };
 
-  // Medya Dosyası Yükleme (Fotoğraf & Video Kesin Ayrımı)
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+  // Toplu Dosya İşleme ve Yükleme (Sürükle-Bırak & Dosya Seçimi Uyumlu)
+  const handleProcessFiles = async (fileList: FileList | File[]) => {
+    if (!fileList || fileList.length === 0) return;
 
+    const filesArray = Array.from(fileList);
+    setUploadQueue(filesArray.map((f) => ({ name: f.name, size: f.size, status: "pending" })));
     setIsUploading(true);
     setErrorMessage(null);
     hasUserModifiedMediaRef.current = true;
 
     try {
       let runningMedia = [...media];
-      for (let i = 0; i < files.length; i++) {
-        const rawFile = files[i];
-        const file = await compressImageBeforeUpload(rawFile);
+
+      for (let i = 0; i < filesArray.length; i++) {
+        const rawFile = filesArray[i];
+
+        setUploadQueue((prev) =>
+          prev.map((item, idx) => (idx === i ? { ...item, status: "uploading" } : item))
+        );
+
+        let fileToUpload: File | Blob = rawFile;
+        try {
+          fileToUpload = await compressImageBeforeUpload(rawFile);
+        } catch {
+          fileToUpload = rawFile;
+        }
+
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append("file", fileToUpload, rawFile.name);
 
         const res = await fetch("/api/admin/media/upload", {
           method: "POST",
@@ -572,10 +591,33 @@ export function ProductEditor({
 
         const data = await safeParseJsonResponse(res);
         if (!res.ok || !data.media) {
-          throw new Error(data.error || "Görsel yüklenemedi.");
+          const errText = data.error || "Görsel yüklenemedi.";
+          setUploadQueue((prev) =>
+            prev.map((item, idx) => (idx === i ? { ...item, status: "error", error: errText } : item))
+          );
+          throw new Error(errText);
         }
 
         const uploaded = data.media;
+
+        // Hash veya URL tabanlı mükerrer yükleme kontrolü
+        const isDuplicate = runningMedia.some(
+          (m) =>
+            (uploaded.hash && m.hash === uploaded.hash) ||
+            m.url === uploaded.url ||
+            (uploaded.fileName && m.url.includes(uploaded.fileName))
+        );
+
+        if (isDuplicate) {
+          setUploadQueue((prev) =>
+            prev.map((item, idx) =>
+              idx === i ? { ...item, status: "error", error: "Bu görsel zaten galeride mevcut." } : item
+            )
+          );
+          setErrorMessage(`"${rawFile.name}" görseli zaten galeride mevcut. Mükerrer ekleme engellendi.`);
+          continue;
+        }
+
         const colorForMedia = activeMediaColorTab !== "all" ? activeMediaColorTab : colors[0]?.name;
 
         const newItem: EditableMedia = {
@@ -587,12 +629,21 @@ export function ProductEditor({
           altText: `${title || "Ürün"} görseli`,
           isThumbnail: runningMedia.length === 0 && uploaded.mediaType !== "VIDEO",
           displayOrder: runningMedia.length + 1,
+          hash: uploaded.hash,
         };
 
         runningMedia = [...runningMedia, newItem];
         setMedia(runningMedia);
+
+        setUploadQueue((prev) =>
+          prev.map((item, idx) => (idx === i ? { ...item, status: "done" } : item))
+        );
       }
+
       persistMediaImmediately(runningMedia, colors);
+      setSuccessMessage("Görseller başarıyla yüklendi ve galeriye eklendi.");
+      setTimeout(() => setSuccessMessage(null), 3000);
+      setTimeout(() => setUploadQueue([]), 4000);
     } catch (err: unknown) {
       setErrorMessage(err instanceof Error ? err.message : "Dosya yüklenirken hata oluştu.");
     } finally {
@@ -601,26 +652,92 @@ export function ProductEditor({
     }
   };
 
-  // Medya Sil
-  const handleRemoveMedia = (idx: number) => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleProcessFiles(e.target.files);
+    }
+  };
+
+  // Medya Sırasını Değiştir (Sola / Sağa Taşı)
+  const handleMoveMedia = (idx: number, direction: "left" | "right") => {
     hasUserModifiedMediaRef.current = true;
     setMedia((prev) => {
-      const next = prev.filter((_, i) => i !== idx);
+      const targetIdx = direction === "left" ? idx - 1 : idx + 1;
+      if (targetIdx < 0 || targetIdx >= prev.length) return prev;
+      const next = [...prev];
+      const temp = next[idx];
+      next[idx] = next[targetIdx];
+      next[targetIdx] = temp;
+      const reindexed = next.map((m, i) => ({
+        ...m,
+        displayOrder: i + 1,
+      }));
+      persistMediaImmediately(reindexed, colors);
+      return reindexed;
+    });
+  };
+
+  // Sürükle-Bırak ile Görsel Sıralama
+  const handleDragStartMedia = (e: React.DragEvent, index: number) => {
+    setDraggedMediaIdx(index);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDropMedia = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedMediaIdx === null || draggedMediaIdx === targetIndex) return;
+
+    hasUserModifiedMediaRef.current = true;
+    setMedia((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(draggedMediaIdx, 1);
+      next.splice(targetIndex, 0, moved);
+      const reindexed = next.map((m, i) => ({ ...m, displayOrder: i + 1 }));
+      persistMediaImmediately(reindexed, colors);
+      return reindexed;
+    });
+    setDraggedMediaIdx(null);
+  };
+
+  // Medya Sil (Kullanıcı Onayı ile)
+  const handleRemoveMedia = (idx: number) => {
+    if (!confirm("Bu görseli galeriden silmek istediğinize emin misiniz?")) {
+      return;
+    }
+    hasUserModifiedMediaRef.current = true;
+    setMedia((prev) => {
+      const next = prev.filter((_, i) => i !== idx).map((m, i) => ({
+        ...m,
+        displayOrder: i + 1,
+      }));
       persistMediaImmediately(next, colors);
       return next;
     });
   };
 
-  // Kapak Resmi Yap
+  // Kapak Resmi Yap (Renge veya genele özel kapak görseli belirler)
   const handleSetCover = (idx: number) => {
     hasUserModifiedMediaRef.current = true;
     setMedia((prev) => {
-      const next = prev.map((m, i) => ({
-        ...m,
-        isThumbnail: i === idx,
-      }));
-      persistMediaImmediately(next, colors);
-      return next;
+      if (idx < 0 || idx >= prev.length) return prev;
+      const target = prev[idx];
+      const targetColor = target.colorName?.toLowerCase();
+
+      // Renge özel kapak mantığı: Seçili rengin kendi kapak görseli belirlenir,
+      // diğer renklerin kapakları korunur.
+      const updated = prev.map((m, i) => {
+        if (i === idx) {
+          return { ...m, isThumbnail: true };
+        }
+        const mColor = m.colorName?.toLowerCase();
+        if (targetColor ? mColor === targetColor : !mColor) {
+          return { ...m, isThumbnail: false };
+        }
+        return m;
+      });
+
+      persistMediaImmediately(updated, colors);
+      return updated;
     });
   };
 
@@ -1220,35 +1337,65 @@ export function ProductEditor({
                               </tr>
                             </thead>
                             <tbody>
-                              {colorVariantsWithIndex.map((v) => (
-                                <tr key={v.originalIdx}>
-                                  <td>
-                                    <input
-                                      type="text"
-                                      value={v.sizeName}
-                                      onChange={(e) => {
-                                        const updated = [...variants];
-                                        updated[v.originalIdx].sizeName = e.target.value;
-                                        setVariants(updated);
+                              {(() => {
+                                const sizeNameCountMap = new Map<string, number>();
+                                colorVariantsWithIndex.forEach((item) => {
+                                  const k = item.sizeName.trim().toLowerCase();
+                                  sizeNameCountMap.set(k, (sizeNameCountMap.get(k) || 0) + 1);
+                                });
+
+                                return colorVariantsWithIndex.map((v) => {
+                                  const isColliding = (sizeNameCountMap.get(v.sizeName.trim().toLowerCase()) || 0) > 1;
+                                  return (
+                                    <tr
+                                      key={v.originalIdx}
+                                      style={{
+                                        backgroundColor: isColliding ? "#FFFDF5" : undefined,
+                                        borderLeft: isColliding ? "3px solid #D97706" : undefined,
                                       }}
-                                      className="hm-admin-input"
-                                      style={{ padding: "0.3rem 0.5rem", fontSize: "0.8125rem" }}
-                                    />
-                                  </td>
-                                  <td>
-                                    <input
-                                      type="text"
-                                      required
-                                      value={v.sku}
-                                      onChange={(e) => {
-                                        const updated = [...variants];
-                                        updated[v.originalIdx].sku = e.target.value;
-                                        setVariants(updated);
-                                      }}
-                                      className="hm-admin-input"
-                                      style={{ padding: "0.3rem 0.5rem", fontSize: "0.8125rem" }}
-                                    />
-                                  </td>
+                                    >
+                                      <td>
+                                        <input
+                                          type="text"
+                                          value={v.sizeName}
+                                          onChange={(e) => {
+                                            const updated = [...variants];
+                                            updated[v.originalIdx].sizeName = e.target.value;
+                                            setVariants(updated);
+                                          }}
+                                          className="hm-admin-input"
+                                          style={{ padding: "0.3rem 0.5rem", fontSize: "0.8125rem" }}
+                                        />
+                                      </td>
+                                      <td>
+                                        <input
+                                          type="text"
+                                          required
+                                          value={v.sku}
+                                          onChange={(e) => {
+                                            const updated = [...variants];
+                                            updated[v.originalIdx].sku = e.target.value;
+                                            setVariants(updated);
+                                          }}
+                                          className="hm-admin-input"
+                                          style={{ padding: "0.3rem 0.5rem", fontSize: "0.8125rem" }}
+                                        />
+                                        {isColliding && (
+                                          <div
+                                            style={{
+                                              fontSize: "0.6875rem",
+                                              color: "#92400E",
+                                              backgroundColor: "#FEF3C7",
+                                              padding: "3px 6px",
+                                              borderRadius: "3px",
+                                              marginTop: "4px",
+                                              fontWeight: 600,
+                                            }}
+                                          >
+                                            ⚠️ Çakışan Varyant: Aynı &quot;{v.sizeName}&quot; bedenini paylaşıyor. Ayrı stok ({v.stockQuantity}) ve SKU korunuyor.
+                                          </div>
+                                        )}
+                                      </td>
                                   <td>
                                     <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
                                       <input
@@ -1322,7 +1469,9 @@ export function ProductEditor({
                                     </button>
                                   </td>
                                 </tr>
-                              ))}
+                              );
+                            });
+                          })()}
                             </tbody>
                           </table>
                         </div>
@@ -1373,28 +1522,122 @@ export function ProductEditor({
         <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
           <div className="hm-admin-card" style={{ padding: "1.5rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-              <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "#1A202C" }}>
-                3. Renge Özel Medya Galerisi
-              </h3>
+              <div>
+                <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "#1A202C" }}>
+                  3. Renge Özel Medya Galerisi
+                </h3>
+                <p style={{ fontSize: "0.75rem", color: "#718096", marginTop: "2px" }}>
+                  Fotoğrafları sürükleyip bırakabilir, renklere göre gruplayabilir ve kapak seçebilirsiniz.
+                </p>
+              </div>
 
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-                className="hm-admin-btn hm-admin-btn-primary"
-                style={{ fontSize: "0.75rem", padding: "0.4rem 0.8rem" }}
-              >
-                {isUploading ? "Yükleniyor..." : "+ Dosya Yükle"}
-              </button>
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="hm-admin-btn hm-admin-btn-primary"
+                  style={{ fontSize: "0.75rem", padding: "0.4rem 0.8rem" }}
+                >
+                  {isUploading ? "Yükleniyor..." : "+ Dosya Yükle"}
+                </button>
+              </div>
               <input
                 ref={fileInputRef}
                 type="file"
                 multiple
-                accept="image/*,video/mp4"
+                accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif,video/mp4"
                 onChange={handleFileUpload}
                 style={{ display: "none" }}
               />
             </div>
+
+            {/* Sürükle - Bırak Alanı (Drag & Drop Zone) */}
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragging(true);
+              }}
+              onDragEnter={(e) => {
+                e.preventDefault();
+                setIsDragging(true);
+              }}
+              onDragLeave={(e) => {
+                e.preventDefault();
+                setIsDragging(false);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDragging(false);
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                  handleProcessFiles(e.dataTransfer.files);
+                }
+              }}
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                border: isDragging ? "2px dashed #8B2635" : "2px dashed #CBD5E0",
+                backgroundColor: isDragging ? "rgba(139, 38, 53, 0.05)" : "#F8FAFC",
+                borderRadius: "6px",
+                padding: "1.25rem",
+                textAlign: "center",
+                cursor: "pointer",
+                marginBottom: "1rem",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <div style={{ fontSize: "1.25rem", marginBottom: "0.25rem" }}>📁 ⬇️</div>
+              <p style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#2D3748" }}>
+                Fotoğrafları buraya sürükleyin veya dosya seçmek için tıklayın
+              </p>
+              <p style={{ fontSize: "0.6875rem", color: "#A0AEC0", marginTop: "4px" }}>
+                JPG, PNG, WebP, AVIF veya MP4 (Maks. 15MB) — Çoklu seçim desteklenir.
+              </p>
+            </div>
+
+            {/* Yükleme Önizleme Kuyruğu (Upload Queue) */}
+            {uploadQueue.length > 0 && (
+              <div
+                style={{
+                  marginBottom: "1rem",
+                  padding: "0.75rem",
+                  backgroundColor: "#F7FAFC",
+                  border: "1px solid #E2E8F0",
+                  borderRadius: "4px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.35rem",
+                }}
+              >
+                <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "#4A5568" }}>
+                  Yükleme Durumu ({uploadQueue.filter((q) => q.status === "done").length} / {uploadQueue.length})
+                </div>
+                {uploadQueue.map((item, qIdx) => (
+                  <div
+                    key={qIdx}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      fontSize: "0.6875rem",
+                      padding: "2px 0",
+                      color:
+                        item.status === "error"
+                          ? "#E53E3E"
+                          : item.status === "done"
+                          ? "#38A169"
+                          : "#4A5568",
+                    }}
+                  >
+                    <span>{item.name}</span>
+                    <span>
+                      {item.status === "pending" && "Bekliyor..."}
+                      {item.status === "uploading" && "⏳ Yükleniyor..."}
+                      {item.status === "done" && "✓ Yüklendi"}
+                      {item.status === "error" && `✗ Hata: ${item.error || "Yüklenemedi"}`}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Renk Filtresi Sekmeleri */}
             <div
@@ -1489,6 +1732,10 @@ export function ProductEditor({
                   return (
                     <div
                       key={idx}
+                      draggable={true}
+                      onDragStart={(e) => handleDragStartMedia(e, idx)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => handleDropMedia(e, idx)}
                       style={{
                         position: "relative",
                         border: item.isThumbnail ? "2px solid #8B2635" : "1px solid var(--hm-admin-border)",
@@ -1497,7 +1744,10 @@ export function ProductEditor({
                         backgroundColor: "#F7FAFC",
                         display: "flex",
                         flexDirection: "column",
+                        cursor: "grab",
+                        transition: "box-shadow 0.2s",
                       }}
+                      title="Sıralamayı değiştirmek için sürükleyip bırakabilirsiniz"
                     >
                       <div style={{ position: "relative", width: "100%", aspectRatio: "3 / 4" }}>
                         {item.type === "VIDEO" ? (
@@ -1584,7 +1834,43 @@ export function ProductEditor({
                           ))}
                         </select>
 
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.25rem", marginTop: "2px" }}>
+                          <div style={{ display: "flex", gap: "2px" }}>
+                            <button
+                              type="button"
+                              disabled={idx === 0}
+                              onClick={() => handleMoveMedia(idx, "left")}
+                              style={{
+                                fontSize: "0.6875rem",
+                                padding: "2px 5px",
+                                background: "#EDF2F7",
+                                border: "1px solid #CBD5E0",
+                                borderRadius: "3px",
+                                cursor: idx === 0 ? "not-allowed" : "pointer",
+                                opacity: idx === 0 ? 0.4 : 1,
+                              }}
+                              title="Öne Al"
+                            >
+                              ◀
+                            </button>
+                            <button
+                              type="button"
+                              disabled={idx === media.length - 1}
+                              onClick={() => handleMoveMedia(idx, "right")}
+                              style={{
+                                fontSize: "0.6875rem",
+                                padding: "2px 5px",
+                                background: "#EDF2F7",
+                                border: "1px solid #CBD5E0",
+                                borderRadius: "3px",
+                                cursor: idx === media.length - 1 ? "not-allowed" : "pointer",
+                                opacity: idx === media.length - 1 ? 0.4 : 1,
+                              }}
+                              title="Sona Al"
+                            >
+                              ▶
+                            </button>
+                          </div>
                           {!item.isThumbnail && (
                             <button
                               type="button"

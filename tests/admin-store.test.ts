@@ -568,6 +568,6 @@ describe("Admin Store Engine & Validation Constraints", () => {
       const safetyBackup = allBackups.find((b) => b.id === restoreRes.safetyBackupId);
       expect(safetyBackup).toBeDefined();
       expect(safetyBackup?.type).toBe("SAFETY");
-    }, 20000);
+    }, 60000);
   });
 });

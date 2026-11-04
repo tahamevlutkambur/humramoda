@@ -34,6 +34,11 @@ export function ProductGallery({ media, productTitle }: ProductGalleryProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isLightboxOpen, handlePrev, handleNext]);
 
+  // Renk değiştiğinde veya medya listesi güncellendiğinde ilk görsele sıfırla
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [media]);
+
   if (!media || media.length === 0) {
     return (
       <div className="hm-product-gallery-wrapper">
@@ -41,14 +46,24 @@ export function ProductGallery({ media, productTitle }: ProductGalleryProps) {
           className="hm-product-gallery-main"
           style={{
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
+            gap: "0.75rem",
             color: "var(--hm-color-text-muted)",
-            textTransform: "uppercase",
-            fontSize: "var(--hm-text-xs)",
+            backgroundColor: "var(--hm-color-surface-subtle, #f5f5f5)",
+            aspectRatio: "3 / 4",
+            borderRadius: "var(--hm-radius-xs, 4px)",
           }}
         >
-          Görsel Hazırlanıyor
+          <img
+            src="/product-placeholder.svg"
+            alt={productTitle}
+            style={{ width: "64px", height: "64px", opacity: 0.4 }}
+          />
+          <span style={{ fontSize: "var(--hm-text-xs)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+            Görsel Hazırlanıyor
+          </span>
         </div>
       </div>
     );
@@ -99,6 +114,11 @@ export function ProductGallery({ media, productTitle }: ProductGalleryProps) {
                       fill
                       unoptimized={thumbSrc.startsWith("data:")}
                       sizes="74px"
+                      onError={(event) => {
+                        if (!event.currentTarget.src.endsWith("/product-placeholder.svg")) {
+                          event.currentTarget.src = "/product-placeholder.svg";
+                        }
+                      }}
                       style={{ objectFit: "cover", objectPosition: "center top" }}
                     />
                     {isVideoItem && (
@@ -170,6 +190,11 @@ export function ProductGallery({ media, productTitle }: ProductGalleryProps) {
                   priority
                   unoptimized={currentMedia.url.startsWith("data:")}
                   sizes="(max-width: 768px) 100vw, 520px"
+                  onError={(event) => {
+                    if (!event.currentTarget.src.endsWith("/product-placeholder.svg")) {
+                      event.currentTarget.src = "/product-placeholder.svg";
+                    }
+                  }}
                   style={{
                     objectFit: "cover",
                     objectPosition: "center top",

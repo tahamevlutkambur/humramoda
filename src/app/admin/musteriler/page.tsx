@@ -76,25 +76,68 @@ export default function AdminCustomersPage() {
       </div>
 
       {/* Müşteri Hesapları Durumu */}
-      <div className="hm-admin-card" style={{ padding: "2rem", textAlign: "center" }}>
-        <h3 style={{ fontSize: "1.125rem", fontWeight: 600, margin: "0 0 0.5rem 0" }}>
-          Kayıtlı Vitrin Müşterileri
-        </h3>
-        <p
-          style={{
-            maxWidth: "520px",
-            margin: "0 auto 1rem auto",
-            color: "var(--hm-admin-text-muted)",
-            fontSize: "0.875rem",
-            lineHeight: 1.6,
-          }}
-        >
-          Müşteri üyelik, favori listeleri ve misafir sipariş tamamlama işlevleri Faz 5 kapsamında
-          ödeme adımıyla birlikte entegre edilecektir. Sahte müşteri verisi üretilmemiştir.
-        </p>
-        <span className="hm-admin-badge hm-admin-badge-neutral">
-          0 Kayıtlı Müşteri
-        </span>
+      <div className="hm-admin-card" style={{ padding: "1.5rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+          <h2 style={{ fontSize: "1.125rem", fontWeight: 600, margin: 0 }}>
+            Kayıtlı Vitrin Müşterileri ({store.customers?.length || 0})
+          </h2>
+          <span className="hm-admin-badge hm-admin-badge-neutral">
+            {store.customers?.length || 0} Kayıtlı Müşteri
+          </span>
+        </div>
+
+        {store.customers && store.customers.length > 0 ? (
+          <table className="hm-admin-table">
+            <thead>
+              <tr>
+                <th>Müşteri Ad Soyad</th>
+                <th>E-Posta Adresi</th>
+                <th>Telefon</th>
+                <th>Kayıtlı Adresler</th>
+                <th>Durum</th>
+                <th>Kayıt Tarihi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {store.customers.map((c) => (
+                <tr key={c.id}>
+                  <td style={{ fontWeight: 600 }}>{c.fullName}</td>
+                  <td>{c.email}</td>
+                  <td>{c.phone || "—"}</td>
+                  <td>
+                    <span className="hm-admin-badge hm-admin-badge-neutral">
+                      {(c.addresses || []).length} Adres
+                    </span>
+                  </td>
+                  <td>
+                    {c.isActive ? (
+                      <span className="hm-admin-badge hm-admin-badge-success">Aktif</span>
+                    ) : (
+                      <span className="hm-admin-badge hm-admin-badge-danger">Pasif</span>
+                    )}
+                  </td>
+                  <td style={{ color: "var(--hm-admin-text-muted)", fontSize: "0.75rem" }}>
+                    {c.createdAt ? new Date(c.createdAt).toLocaleDateString("tr-TR") : "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div style={{ textAlign: "center", padding: "2rem 0" }}>
+            <p
+              style={{
+                maxWidth: "520px",
+                margin: "0 auto",
+                color: "var(--hm-admin-text-muted)",
+                fontSize: "0.875rem",
+                lineHeight: 1.6,
+              }}
+            >
+              Henüz sistemde kayıtlı vitrin müşterisi bulunmamaktadır. Yeni müşteriler `/kayit` sayfası üzerinden üye olduklarında burada listelenir.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

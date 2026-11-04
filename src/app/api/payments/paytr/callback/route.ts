@@ -1,5 +1,5 @@
 import { processPayTRCallback } from "@/lib/server/paytr";
-import { getStoreData } from "@/lib/server/store";
+import { getStoreData, executeWithOrderLock } from "@/lib/server/store";
 import { getPersistentStoreData, savePersistentStoreData } from "@/lib/server/persistent-store";
 
 /**
@@ -51,17 +51,19 @@ export async function POST(req: Request) {
       });
     }
 
-    const result = processPayTRCallback(
-      {
-        merchantOid,
-        status,
-        totalAmount,
-        hash,
-        failedReasonCode,
-        failedReasonMsg,
-      },
-      clientIp
-    );
+    const result = await executeWithOrderLock(async () => {
+      return processPayTRCallback(
+        {
+          merchantOid,
+          status,
+          totalAmount,
+          hash,
+          failedReasonCode,
+          failedReasonMsg,
+        },
+        clientIp
+      );
+    });
 
     if (result.ok) {
       await savePersistentStoreData(getStoreData()).catch(() => {});

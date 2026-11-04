@@ -18,6 +18,19 @@ export async function GET(req: Request, { params }: RouteParams) {
 
   const relativePath = slug.join("/");
   const fileName = slug[slug.length - 1];
+  if (slug.some((part) => !part || part === "." || part === ".." || part.includes("\\"))) {
+    return new NextResponse("Not Found", { status: 404 });
+  }
+  const mimeForFile = (name: string) => {
+    const ext = path.extname(name).toLowerCase();
+    if (ext === ".mp4") return "video/mp4";
+    if (ext === ".webm") return "video/webm";
+    if (ext === ".png") return "image/png";
+    if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
+    if (ext === ".avif") return "image/avif";
+    if (ext === ".gif") return "image/gif";
+    return "image/webp";
+  };
 
   // 1. In-memory cache kontrolü
   const inMemory = mediaMemoryCache.get(fileName);
@@ -31,12 +44,13 @@ export async function GET(req: Request, { params }: RouteParams) {
   }
 
   // 2. /tmp/uploads kontrolü
-  const tmpPath = path.join(os.tmpdir(), "humramoda_uploads", relativePath);
+  const tmpBase = path.resolve(os.tmpdir(), "humramoda_uploads");
+  const tmpPath = path.resolve(tmpBase, relativePath);
+  if (!tmpPath.startsWith(`${tmpBase}${path.sep}`)) return new NextResponse("Not Found", { status: 404 });
   if (fs.existsSync(tmpPath)) {
     try {
       const buffer = fs.readFileSync(tmpPath);
-      const isVideo = fileName.endsWith(".mp4") || fileName.endsWith(".webm");
-      const mime = isVideo ? "video/mp4" : "image/webp";
+      const mime = mimeForFile(fileName);
       return new Response(buffer as unknown as BodyInit, {
         headers: {
           "Content-Type": mime,
@@ -49,14 +63,13 @@ export async function GET(req: Request, { params }: RouteParams) {
   }
 
   // 3. public/uploads kontrolü
-  const publicPath = path.join(process.cwd(), "public", "uploads", relativePath);
+  const publicBase = path.resolve(process.cwd(), "public", "uploads");
+  const publicPath = path.resolve(publicBase, relativePath);
+  if (!publicPath.startsWith(`${publicBase}${path.sep}`)) return new NextResponse("Not Found", { status: 404 });
   if (fs.existsSync(publicPath)) {
     try {
       const buffer = fs.readFileSync(publicPath);
-      const isVideo = fileName.endsWith(".mp4") || fileName.endsWith(".webm");
-      const isPng = fileName.endsWith(".png");
-      const isJpg = fileName.endsWith(".jpg") || fileName.endsWith(".jpeg");
-      const mime = isVideo ? "video/mp4" : isPng ? "image/png" : isJpg ? "image/jpeg" : "image/webp";
+      const mime = mimeForFile(fileName);
       return new Response(buffer as unknown as BodyInit, {
         headers: {
           "Content-Type": mime,

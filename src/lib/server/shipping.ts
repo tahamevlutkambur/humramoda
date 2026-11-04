@@ -659,23 +659,14 @@ export function verifyCustomerTrackingAccess(
     }
   }
 
-  // 3. Misafir kullanıcı telefon doğrulaması (+90, 0 ve boşluk formatlarından bağımsız son 10 hane veya son 4 hane)
+  // 3. Misafir kullanıcı telefon doğrulaması (+90 ve 0 önekleri normalize edilir)
   if (identifier.phone) {
     const cleanInputPhone = identifier.phone.replace(/\D/g, "");
     const cleanOrderPhone = order.customerPhone.replace(/\D/g, "");
     const inputLast10 = cleanInputPhone.slice(-10);
     const orderLast10 = cleanOrderPhone.slice(-10);
 
-    if (
-      cleanInputPhone.length >= 4 &&
-      (
-        cleanOrderPhone.endsWith(cleanInputPhone) ||
-        cleanInputPhone.endsWith(cleanOrderPhone) ||
-        (inputLast10.length >= 7 && inputLast10 === orderLast10) ||
-        cleanInputPhone === cleanOrderPhone ||
-        (cleanInputPhone.length >= 4 && orderLast10.endsWith(cleanInputPhone.slice(-4)))
-      )
-    ) {
+    if (inputLast10.length === 10 && orderLast10.length === 10 && inputLast10 === orderLast10) {
       return { authorized: true, order };
     }
   }
@@ -736,6 +727,7 @@ export function getMaskedOrderTrackingView(order: StoreOrder) {
     customerPhone: maskedPhone,
     operationalStatus: order.operationalStatus,
     paymentStatus: order.paymentStatus,
+    paymentProvider: order.paymentProvider,
     shippingStatus: order.shippingStatus || "AWAITING_SHIPMENT",
     carrier: order.carrier,
     carrierName: order.carrierName || "Kargo Firması Henüz Seçilmedi",

@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 function SimulationContent() {
   const searchParams = useSearchParams();
   const orderNumber = searchParams.get("orderNumber") || "";
+  const accessToken = searchParams.get("accessToken") || "";
   const amount = searchParams.get("amount") || "0";
 
   const [loading, setLoading] = useState(false);
@@ -35,7 +36,7 @@ function SimulationContent() {
       // Ana pencereyi başarı veya başarısızlık sayfasına yönlendir
       const targetUrl =
         action === "success"
-          ? `/odeme/basarili?orderNumber=${encodeURIComponent(orderNumber)}`
+          ? `/odeme/basarili?orderNumber=${encodeURIComponent(orderNumber)}&accessToken=${encodeURIComponent(accessToken)}`
           : `/odeme/basarisiz?orderNumber=${encodeURIComponent(orderNumber)}`;
 
       if (window.top) {

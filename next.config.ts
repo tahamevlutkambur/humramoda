@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  serverExternalPackages: ["sharp", "@prisma/client"],
   outputFileTracingIncludes: {
     "/**": ["./data/**/*"],
   },
@@ -13,6 +14,20 @@ const nextConfig: NextConfig = {
         hostname: "**",
       },
     ],
+  },
+  async redirects() {
+    return [
+      {
+        source: "/koleksiyonlar/:slug",
+        destination: "/koleksiyon/:slug",
+        permanent: true,
+      },
+      {
+        source: "/koleksiyonlar",
+        destination: "/urunler",
+        permanent: true,
+      },
+    ];
   },
   async rewrites() {
     return [

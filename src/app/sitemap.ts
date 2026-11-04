@@ -43,12 +43,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.95,
     },
     {
-      url: `${baseUrl}/koleksiyonlar`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.85,
-    },
-    {
       url: `${baseUrl}/siparis-takip`,
       lastModified: now,
       changeFrequency: "weekly",
@@ -90,7 +84,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // 3. Koleksiyon Sayfaları
   const collectionPages: MetadataRoute.Sitemap = allCollections.map((col) => ({
-    url: `${baseUrl}/koleksiyonlar/${col.slug}`,
+    url: `${baseUrl}/koleksiyon/${col.slug}`,
     lastModified: now,
     changeFrequency: "weekly",
     priority: 0.85,

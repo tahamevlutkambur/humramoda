@@ -1,6 +1,7 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 generator client {
@@ -15,26 +16,38 @@ enum UserRole {
   ADMIN
   STAFF
   CUSTOMER
+  CARRIER
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  passwordHash  String
-  fullName      String
-  phone         String?
-  role          UserRole  @default(CUSTOMER)
-  isActive      Boolean   @default(true)
-  emailVerified DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                    String                @id @default(cuid())
+  email                 String                @unique
+  passwordHash          String
+  fullName              String
+  phone                 String?
+  role                  UserRole              @default(CUSTOMER)
+  isActive              Boolean               @default(true)
+  emailVerified         DateTime?
+  kvkkApproved          Boolean               @default(false)
+  kvkkApprovedAt        DateTime?
+  kvkkVersion           String?
+  termsApproved         Boolean               @default(false)
+  termsApprovedAt       DateTime?
+  termsVersion          String?
+  marketingConsent      Boolean               @default(false)
+  marketingConsentAt    DateTime?
+  tokenVersionTimestamp BigInt?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
 
-  addresses     Address[]
-  orders        Order[]
-  favorites     Favorite[]
-  cart          Cart?
+  addresses             Address[]
+  orders                Order[]
+  favorites             Favorite[]
+  cart                  Cart?
+  passwordResetTokens   PasswordResetToken[]
 
   @@index([email])
+  @@index([role])
 }
 
 model Address {
@@ -208,7 +221,7 @@ model ProductVariant {
   cartItems       CartItem[]
   orderItems      OrderItem[]
 
-  @@unique([productId, colorId, sizeId])
+  @@index([productId, colorId, sizeId])
   @@index([sku])
   @@index([stockQuantity])
 }
@@ -511,6 +524,7 @@ model DiscountCampaign {
   startDate        DateTime
   endDate          DateTime
   isActive         Boolean   @default(true)
+  description      String?   @db.Text
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 }
@@ -566,6 +580,8 @@ model ReturnRequest {
   customerEmail         String
   customerPhone         String
   status                ReturnStatus          @default(REQUESTED)
+  requestType           String                @default("RETURN") // RETURN, CANCEL, EXCHANGE
+  exchangeDetails       Json?                 // Değişim ürün/beden detayları snapshot'ı
   requestedAmount       Decimal               @db.Decimal(10, 2)
   refundedAmount        Decimal               @default(0) @db.Decimal(10, 2)
   reason                String
@@ -585,6 +601,7 @@ model ReturnRequest {
   @@index([orderId])
   @@index([orderNumber])
   @@index([status])
+  @@index([requestType])
 }
 
 model ReturnItem {
@@ -609,8 +626,9 @@ model ReturnItem {
 
 model CustomerNotification {
   id             String              @id @default(cuid())
-  orderId        String
+  orderId        String?
   orderNumber    String
+  legacyOrderId  String?             // 58 eski bildirimdeki sipariş referansı
   channel        NotificationChannel @default(EMAIL)
   eventType      String              // ORDER_CREATED, PAYMENT_CONFIRMED, SHIPMENT_CREATED, vb.
   recipient      String
@@ -623,10 +641,11 @@ model CustomerNotification {
   sentAt         DateTime?
   createdAt      DateTime            @default(now())
 
-  order          Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order          Order?              @relation(fields: [orderId], references: [id], onDelete: SetNull)
 
   @@index([orderId])
   @@index([orderNumber])
+  @@index([legacyOrderId])
   @@index([status])
 }
 
@@ -642,4 +661,110 @@ model WebhookEvent {
 
   @@index([provider, eventId])
 }
+
+// -------------------------------------------------------------
+// 9. FAZ 7.9: EKSİK MODELLER VE POSTGRESQL UYUMLULUK KATMANI
+// -------------------------------------------------------------
+
+model FeaturedVideo {
+  id           String   @id @default(cuid())
+  title        String
+  productSlug  String
+  colorSlug    String?
+  videoUrl     String
+  posterUrl    String?
+  price        Decimal  @db.Decimal(10, 2)
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([productSlug])
+  @@index([displayOrder])
+  @@index([isActive])
+}
+
+model AuditLog {
+  id            String   @id @default(cuid())
+  timestamp     DateTime @default(now())
+  adminId       String?  // Actor ID (adminId, actorId, system, customer, etc.)
+  adminEmail    String?
+  action        String
+  targetType    String
+  targetId      String?
+  result        String
+  ipAddress     String?
+  correlationId String?
+  details       Json?
+  createdAt     DateTime @default(now())
+
+  @@index([adminId])
+  @@index([action])
+  @@index([targetType])
+  @@index([timestamp])
+}
+
+model SiteActivity {
+  id        String   @id @default(cuid())
+  eventType String
+  path      String
+  ipAddress String?
+  userAgent String?
+  details   Json?
+  createdAt DateTime @default(now())
+
+  @@index([eventType])
+  @@index([createdAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String?
+  email     String
+  expiresAt DateTime
+  used      Boolean   @default(false)
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([email])
+  @@index([tokenHash])
+  @@index([expiresAt])
+}
+
+model IdempotencyKey {
+  key             String    @id
+  scope           String
+  requestHash     String
+  responseStatus  String
+  responsePayload Json
+  orderId         String?
+  createdAt       DateTime  @default(now())
+  lockedAt        DateTime?
+  expiresAt       DateTime
+
+  @@index([scope])
+}
+
+model PaymentOutbox {
+  id                String    @id @default(cuid())
+  eventType         String
+  aggregateId       String
+  idempotencyKey    String    @unique
+  payload           Json
+  status            String    @default("PENDING")
+  retryCount        Int       @default(0)
+  maxRetries        Int       @default(5)
+  nextRetryAt       DateTime  @default(now())
+  errorMessage      String?
+  processedAt       DateTime?
+  providerReference String?
+  createdAt         DateTime  @default(now())
+
+  @@index([status, nextRetryAt])
+  @@index([aggregateId])
+}
+
 

@@ -33,11 +33,28 @@ export function ProductCard({ product, initialColorSlug }: ProductCardProps) {
 
   const isFav = isFavorite(product.id);
 
-  // Seçili renge ait görselleri filtrele
+  // Seçili renge ait görselleri filtrele ve kapak öncelikli sırala
   const safeMedia = product.media || [];
-  const colorMedia = safeMedia.filter((m) => m.colorId === selectedColor?.id);
-  const primaryMedia = colorMedia[0] || safeMedia[0];
-  const secondaryMedia = colorMedia[1] || primaryMedia;
+  const colorMedia = safeMedia.filter(
+    (m) =>
+      m.colorId === selectedColor?.id ||
+      (m as { colorName?: string }).colorName?.toLowerCase() === selectedColor?.name.toLowerCase()
+  );
+
+  const sortedColorMedia = [...colorMedia].sort((a, b) => {
+    if (a.isThumbnail && !b.isThumbnail) return -1;
+    if (!a.isThumbnail && b.isThumbnail) return 1;
+    return (a.displayOrder || 0) - (b.displayOrder || 0);
+  });
+
+  const sortedSafeMedia = [...safeMedia].sort((a, b) => {
+    if (a.isThumbnail && !b.isThumbnail) return -1;
+    if (!a.isThumbnail && b.isThumbnail) return 1;
+    return (a.displayOrder || 0) - (b.displayOrder || 0);
+  });
+
+  const primaryMedia = sortedColorMedia[0] || sortedSafeMedia[0];
+  const secondaryMedia = sortedColorMedia[1] || (primaryMedia !== sortedSafeMedia[1] ? sortedSafeMedia[1] : undefined);
 
   const currentMedia = isHovered && secondaryMedia ? secondaryMedia : primaryMedia;
 
@@ -74,13 +91,18 @@ export function ProductCard({ product, initialColorSlug }: ProductCardProps) {
         }}
       >
         <Link href={productUrl} style={{ position: "absolute", inset: 0, zIndex: 1 }}>
-          {currentMedia && (
+          {currentMedia ? (
             <Image
               src={currentMedia.url}
               alt={currentMedia.altText || product.title}
               fill
               unoptimized={currentMedia.url.startsWith("data:")}
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              onError={(event) => {
+                if (!event.currentTarget.src.endsWith("/product-placeholder.svg")) {
+                  event.currentTarget.src = "/product-placeholder.svg";
+                }
+              }}
               style={{
                 objectFit: "cover",
                 objectPosition: "center top",
@@ -88,6 +110,31 @@ export function ProductCard({ product, initialColorSlug }: ProductCardProps) {
                 transform: isHovered ? "scale(1.03)" : "scale(1)",
               }}
             />
+          ) : (
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "var(--hm-color-surface-subtle, #f5f5f5)",
+                color: "var(--hm-color-text-muted, #718096)",
+                gap: "0.5rem",
+                padding: "1rem",
+                textAlign: "center",
+              }}
+            >
+              <img
+                src="/product-placeholder.svg"
+                alt={product.title}
+                style={{ width: "44px", height: "44px", opacity: 0.4 }}
+              />
+              <span style={{ fontSize: "0.6875rem", letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: 500 }}>
+                Görsel Hazırlanıyor
+              </span>
+            </div>
           )}
         </Link>
 

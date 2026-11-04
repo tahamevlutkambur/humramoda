@@ -8,7 +8,7 @@ import { getPersistentStoreData, savePersistentStoreData } from "@/lib/server/pe
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export async function GET(req?: Request) {
+export async function GET(req: Request) {
   const auth = await requireAdminRole(req, ["ADMIN", "STAFF"]);
   if (auth.errorResponse) {
     return auth.errorResponse;

@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { createPendingOrder, getStoreData } from "@/lib/server/store";
+import { createPendingOrder, getStoreData, executeWithOrderLock } from "@/lib/server/store";
 import { getPersistentStoreData, savePersistentStoreData } from "@/lib/server/persistent-store";
 import { requestPayTRIFrameToken } from "@/lib/server/paytr";
 import { logAdminAudit, logSiteActivity } from "@/lib/server/logger";
+import { getAuthenticatedCustomer } from "@/lib/server/customer-auth";
 
 export async function POST(req: Request) {
   try {
@@ -12,14 +13,22 @@ export async function POST(req: Request) {
     // Checkout fiyatı ve stok yalnızca sunucunun güvenilir kayıtlarından hesaplanır.
     const { customer, items, campaignCode } = body;
 
+    const authCustomer = await getAuthenticatedCustomer(req).catch(() => null);
+    const enrichedCustomer = {
+      ...customer,
+      userId: customer?.userId || authCustomer?.id || undefined,
+    };
+
     const forwardedFor = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip");
     const clientIp = forwardedFor ? forwardedFor.split(",")[0].trim() : "127.0.0.1";
 
-    // 1. Sunucu tarafında siparişi ve tutarları doğrula, taslak sipariş oluştur
-    const orderResult = createPendingOrder({
-      customer,
-      items,
-      campaignCode,
+    // 1. Sunucu tarafında siparişi ve tutarları Mutex kilidi altında doğrula, taslak sipariş oluştur
+    const orderResult = await executeWithOrderLock(async () => {
+      return createPendingOrder({
+        customer: enrichedCustomer,
+        items,
+        campaignCode,
+      });
     });
 
     if (!orderResult.success || !orderResult.order) {
@@ -81,6 +90,7 @@ export async function POST(req: Request) {
       token: tokenResult.token,
       iframeUrl: tokenResult.iframeUrl,
       isSimulation: tokenResult.isSimulation ?? false,
+      accessToken: tokenResult.accessToken,
     });
   } catch (err) {
     console.error("Payment create API error:", err);

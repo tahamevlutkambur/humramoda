@@ -3,10 +3,10 @@ import {
   verifyCustomerTrackingAccess,
   getMaskedOrderTrackingView,
   createOrderTrackingToken,
+  verifyOrderTrackingToken,
 } from "@/lib/server/shipping";
 import { getReturnRequestsByOrderId } from "@/lib/server/returns";
 import { getPersistentStoreData } from "@/lib/server/persistent-store";
-import { getAuthenticatedAdmin } from "@/lib/server/session-guard";
 import { getStoreData } from "@/lib/server/store";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +19,7 @@ export async function POST(req: Request) {
     const orderNumber = body.orderNumber?.trim();
     const email = body.email?.trim();
     const phone = body.phone?.trim();
+    const trackingToken = body.trackingToken?.trim();
 
     if (!orderNumber) {
       return NextResponse.json(
@@ -30,10 +31,7 @@ export async function POST(req: Request) {
     const store = getStoreData();
     const cleanOrderNumber = orderNumber.toUpperCase();
     const order = store.orders?.find(
-      (o) =>
-        o.orderNumber.toUpperCase() === cleanOrderNumber ||
-        o.id.toUpperCase() === cleanOrderNumber ||
-        (o.trackingNumber && o.trackingNumber.toUpperCase() === cleanOrderNumber)
+      (o) => o.orderNumber.toUpperCase() === cleanOrderNumber
     );
 
     if (!order) {
@@ -43,8 +41,16 @@ export async function POST(req: Request) {
       );
     }
 
-    // Telefon veya e-posta girilmişse ek doğrulama yap (girilmemişse direkt maskelenmiş takip verisini sun)
-    if (email || phone) {
+    // İlk sorgu tam iletişim bilgisiyle doğrulanır. Sonraki ekran yenilemeleri kısa
+    // ömürlü, siparişe bağlı imzalı token kullanır.
+    if (trackingToken) {
+      if (!verifyOrderTrackingToken(trackingToken, order.id)) {
+        return NextResponse.json({ error: "Sipariş doğrulaması süresi doldu. Lütfen yeniden doğrulayınız." }, { status: 401 });
+      }
+    } else {
+      if (!email && !phone) {
+        return NextResponse.json({ error: "Siparişinizi doğrulamak için telefon veya e-posta giriniz." }, { status: 400 });
+      }
       const { authorized, error } = verifyCustomerTrackingAccess(orderNumber, {
         email,
         phone,

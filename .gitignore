@@ -40,4 +40,10 @@ next-env.d.ts
 # local backups & logs
 /data/backups/
 /data/logs/
+/backups/
+/scratch/
+*.sql
 *.tmp-*
+
+.vercel
+.env*

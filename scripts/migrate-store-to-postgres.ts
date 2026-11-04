@@ -67,6 +67,62 @@ export async function runMigration(): Promise<{
   backupPath?: string;
 }> {
   console.log("==========================================================");
+
+  // This one-time utility is intentionally limited to the disposable local DB.
+  // Never let a migration run against a remote or ambiguously named database.
+  let target: URL;
+  try {
+    target = new URL(process.env.DATABASE_URL || "");
+  } catch {
+    return { success: false, message: "DATABASE_URL eksik veya geçersiz; aktarım durduruldu." };
+  }
+  if (
+    !["127.0.0.1", "localhost", "::1"].includes(target.hostname.toLowerCase()) ||
+    target.pathname.replace(/^\//, "") !== "humra_moda_local"
+  ) {
+    return { success: false, message: "Aktarım yalnızca humra_moda_local loopback veritabanına yapılabilir." };
+  }
+
+  // Validate every source relationship before the legacy upsert loop can write
+  // anything. The old importer wrote partial rows before discovering conflicts.
+  const store = getStoreData();
+  const sourceIssues: string[] = [];
+  const seenSkus = new Set<string>();
+  for (const product of store.products) {
+    const colorIds = new Set((product.colors || []).map((color) => color.id));
+    const sizeIds = new Set((product.sizes || []).map((size) => size.id));
+    const combinations = new Set<string>();
+    if ((product as typeof product & { _mediaTruncated?: boolean })._mediaTruncated) {
+      sourceIssues.push(`${product.slug}: medya referans listesi kısmi`);
+    }
+    for (const variant of product.variants || []) {
+      const combination = `${variant.colorId}\u0000${variant.sizeId}`;
+      if (!variant.sku || seenSkus.has(variant.sku)) sourceIssues.push(`${product.slug}: SKU boş veya mükerrer`);
+      if (seenSkus.has(variant.sku)) continue;
+      seenSkus.add(variant.sku);
+      if (combinations.has(combination)) sourceIssues.push(`${product.slug}: yinelenen renk/beden kombinasyonu`);
+      combinations.add(combination);
+      if (!colorIds.has(variant.colorId) || !sizeIds.has(variant.sizeId)) {
+        sourceIssues.push(`${product.slug}: varyant renk/beden ilişkisi kopuk`);
+      }
+      if (!Number.isInteger(variant.stockQuantity) || variant.stockQuantity < 0) {
+        sourceIssues.push(`${product.slug}: geçersiz stok miktarı`);
+      }
+    }
+  }
+  if (sourceIssues.length) {
+    console.error("Aktarım ön doğrulaması başarısız; veritabanına yazılmadı:");
+    for (const issue of [...new Set(sourceIssues)]) console.error(`- ${issue}`);
+    return { success: false, message: `JSON kaynak verisinde ${new Set(sourceIssues).size} aktarımı engelleyen tutarsızlık var.` };
+  }
+
+  // The legacy mapper below issues individual writes and does not cover all
+  // store collections. Keep it unreachable until the full mapper is converted
+  // to one serializable transaction with complete row-count verification.
+  return {
+    success: false,
+    message: "Eski aktarım aracı tüm kayıtları transaction içinde taşımıyor; güvenli aktarım tamamlanana kadar DB yazımı kapalı.",
+  };
   console.log("Hümra Moda — PostgreSQL Veri Aktarım & Eşitleme Aracı");
   console.log("==========================================================");
 
@@ -75,7 +131,7 @@ export async function runMigration(): Promise<{
   try {
     await prisma.$queryRaw`SELECT 1`;
     console.log("✔ PostgreSQL bağlantısı başarılı.");
-  } catch (err) {
+  } catch (err: any) {
     const errorMsg =
       err instanceof Error ? err.message : "Bilinmeyen bağlantı hatası.";
     console.warn("\n✖ PostgreSQL hizmetine bağlanılamadı!");
@@ -98,8 +154,6 @@ export async function runMigration(): Promise<{
 
   // 3. Kaynak veriyi oku
   console.log("\n[3/5] Kaynak 'data/store.json' verisi analiz ediliyor...");
-  const store = getStoreData();
-
   const totalVariants = store.products.reduce(
     (acc, p) => acc + (p.variants?.length || 0),
     0
@@ -204,9 +258,9 @@ export async function runMigration(): Promise<{
           fabricDetails: p.fabricDetails || null,
           modelDimensions: p.modelDimensions || null,
           basePrice: new Prisma.Decimal(p.basePrice),
-          discountPrice: p.discountPrice ? new Prisma.Decimal(p.discountPrice) : null,
+          discountPrice: typeof p.discountPrice === "number" ? new Prisma.Decimal(p.discountPrice as number) : null,
           badge: p.badge || null,
-          categoryId,
+          categoryId: (categoryId || undefined) as any,
           isActive: true,
           isDraft: false,
         },
@@ -218,9 +272,9 @@ export async function runMigration(): Promise<{
           fabricDetails: p.fabricDetails || null,
           modelDimensions: p.modelDimensions || null,
           basePrice: new Prisma.Decimal(p.basePrice),
-          discountPrice: p.discountPrice ? new Prisma.Decimal(p.discountPrice) : null,
+          discountPrice: typeof p.discountPrice === "number" ? new Prisma.Decimal(p.discountPrice as number) : null,
           badge: p.badge || null,
-          categoryId,
+          categoryId: (categoryId || undefined) as any,
           isActive: true,
           isDraft: false,
           createdAt: new Date(p.createdAt || Date.now()),
@@ -230,19 +284,19 @@ export async function runMigration(): Promise<{
       // Koleksiyon ilişkileri
       if (p.collectionSlugs) {
         for (const colSlug of p.collectionSlugs) {
-          const collectionId = colIdMap.get(colSlug);
+          const collectionId = colIdMap.get(colSlug); if (!collectionId) continue;
           if (collectionId) {
             await prisma.productCollection.upsert({
               where: {
                 productId_collectionId: {
                   productId: savedProd.id,
-                  collectionId,
+                  collectionId: collectionId as string,
                 },
               },
               update: {},
               create: {
                 productId: savedProd.id,
-                collectionId,
+                collectionId: collectionId as string,
               },
             });
           }
@@ -315,16 +369,16 @@ export async function runMigration(): Promise<{
         await prisma.productVariant.upsert({
           where: { sku: v.sku },
           update: {
-            colorId: pgColorId,
-            sizeId: pgSizeId,
+            colorId: (pgColorId || undefined) as any,
+            sizeId: (pgSizeId || undefined) as any,
             stockQuantity: v.stockQuantity,
             isActive: v.isActive ?? true,
           },
           create: {
             id: v.id,
             productId: savedProd.id,
-            colorId: pgColorId,
-            sizeId: pgSizeId,
+            colorId: (pgColorId || undefined) as any,
+            sizeId: (pgSizeId || undefined) as any,
             sku: v.sku,
             stockQuantity: v.stockQuantity,
             isActive: v.isActive ?? true,
@@ -336,8 +390,8 @@ export async function runMigration(): Promise<{
       for (let i = 0; i < (p.media || []).length; i++) {
         const m = p.media[i];
         let pgColorId: string | null = null;
-        if (m.colorId && colorIdMap.has(m.colorId)) {
-          pgColorId = colorIdMap.get(m.colorId) || null;
+        if (m.colorId && colorIdMap.has(m.colorId!)) {
+          pgColorId = colorIdMap.get(m.colorId!) || null;
         }
 
         const existingMedia = await prisma.productMedia.findFirst({
@@ -349,7 +403,7 @@ export async function runMigration(): Promise<{
 
         if (existingMedia) {
           await prisma.productMedia.update({
-            where: { id: existingMedia.id },
+            where: { id: existingMedia!.id },
             data: {
               colorId: pgColorId,
               altText: m.altText || null,
@@ -405,8 +459,8 @@ export async function runMigration(): Promise<{
         where: { code: camp.code },
         update: {
           title: camp.name,
-          percentage: camp.discountPercentage ? new Prisma.Decimal(camp.discountPercentage) : null,
-          minSpendAmount: camp.minBasketAmount ? new Prisma.Decimal(camp.minBasketAmount) : null,
+          percentage: typeof camp.discountPercentage === "number" ? new Prisma.Decimal(camp.discountPercentage as number) : null,
+          minSpendAmount: typeof camp.minBasketAmount === "number" ? new Prisma.Decimal(camp.minBasketAmount as number) : null,
           startDate: new Date(camp.startDate),
           endDate: new Date(camp.endDate),
           isActive: camp.isActive,
@@ -415,8 +469,8 @@ export async function runMigration(): Promise<{
           id: camp.id,
           code: camp.code,
           title: camp.name,
-          percentage: camp.discountPercentage ? new Prisma.Decimal(camp.discountPercentage) : null,
-          minSpendAmount: camp.minBasketAmount ? new Prisma.Decimal(camp.minBasketAmount) : null,
+          percentage: typeof camp.discountPercentage === "number" ? new Prisma.Decimal(camp.discountPercentage as number) : null,
+          minSpendAmount: typeof camp.minBasketAmount === "number" ? new Prisma.Decimal(camp.minBasketAmount as number) : null,
           startDate: new Date(camp.startDate),
           endDate: new Date(camp.endDate),
           isActive: camp.isActive,
@@ -469,7 +523,7 @@ export async function runMigration(): Promise<{
       stats,
       backupPath,
     };
-  } catch (err) {
+  } catch (err: any) {
     const errorMsg = err instanceof Error ? err.message : "Aktarım hatası.";
     console.error("\n✖ Aktarım sırasında hata oluştu:", errorMsg);
     console.warn(`Kaynak veri güvenle korunmaktadır. Yedek: ${backupPath}`);

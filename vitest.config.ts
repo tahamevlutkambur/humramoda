@@ -5,11 +5,8 @@ export default defineConfig({
   test: {
     environment: "node",
     fileParallelism: false,
-    poolOptions: {
-      threads: {
-        singleThread: true,
-      },
-    },
+    pool: "forks",
+    setupFiles: ["./tests/setup.ts"],
   },
   resolve: {
     alias: {

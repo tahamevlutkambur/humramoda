@@ -127,15 +127,32 @@ export function ProductDetailView({
     }
   }, [initialRenkSlug, product?.colors, selectedColor.id]);
 
-  // Renge özel medya listesi
+  // Renge özel medya listesi (kapak görseli öncelikli ve sıralı)
   const colorMedia = useMemo<ProductMediaItem[]>(() => {
     if (!product?.media || product.media.length === 0) return [];
-    const filtered = product.media.filter((m) => m.colorId === selectedColor.id);
-    if (filtered.length > 0) return filtered;
-    const uncolored = product.media.filter((m) => !m.colorId);
-    if (uncolored.length > 0) return uncolored;
-    return product.media;
-  }, [product?.media, selectedColor.id]);
+    
+    // 1. Doğrudan colorId veya renk adına göre filtrele
+    const matchingColor = product.media.filter(
+      (m) =>
+        m.colorId === selectedColor.id ||
+        (m as { colorName?: string }).colorName?.toLowerCase() === selectedColor.name.toLowerCase()
+    );
+
+    let baseList: ProductMediaItem[];
+    if (matchingColor.length > 0) {
+      baseList = matchingColor;
+    } else {
+      const uncolored = product.media.filter((m) => !m.colorId && !(m as { colorName?: string }).colorName);
+      baseList = uncolored.length > 0 ? uncolored : product.media;
+    }
+
+    // 2. Kapak görseli (isThumbnail) ilk sırada, ardından displayOrder'a göre sırala
+    return [...baseList].sort((a, b) => {
+      if (a.isThumbnail && !b.isThumbnail) return -1;
+      if (!a.isThumbnail && b.isThumbnail) return 1;
+      return (a.displayOrder || 0) - (b.displayOrder || 0);
+    });
+  }, [product?.media, selectedColor.id, selectedColor.name]);
 
   if (isLoading && !product) {
     return (

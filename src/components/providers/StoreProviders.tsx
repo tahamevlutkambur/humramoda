@@ -4,8 +4,8 @@ import React, { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { CartProvider } from "@/context/CartContext";
 import { FavoritesProvider } from "@/context/FavoritesContext";
+import { CustomerAuthProvider } from "@/context/CustomerAuthContext";
 import { CartDrawer } from "@/components/cart/CartDrawer";
-
 
 function SiteActivityTracker() {
   const pathname = usePathname();
@@ -34,13 +34,15 @@ export function StoreProviders({
   freeShippingThreshold?: number;
 }) {
   return (
-    <FavoritesProvider>
-      <CartProvider initialFreeShippingThreshold={freeShippingThreshold}>
-        <SiteActivityTracker />
-        {children}
-        <CartDrawer />
-      </CartProvider>
-    </FavoritesProvider>
+    <CustomerAuthProvider>
+      <FavoritesProvider>
+        <CartProvider initialFreeShippingThreshold={freeShippingThreshold}>
+          <SiteActivityTracker />
+          {children}
+          <CartDrawer />
+        </CartProvider>
+      </FavoritesProvider>
+    </CustomerAuthProvider>
   );
 }
 

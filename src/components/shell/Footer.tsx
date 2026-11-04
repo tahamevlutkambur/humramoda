@@ -144,7 +144,7 @@ export function Footer() {
                 <Link href="/kategori/triko">Triko &amp; Tunik</Link>
               </li>
               <li>
-                <Link href="/koleksiyonlar/cok-satanlar">Çok Satanlar</Link>
+                <Link href="/koleksiyon/cok-satanlar">Çok Satanlar</Link>
               </li>
             </ul>
           </div>

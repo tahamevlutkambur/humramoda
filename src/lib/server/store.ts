@@ -1,4 +1,5 @@
 import fs from "fs";
+
 import path from "path";
 import os from "os";
 import crypto from "crypto";
@@ -311,6 +312,53 @@ export interface StoreOrder {
   refundedAmount?: number;
 }
 
+export interface CustomerAddress {
+  id: string;
+  customerId: string;
+  title: string; // "Ev", "İş", vb.
+  recipient: string; // Teslim alacak kişi adı
+  phone: string;
+  city: string;
+  district: string;
+  neighborhood?: string;
+  fullAddress: string;
+  postalCode?: string;
+  isDefaultDelivery?: boolean;
+  isDefaultBilling?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CustomerUser {
+  id: string; // "cust-..."
+  email: string;
+  passwordHash: string;
+  fullName: string;
+  phone?: string;
+  isActive: boolean;
+  kvkkApproved: boolean;
+  kvkkApprovedAt?: string;
+  kvkkVersion?: string;
+  termsApproved: boolean;
+  termsApprovedAt?: string;
+  termsVersion?: string;
+  marketingConsent?: boolean;
+  marketingConsentAt?: string;
+  addresses: CustomerAddress[];
+  tokenVersionTimestamp?: number; // Oturum geçersiz kılma için timestamp
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PasswordResetRecord {
+  token: string;
+  customerId: string;
+  email: string;
+  expiresAt: number;
+  used: boolean;
+  createdAt: number;
+}
+
 export interface AppStoreData {
   updatedAt?: number;
   products: ProductItem[];
@@ -322,6 +370,8 @@ export interface AppStoreData {
   campaigns: CampaignItem[];
   adminUsers: AdminUser[];
   orders: StoreOrder[];
+  customers?: CustomerUser[];
+  passwordResetTokens?: PasswordResetRecord[];
   backups?: any[];
   shipments?: ShipmentRecord[];
   returnRequests?: ReturnRequest[];
@@ -331,8 +381,19 @@ export interface AppStoreData {
 }
 
 const DATA_DIR = path.join(process.cwd(), "data");
-const STORE_FILE = path.join(DATA_DIR, "store.json");
-const TMP_STORE_FILE = path.join(os.tmpdir(), "humramoda_store.json");
+export function getStoreFilePath(): string {
+  if (process.env.HUMRA_STORE_FILE && process.env.HUMRA_STORE_FILE.trim().length > 0) {
+    return process.env.HUMRA_STORE_FILE.trim();
+  }
+  return path.join(DATA_DIR, "store.json");
+}
+
+export function getTmpStoreFilePath(): string {
+  if (process.env.HUMRA_TMP_STORE_FILE && process.env.HUMRA_TMP_STORE_FILE.trim().length > 0) {
+    return process.env.HUMRA_TMP_STORE_FILE.trim();
+  }
+  return path.join(os.tmpdir(), "humramoda_store.json");
+}
 
 interface GlobalStoreState {
   inMemoryStore: AppStoreData | null;
@@ -558,6 +619,8 @@ const DEFAULT_ADMIN_USERS: AdminUser[] = [
  * Vercel / Serverless ortamında salt-okunur dosya sistemi hatalarını (EROFS) engeller.
  */
 export function getStoreData(): AppStoreData {
+  const STORE_FILE = getStoreFilePath();
+  const TMP_STORE_FILE = getTmpStoreFilePath();
   let fileMtime = 0;
   let activeFile = "";
   try {
@@ -687,6 +750,8 @@ export function getStoreData(): AppStoreData {
       campaigns: parsed.campaigns || DEFAULT_CAMPAIGNS,
       adminUsers: loadedAdminUsers,
       orders: parsed.orders !== undefined && Array.isArray(parsed.orders) ? parsed.orders : DEFAULT_ORDERS,
+      customers: parsed.customers !== undefined && Array.isArray(parsed.customers) ? parsed.customers : [],
+      passwordResetTokens: parsed.passwordResetTokens !== undefined && Array.isArray(parsed.passwordResetTokens) ? parsed.passwordResetTokens : [],
       shipments: parsed.shipments || [],
       returnRequests: parsed.returnRequests || [],
       notifications: parsed.notifications || [],
@@ -710,6 +775,8 @@ export function getStoreData(): AppStoreData {
       campaigns: DEFAULT_CAMPAIGNS,
       adminUsers: DEFAULT_ADMIN_USERS,
       orders: DEFAULT_ORDERS,
+      customers: [],
+      passwordResetTokens: [],
       shipments: [],
       returnRequests: [],
       notifications: [],
@@ -724,10 +791,14 @@ export function getStoreData(): AppStoreData {
  * Vercel / Serverless salt-okunur dosya sisteminde hata fırlatmaz.
  */
 export function saveStoreData(data: AppStoreData): void {
+  const STORE_FILE = getStoreFilePath();
+  const TMP_STORE_FILE = getTmpStoreFilePath();
   data.updatedAt = Math.max(Date.now(), (data.updatedAt || 0) + 1);
   storeState.inMemoryStore = data;
   storeState.persistentStoreOverride = data;
 
+  let tmpSaved = false;
+  let tmpError: any = null;
   // 1. Vercel / Lambda ortamı için /tmp dizinine MUTLAKA yaz
   try {
     fs.writeFileSync(TMP_STORE_FILE, JSON.stringify(data, null, 2), "utf-8");
@@ -736,12 +807,16 @@ export function saveStoreData(data: AppStoreData): void {
     } catch {
       storeState.lastStoreFileMtime = Date.now();
     }
+    tmpSaved = true;
   } catch (err) {
+    tmpError = err;
     console.warn("Could not persist to /tmp:", err);
     storeState.lastStoreFileMtime = Date.now();
   }
 
   // 2. Proje dizinine yazmayı dene (yerel geliştirme / derleme ortamı)
+  let localSaved = false;
+  let localError: any = null;
   try {
     if (!fs.existsSync(DATA_DIR)) {
       fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -763,13 +838,20 @@ export function saveStoreData(data: AppStoreData): void {
     } catch {
       // ignore
     }
-  } catch {
+    localSaved = true;
+  } catch (err) {
+    localError = err;
     // Vercel serverless salt okunur dosya sistemi - normal
+  }
+
+  if (!tmpSaved && !localSaved) {
+    throw new Error(`Veri kaydedilemedi: ${tmpError?.message || localError?.message || "Disk hatası"}`);
   }
 }
 
 /** Hydrate the current request's store from the durable database snapshot. */
 export function usePersistentStoreData(data: AppStoreData): void {
+  const TMP_STORE_FILE = getTmpStoreFilePath();
   storeState.inMemoryStore = data;
   storeState.persistentStoreOverride = data;
   try {
@@ -778,6 +860,80 @@ export function usePersistentStoreData(data: AppStoreData): void {
   } catch {
     // ignore
   }
+}
+
+export function createInitialStoreData(): AppStoreData {
+  return {
+    products: PRODUCTS,
+    categories: CATEGORIES,
+    collections: COLLECTIONS,
+    featuredVideos: FEATURED_VIDEOS,
+    homepageContent: DEFAULT_HOMEPAGE_CONTENT,
+    settings: DEFAULT_SETTINGS,
+    campaigns: DEFAULT_CAMPAIGNS,
+    adminUsers: DEFAULT_ADMIN_USERS,
+    orders: DEFAULT_ORDERS,
+    shipments: [],
+    returnRequests: [],
+    notifications: [],
+    customers: [],
+    auditLogs: [],
+    siteActivityLogs: [],
+  };
+}
+
+/**
+ * FAZ 7.10.1: Test Ortamı İzolasyonu
+ * Gerçek data/store.json dosyasını asla değiştirmeden, os.tmpdir() altında
+ * izole bir geçici dosya açar ve tüm okuma/yazma işlemlerini oraya yönlendirir.
+ * Gerçek store.json'un hash ve içerik bütünlüğü %100 korunur.
+ */
+export function setupIsolatedTestStore(customData?: AppStoreData): {
+  testFilePath: string;
+  cleanup: () => void;
+} {
+  const tempDir = os.tmpdir();
+  const testId = `test_store_${process.pid}_${Date.now()}_${crypto.randomBytes(4).toString("hex")}.json`;
+  const testFilePath = path.join(tempDir, testId);
+  const testTmpFilePath = path.join(tempDir, `tmp_${testId}`);
+
+  let initialJson: string;
+  if (customData) {
+    initialJson = JSON.stringify(customData, null, 2);
+  } else {
+    const realStoreFile = path.join(DATA_DIR, "store.json");
+    initialJson = fs.existsSync(realStoreFile)
+      ? fs.readFileSync(realStoreFile, "utf-8")
+      : JSON.stringify(createInitialStoreData(), null, 2);
+  }
+
+  fs.writeFileSync(testFilePath, initialJson, "utf-8");
+  fs.writeFileSync(testTmpFilePath, initialJson, "utf-8");
+
+  process.env.HUMRA_STORE_FILE = testFilePath;
+  process.env.HUMRA_TMP_STORE_FILE = testTmpFilePath;
+
+  // Global bellek durumunu izole veriye sıfırla
+  storeState.inMemoryStore = JSON.parse(initialJson);
+  storeState.persistentStoreOverride = null;
+  storeState.lastStoreFileMtime = fs.statSync(testFilePath).mtimeMs;
+
+  return {
+    testFilePath,
+    cleanup: () => {
+      delete process.env.HUMRA_STORE_FILE;
+      delete process.env.HUMRA_TMP_STORE_FILE;
+      storeState.inMemoryStore = null;
+      storeState.persistentStoreOverride = null;
+      storeState.lastStoreFileMtime = 0;
+      try {
+        if (fs.existsSync(testFilePath)) fs.unlinkSync(testFilePath);
+      } catch {}
+      try {
+        if (fs.existsSync(testTmpFilePath)) fs.unlinkSync(testTmpFilePath);
+      } catch {}
+    },
+  };
 }
 
 /**
@@ -1450,7 +1606,7 @@ export function updateStoreProduct(
           : undefined;
 
       updatedVariants.push({
-        id: `var-${productId}-${updatedVariants.length}`,
+        id: (v as { id?: string }).id || `var-${productId}-${updatedVariants.length}`,
         colorId: matchedColor.id,
         sizeId: matchedSize.id,
         sku,
@@ -2432,6 +2588,7 @@ export function getFinancialReport(filters?: {
 }
 
 export interface CreateOrderCustomerInput {
+  userId?: string;
   fullName: string;
   email: string;
   phone: string;
@@ -2513,13 +2670,52 @@ export function createPendingOrder(input: CreateOrderInput): {
       return { success: false, error: `Seçilen ürün katalogda bulunamadı (ID: ${it.productId}).` };
     }
 
-    // Varyantı SKU veya variantId ile bul
-    const variant =
-      product.variants.find(
-        (v) =>
-          (it.variantId && v.id === it.variantId) ||
-          (it.sku && v.sku.toUpperCase() === it.sku.toUpperCase())
-      ) || product.variants[0];
+    // Varyantı SKU, variantId veya renk/beden ile bul
+    let variant: (typeof product.variants)[number] | undefined;
+
+    if (it.variantId) {
+      variant = product.variants.find((v) => v.id === it.variantId);
+      if (!variant) {
+        return { success: false, error: `"${product.title}" için geçerli varyant bulunamadı.` };
+      }
+    } else if (it.sku) {
+      variant = product.variants.find((v) => v.sku.toUpperCase() === it.sku!.trim().toUpperCase());
+      if (!variant) {
+        return { success: false, error: `"${product.title}" için geçerli varyant bulunamadı.` };
+      }
+    } else if (it.colorName || it.sizeName) {
+      const matchingVariants = product.variants.filter((v) => {
+        if (it.colorName) {
+          const colorObj = product.colors.find((c) => c.id === v.colorId);
+          const colorMatches =
+            (colorObj && colorObj.name.toLowerCase() === it.colorName.toLowerCase()) ||
+            v.sku.toLowerCase().includes(it.colorName.toLowerCase());
+          if (!colorMatches) return false;
+        }
+        if (it.sizeName) {
+          const sizeObj = product.sizes.find((s) => s.id === v.sizeId);
+          const sizeMatches =
+            (sizeObj && sizeObj.name.toLowerCase() === it.sizeName.toLowerCase()) ||
+            v.sku.toLowerCase().includes(it.sizeName.toLowerCase());
+          if (!sizeMatches) return false;
+        }
+        return true;
+      });
+
+      if (matchingVariants.length > 1) {
+        return {
+          success: false,
+          error: `"${product.title}" için seçilen renk ve bedende birden fazla varyant tanımlıdır. Lütfen kesin varyant seçiniz.`,
+        };
+      }
+      if (matchingVariants.length === 1) {
+        variant = matchingVariants[0];
+      } else {
+        return { success: false, error: `"${product.title}" için geçerli varyant bulunamadı.` };
+      }
+    } else {
+      variant = product.variants[0];
+    }
 
     if (!variant) {
       return { success: false, error: `"${product.title}" için geçerli varyant bulunamadı.` };
@@ -2535,6 +2731,17 @@ export function createPendingOrder(input: CreateOrderInput): {
 
     const color = product.colors.find((c) => c.id === variant.colorId);
     const size = product.sizes.find((s) => s.id === variant.sizeId);
+
+    // Çapraz kombinasyon denetimi: İstemcinin gönderdiği SKU, renk ve beden verileri seçilen varyant ile birebir uyuşmalıdır
+    if (it.sku && variant.sku.toUpperCase() !== it.sku.trim().toUpperCase()) {
+      return { success: false, error: `"${product.title}" için gönderilen stok kodu (${it.sku}) seçilen varyant (${variant.sku}) ile uyuşmuyor.` };
+    }
+    if (it.colorName && color && color.name.trim().toLowerCase() !== it.colorName.trim().toLowerCase()) {
+      return { success: false, error: `"${product.title}" için gönderilen renk (${it.colorName}) seçilen varyant rengi (${color.name}) ile uyuşmuyor.` };
+    }
+    if (it.sizeName && size && size.name.trim().toLowerCase() !== it.sizeName.trim().toLowerCase()) {
+      return { success: false, error: `"${product.title}" için gönderilen beden (${it.sizeName}) seçilen varyant bedeni (${size.name}) ile uyuşmuyor.` };
+    }
 
     // Fiyatı daima sunucu verisinden al
     const unitPrice =
@@ -2595,8 +2802,9 @@ export function createPendingOrder(input: CreateOrderInput): {
   const nowIso = now.toISOString();
 
   const order: StoreOrder = {
-    id: `ord-${Date.now()}`,
+    id: `ord-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`,
     orderNumber,
+    userId: customer.userId?.trim() || undefined,
     customerFullName: customer.fullName.trim(),
     customerEmail: customer.email.trim().toLowerCase(),
     customerPhone: customer.phone.trim(),
@@ -2625,9 +2833,39 @@ export function createPendingOrder(input: CreateOrderInput): {
 
   store.orders = store.orders || [];
   store.orders.unshift(order);
-  saveStoreData(store);
+
+  try {
+    saveStoreData(store);
+  } catch {
+    const idx = store.orders.indexOf(order);
+    if (idx !== -1) {
+      store.orders.splice(idx, 1);
+    }
+    return { success: false, error: "Sipariş veritabanına kaydedilemedi." };
+  }
 
   return { success: true, order };
+}
+
+let orderMutexChain = Promise.resolve();
+
+/**
+ * Eşzamanlı sipariş ve stok işlemlerini sıralı (serialized) yürüten bellek içi kilit (Mutex).
+ * Aynı anda gelen isteklerin yarış durumuna (race condition) düşmesini ve mükerrer stok tüketmesini engeller.
+ */
+export async function executeWithOrderLock<T>(action: () => Promise<T> | T): Promise<T> {
+  let release: () => void;
+  const nextLock = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const currentLock = orderMutexChain;
+  orderMutexChain = currentLock.then(() => nextLock);
+  await currentLock;
+  try {
+    return await action();
+  } finally {
+    release!();
+  }
 }
 
 /**
@@ -2639,6 +2877,35 @@ export function createCashOnDeliveryOrder(input: CreateOrderInput): {
   error?: string;
 } {
   const store = getStoreData();
+  store.orders = store.orders || [];
+
+  const { customer, items } = input;
+  const nowMs = Date.now();
+  const cleanEmail = customer?.email?.trim().toLowerCase() || "";
+  const cleanPhone = customer?.phone ? customer.phone.replace(/\D/g, "").slice(-10) : "";
+
+  // 1. Idempotency koruması: Son 60 saniye içinde aynı müşteri ve aynı sepet ile gelen mükerrer sipariş
+  const duplicateOrder = store.orders.find((existing) => {
+    if (existing.paymentProvider !== "CASH_ON_DELIVERY") return false;
+    const createdTime = new Date(existing.createdAt).getTime();
+    if (nowMs - createdTime > 60_000) return false;
+    const sameEmail = Boolean(cleanEmail) && existing.customerEmail.toLowerCase() === cleanEmail;
+    const samePhone = Boolean(cleanPhone) && existing.customerPhone.replace(/\D/g, "").slice(-10) === cleanPhone;
+    if (!sameEmail && !samePhone) return false;
+    if (existing.items.length !== items.length) return false;
+    return items.every((it) =>
+      existing.items.some(
+        (ei) =>
+          (ei.variantId === it.variantId || ei.sku.toUpperCase() === (it.sku || "").toUpperCase()) &&
+          ei.quantity === Number(it.quantity)
+      )
+    );
+  });
+
+  if (duplicateOrder) {
+    return { success: true, order: duplicateOrder };
+  }
+
   const result = createPendingOrder(input);
   if (!result.success || !result.order) {
     return result;
@@ -2672,7 +2939,33 @@ export function createCashOnDeliveryOrder(input: CreateOrderInput): {
     order.stockDeducted = true;
   }
 
-  saveStoreData(store);
+  try {
+    saveStoreData(store);
+  } catch {
+    // Atomik rollback
+    if (order.stockDeducted) {
+      for (const item of order.items) {
+        for (const p of store.products) {
+          const v = p.variants.find(
+            (variant) =>
+              variant.id === item.variantId ||
+              variant.sku.toUpperCase() === item.sku.toUpperCase()
+          );
+          if (v) {
+            v.stockQuantity += item.quantity;
+            break;
+          }
+        }
+      }
+      order.stockDeducted = false;
+    }
+    const idx = store.orders.indexOf(order);
+    if (idx !== -1) {
+      store.orders.splice(idx, 1);
+    }
+    return { success: false, error: "Sipariş veritabanına kaydedilemedi." };
+  }
+
   return { success: true, order };
 }
 
@@ -2720,4 +3013,413 @@ export function getOrderPublicStatus(orderNumberOrId: string) {
     paymentFailedReason: order.paymentFailedReason,
   };
 }
+
+// -------------------------------------------------------------
+// FAZ 7.7: MÜŞTERİ ÜYELİK, HESAP VE ADRES YÖNETİMİ METOTLARI
+// -------------------------------------------------------------
+
+export function findCustomerByEmail(email: string): CustomerUser | null {
+  if (!email || typeof email !== "string") return null;
+  const cleanEmail = email.trim().toLowerCase();
+  const store = getStoreData();
+  const customer = store.customers?.find((c) => c.email.toLowerCase() === cleanEmail);
+  return customer || null;
+}
+
+export function findCustomerById(id: string): CustomerUser | null {
+  if (!id || typeof id !== "string") return null;
+  const store = getStoreData();
+  const customer = store.customers?.find((c) => c.id === id);
+  return customer || null;
+}
+
+export function createCustomer(input: {
+  fullName: string;
+  email: string;
+  passwordHash: string;
+  phone?: string;
+  kvkkApproved: boolean;
+  termsApproved: boolean;
+  marketingConsent?: boolean;
+}): { success: boolean; customer?: CustomerUser; error?: string } {
+  const store = getStoreData();
+  const cleanEmail = input.email.trim().toLowerCase();
+
+  if (!input.fullName?.trim()) {
+    return { success: false, error: "Lütfen adınızı ve soyadınızı giriniz." };
+  }
+  if (!cleanEmail || !cleanEmail.includes("@")) {
+    return { success: false, error: "Geçerli bir e-posta adresi giriniz." };
+  }
+  if (!input.passwordHash) {
+    return { success: false, error: "Şifre zorunludur." };
+  }
+  if (!input.kvkkApproved) {
+    return { success: false, error: "KVKK Aydınlatma Metni'ni onaylamanız gerekmektedir." };
+  }
+  if (!input.termsApproved) {
+    return { success: false, error: "Üyelik Sözleşmesi ve Kullanım Koşulları'nı onaylamanız gerekmektedir." };
+  }
+
+  store.customers = store.customers || [];
+  const existing = store.customers.find((c) => c.email.toLowerCase() === cleanEmail);
+  if (existing) {
+    return { success: false, error: "Bu e-posta adresiyle kayıtlı bir hesap zaten mevcuttur." };
+  }
+
+  const nowIso = new Date().toISOString();
+  const newCustomer: CustomerUser = {
+    id: `cust-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
+    email: cleanEmail,
+    passwordHash: input.passwordHash,
+    fullName: input.fullName.trim(),
+    phone: input.phone?.trim() || undefined,
+    isActive: true,
+    kvkkApproved: true,
+    kvkkApprovedAt: nowIso,
+    kvkkVersion: "2026.1",
+    termsApproved: true,
+    termsApprovedAt: nowIso,
+    termsVersion: "2026.1",
+    marketingConsent: Boolean(input.marketingConsent),
+    marketingConsentAt: input.marketingConsent ? nowIso : undefined,
+    addresses: [],
+    createdAt: nowIso,
+    updatedAt: nowIso,
+  };
+
+  store.customers.push(newCustomer);
+  saveStoreData(store);
+
+  return { success: true, customer: newCustomer };
+}
+
+export function updateCustomerProfile(
+  id: string,
+  input: { fullName?: string; phone?: string; marketingConsent?: boolean }
+): { success: boolean; customer?: CustomerUser; error?: string } {
+  const store = getStoreData();
+  store.customers = store.customers || [];
+  const customer = store.customers.find((c) => c.id === id);
+  if (!customer) {
+    return { success: false, error: "Müşteri hesabı bulunamadı." };
+  }
+
+  if (input.fullName !== undefined) {
+    if (!input.fullName.trim()) {
+      return { success: false, error: "Ad ve soyad boş bırakılamaz." };
+    }
+    customer.fullName = input.fullName.trim();
+  }
+  if (input.phone !== undefined) {
+    customer.phone = input.phone.trim() || undefined;
+  }
+  if (input.marketingConsent !== undefined) {
+    const nextConsent = Boolean(input.marketingConsent);
+    if (customer.marketingConsent !== nextConsent) {
+      customer.marketingConsent = nextConsent;
+      customer.marketingConsentAt = new Date().toISOString();
+    }
+  }
+
+  customer.updatedAt = new Date().toISOString();
+  saveStoreData(store);
+
+  return { success: true, customer };
+}
+
+export function updateCustomerPassword(
+  id: string,
+  newPasswordHash: string
+): { success: boolean; error?: string } {
+  const store = getStoreData();
+  store.customers = store.customers || [];
+  const customer = store.customers.find((c) => c.id === id);
+  if (!customer) {
+    return { success: false, error: "Müşteri hesabı bulunamadı." };
+  }
+
+  customer.passwordHash = newPasswordHash;
+  customer.tokenVersionTimestamp = Date.now();
+  customer.updatedAt = new Date().toISOString();
+  saveStoreData(store);
+
+  return { success: true };
+}
+
+export function addCustomerAddress(
+  customerId: string,
+  addressInput: {
+    title: string;
+    recipient: string;
+    phone: string;
+    city: string;
+    district: string;
+    neighborhood?: string;
+    fullAddress: string;
+    postalCode?: string;
+    isDefaultDelivery?: boolean;
+    isDefaultBilling?: boolean;
+  }
+): { success: boolean; address?: CustomerAddress; error?: string } {
+  const store = getStoreData();
+  store.customers = store.customers || [];
+  const customer = store.customers.find((c) => c.id === customerId);
+  if (!customer) {
+    return { success: false, error: "Müşteri hesabı bulunamadı." };
+  }
+
+  if (!addressInput.title?.trim()) return { success: false, error: "Adres başlığı (örn: Ev, İş) zorunludur." };
+  if (!addressInput.recipient?.trim()) return { success: false, error: "Teslim alacak kişi adı zorunludur." };
+  if (!addressInput.phone?.trim() || addressInput.phone.length < 10) return { success: false, error: "Geçerli bir telefon numarası giriniz." };
+  if (!addressInput.city?.trim()) return { success: false, error: "Lütfen il seçiniz." };
+  if (!addressInput.district?.trim()) return { success: false, error: "Lütfen ilçe giriniz." };
+  if (!addressInput.fullAddress?.trim()) return { success: false, error: "Lütfen açık adres giriniz." };
+
+  customer.addresses = customer.addresses || [];
+  const isFirst = customer.addresses.length === 0;
+
+  const isDefaultDeliv = isFirst ? true : Boolean(addressInput.isDefaultDelivery);
+  const isDefaultBill = isFirst ? true : Boolean(addressInput.isDefaultBilling);
+
+  if (isDefaultDeliv) {
+    customer.addresses.forEach((a) => (a.isDefaultDelivery = false));
+  }
+  if (isDefaultBill) {
+    customer.addresses.forEach((a) => (a.isDefaultBilling = false));
+  }
+
+  const nowIso = new Date().toISOString();
+  const newAddress: CustomerAddress = {
+    id: `addr-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`,
+    customerId,
+    title: addressInput.title.trim(),
+    recipient: addressInput.recipient.trim(),
+    phone: addressInput.phone.trim(),
+    city: addressInput.city.trim(),
+    district: addressInput.district.trim(),
+    neighborhood: addressInput.neighborhood?.trim() || undefined,
+    fullAddress: addressInput.fullAddress.trim(),
+    postalCode: addressInput.postalCode?.trim() || undefined,
+    isDefaultDelivery: isDefaultDeliv,
+    isDefaultBilling: isDefaultBill,
+    createdAt: nowIso,
+    updatedAt: nowIso,
+  };
+
+  customer.addresses.push(newAddress);
+  customer.updatedAt = nowIso;
+  saveStoreData(store);
+
+  return { success: true, address: newAddress };
+}
+
+export function updateCustomerAddress(
+  customerId: string,
+  addressId: string,
+  addressInput: Partial<{
+    title: string;
+    recipient: string;
+    phone: string;
+    city: string;
+    district: string;
+    neighborhood?: string;
+    fullAddress: string;
+    postalCode?: string;
+    isDefaultDelivery?: boolean;
+    isDefaultBilling?: boolean;
+  }>
+): { success: boolean; address?: CustomerAddress; error?: string } {
+  const store = getStoreData();
+  store.customers = store.customers || [];
+  const customer = store.customers.find((c) => c.id === customerId);
+  if (!customer) {
+    return { success: false, error: "Müşteri hesabı bulunamadı." };
+  }
+
+  customer.addresses = customer.addresses || [];
+  const address = customer.addresses.find((a) => a.id === addressId);
+  if (!address) {
+    return { success: false, error: "Adres bulunamadı." };
+  }
+
+  if (addressInput.title !== undefined) {
+    if (!addressInput.title.trim()) return { success: false, error: "Adres başlığı boş bırakılamaz." };
+    address.title = addressInput.title.trim();
+  }
+  if (addressInput.recipient !== undefined) {
+    if (!addressInput.recipient.trim()) return { success: false, error: "Teslim alacak kişi adı boş bırakılamaz." };
+    address.recipient = addressInput.recipient.trim();
+  }
+  if (addressInput.phone !== undefined) {
+    if (!addressInput.phone.trim() || addressInput.phone.length < 10) return { success: false, error: "Geçerli bir telefon numarası giriniz." };
+    address.phone = addressInput.phone.trim();
+  }
+  if (addressInput.city !== undefined) {
+    if (!addressInput.city.trim()) return { success: false, error: "İl boş bırakılamaz." };
+    address.city = addressInput.city.trim();
+  }
+  if (addressInput.district !== undefined) {
+    if (!addressInput.district.trim()) return { success: false, error: "İlçe boş bırakılamaz." };
+    address.district = addressInput.district.trim();
+  }
+  if (addressInput.fullAddress !== undefined) {
+    if (!addressInput.fullAddress.trim()) return { success: false, error: "Açık adres boş bırakılamaz." };
+    address.fullAddress = addressInput.fullAddress.trim();
+  }
+  if (addressInput.neighborhood !== undefined) {
+    address.neighborhood = addressInput.neighborhood.trim() || undefined;
+  }
+  if (addressInput.postalCode !== undefined) {
+    address.postalCode = addressInput.postalCode.trim() || undefined;
+  }
+
+  if (addressInput.isDefaultDelivery) {
+    customer.addresses.forEach((a) => (a.isDefaultDelivery = false));
+    address.isDefaultDelivery = true;
+  }
+  if (addressInput.isDefaultBilling) {
+    customer.addresses.forEach((a) => (a.isDefaultBilling = false));
+    address.isDefaultBilling = true;
+  }
+
+  const nowIso = new Date().toISOString();
+  address.updatedAt = nowIso;
+  customer.updatedAt = nowIso;
+  saveStoreData(store);
+
+  return { success: true, address };
+}
+
+export function deleteCustomerAddress(
+  customerId: string,
+  addressId: string
+): { success: boolean; error?: string } {
+  const store = getStoreData();
+  store.customers = store.customers || [];
+  const customer = store.customers.find((c) => c.id === customerId);
+  if (!customer) {
+    return { success: false, error: "Müşteri hesabı bulunamadı." };
+  }
+
+  customer.addresses = customer.addresses || [];
+  const idx = customer.addresses.findIndex((a) => a.id === addressId);
+  if (idx === -1) {
+    return { success: false, error: "Adres bulunamadı." };
+  }
+
+  const [deleted] = customer.addresses.splice(idx, 1);
+
+  // Eğer silinen adres varsayılan ise ve başka adres varsa, ilk adresi varsayılan yap
+  if (customer.addresses.length > 0) {
+    if (deleted.isDefaultDelivery && !customer.addresses.some((a) => a.isDefaultDelivery)) {
+      customer.addresses[0].isDefaultDelivery = true;
+    }
+    if (deleted.isDefaultBilling && !customer.addresses.some((a) => a.isDefaultBilling)) {
+      customer.addresses[0].isDefaultBilling = true;
+    }
+  }
+
+  customer.updatedAt = new Date().toISOString();
+  saveStoreData(store);
+
+  return { success: true };
+}
+
+export function createPasswordResetToken(email: string): {
+  success: boolean;
+  token?: string;
+  debugResetUrl?: string;
+  error?: string;
+} {
+  const store = getStoreData();
+  const cleanEmail = email.trim().toLowerCase();
+  const customer = findCustomerByEmail(cleanEmail);
+
+  // Kullanıcı bulunamasa dahi e-posta tarama saldırılarını (enumeration) engellemek için genel başarılı mesajı
+  if (!customer) {
+    return {
+      success: true,
+      error: undefined,
+    };
+  }
+
+  const token = crypto.randomBytes(32).toString("hex");
+  const expiresAt = Date.now() + 15 * 60 * 1000; // 15 dakika
+
+  store.passwordResetTokens = store.passwordResetTokens || [];
+  store.passwordResetTokens.push({
+    token,
+    customerId: customer.id,
+    email: cleanEmail,
+    expiresAt,
+    used: false,
+    createdAt: Date.now(),
+  });
+
+  saveStoreData(store);
+
+  const debugResetUrl = `/sifre-sifirla?token=${token}`;
+  return { success: true, token, debugResetUrl };
+}
+
+export function verifyAndConsumeResetToken(
+  token: string,
+  newPasswordHash: string
+): { success: boolean; customerId?: string; error?: string } {
+  if (!token || typeof token !== "string") {
+    return { success: false, error: "Geçersiz şifre sıfırlama bağlantısı." };
+  }
+
+  const store = getStoreData();
+  store.passwordResetTokens = store.passwordResetTokens || [];
+  const record = store.passwordResetTokens.find((r) => r.token === token);
+
+  if (!record) {
+    return { success: false, error: "Şifre sıfırlama bağlantısı bulunamadı veya geçersiz." };
+  }
+  if (record.used) {
+    return { success: false, error: "Bu şifre sıfırlama bağlantısı daha önce kullanılmış." };
+  }
+  if (Date.now() > record.expiresAt) {
+    return { success: false, error: "Şifre sıfırlama bağlantısının süresi dolmuş. Lütfen tekrar talep ediniz." };
+  }
+
+  // Token'ı tek kullanımlık yap
+  record.used = true;
+
+  // Müşteriyi güncelle
+  const customer = findCustomerById(record.customerId);
+  if (!customer) {
+    return { success: false, error: "Kullanıcı hesabı bulunamadı." };
+  }
+
+  customer.passwordHash = newPasswordHash;
+  customer.tokenVersionTimestamp = Date.now(); // Tüm eski oturumları geçersiz kıl
+  customer.updatedAt = new Date().toISOString();
+
+  saveStoreData(store);
+
+  return { success: true, customerId: customer.id };
+}
+
+export function getCustomerOrders(customerId: string): StoreOrder[] {
+  if (!customerId) return [];
+  const store = getStoreData();
+  return (store.orders || []).filter((o) => o.userId === customerId);
+}
+
+export function getCustomerOrderById(
+  customerId: string,
+  orderNumberOrId: string
+): StoreOrder | null {
+  if (!customerId || !orderNumberOrId) return null;
+  const store = getStoreData();
+  const clean = orderNumberOrId.trim();
+  const order = (store.orders || []).find(
+    (o) => o.userId === customerId && (o.id === clean || o.orderNumber === clean)
+  );
+  return order || null;
+}
+
 

@@ -33,6 +33,7 @@ interface TrackingData {
   customerPhone: string;
   operationalStatus: string;
   paymentStatus: string;
+  paymentProvider?: string;
   shippingStatus: string;
   carrier?: string;
   carrierName: string;
@@ -57,6 +58,7 @@ interface ReturnRequestItem {
 
 export default function OrderTrackingPage() {
   const [orderNumber, setOrderNumber] = useState("");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<TrackingData | null>(null);
@@ -86,6 +88,7 @@ export default function OrderTrackingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           orderNumber: orderNumber.trim(),
+          phone: phone.trim(),
         }),
       });
 
@@ -157,8 +160,10 @@ export default function OrderTrackingPage() {
     }
   }
 
+  const refreshOrderNumber = data?.orderNumber;
+  const refreshTrackingToken = data?.trackingToken;
   React.useEffect(() => {
-    if (!data || typeof document === "undefined") return;
+    if (!refreshOrderNumber || !refreshTrackingToken || typeof document === "undefined") return;
     const refresh = async () => {
       if (document.visibilityState !== "visible") return;
       try {
@@ -166,7 +171,7 @@ export default function OrderTrackingPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           cache: "no-store",
-          body: JSON.stringify({ orderNumber: data.orderNumber }),
+        body: JSON.stringify({ orderNumber: refreshOrderNumber, trackingToken: refreshTrackingToken }),
         });
         const result = await response.json();
         if (response.ok && result.tracking) setData(result.tracking);
@@ -174,7 +179,7 @@ export default function OrderTrackingPage() {
     };
     const timer = window.setInterval(refresh, 5000);
     return () => window.clearInterval(timer);
-  }, [data?.orderNumber]);
+  }, [refreshOrderNumber, refreshTrackingToken]);
 
   // 3 Net İlerleme Aşaması
   const isShipped =
@@ -189,7 +194,9 @@ export default function OrderTrackingPage() {
       key: "RECEIVED",
       label: "1. Siparişiniz Tarafımıza Ulaşmıştır",
       done: true,
-      desc: "Siparişiniz alındı ve ödemeniz onaylandı.",
+      desc: data?.paymentProvider === "CASH_ON_DELIVERY"
+        ? "Kapıda ödemeli siparişiniz onaylandı ve atölyemizde hazırlanıyor."
+        : "Siparişiniz alındı ve ödemeniz onaylandı.",
     },
     {
       key: "SHIPPED",
@@ -281,6 +288,24 @@ export default function OrderTrackingPage() {
               />
             </div>
 
+            <div>
+              <label
+                htmlFor="tracking-phone"
+                style={{ display: "block", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.35rem", color: "#333" }}
+              >
+                Siparişte Kayıtlı Telefon
+              </label>
+              <input
+                id="tracking-phone"
+                type="tel"
+                autoComplete="tel"
+                placeholder="05XX XXX XX XX"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                style={{ width: "100%", padding: "0.75rem 1rem", border: "1px solid #CCC", borderRadius: "3px", fontSize: "14px", outline: "none" }}
+              />
+            </div>
+
             {error && (
               <div
                 style={{
@@ -360,7 +385,7 @@ export default function OrderTrackingPage() {
                   <span style={{ fontSize: "12px", color: "#888", textTransform: "uppercase" }}>Sipariş No</span>
                   <h2 style={{ margin: "2px 0 6px", fontSize: "20px", fontWeight: 600 }}>{data.orderNumber}</h2>
                   <span style={{ fontSize: "12px", color: "#666" }}>
-                    Tarih: {new Date(data.createdAt).toLocaleDateString("tr-TR")} | Teslimat: {data.district} / {data.city}
+                    Alıcı: <strong>{data.customerName}</strong> | Tarih: {new Date(data.createdAt).toLocaleDateString("tr-TR")} | Teslimat: {data.district} / {data.city}
                   </span>
                 </div>
 
@@ -375,7 +400,7 @@ export default function OrderTrackingPage() {
                       color: data.paymentStatus === "PAID" ? "#2E7D32" : "#E65100",
                     }}
                   >
-                    Ödeme: {data.paymentStatus === "PAID" ? "Onaylandı" : data.paymentStatus}
+                    Ödeme: {data.paymentStatus === "PAID" ? "Onaylandı" : (data.paymentProvider === "CASH_ON_DELIVERY" ? "Kapıda Ödeme (Bekliyor)" : "Bekliyor")}
                   </span>
                   <span
                     style={{

@@ -5,7 +5,7 @@ import { logAdminAudit } from "@/lib/server/logger";
 import { revalidatePath } from "next/cache";
 import { getPersistentStoreData, savePersistentStoreData } from "@/lib/server/persistent-store";
 
-export async function GET(req?: Request) {
+export async function GET(req: Request) {
   const auth = await requireAdminRole(req, ["ADMIN", "STAFF"]);
   if (auth.errorResponse) {
     return auth.errorResponse;

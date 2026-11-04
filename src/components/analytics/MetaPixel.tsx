@@ -5,7 +5,7 @@ import Script from "next/script";
 import { usePathname, useSearchParams } from "next/navigation";
 import { FB_PIXEL_ID, pageview } from "@/lib/meta-pixel";
 
-export function MetaPixel() {
+function ProductionMetaPixel() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -45,5 +45,11 @@ export function MetaPixel() {
       </noscript>
     </>
   );
+}
+
+export function MetaPixel() {
+  // Local development/test traffic must never be sent to the live Pixel.
+  if (process.env.NODE_ENV !== "production") return null;
+  return <ProductionMetaPixel />;
 }
 

@@ -9,6 +9,7 @@ import { formatCurrency } from "@/lib/formatters";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { event as trackMetaEvent } from "@/lib/meta-pixel";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 
 interface CustomerFormData {
   fullName: string;
@@ -24,6 +25,8 @@ interface CustomerFormData {
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, subtotal, clearCart, freeShippingThreshold } = useCart();
+  const { customer } = useCustomerAuth();
+
   const [paymentMethod, setPaymentMethod] = useState<"PAYTR" | "CASH_ON_DELIVERY">("PAYTR");
   const [formData, setFormData] = useState<CustomerFormData>({
     fullName: "",
@@ -35,6 +38,66 @@ export default function CheckoutPage() {
     postalCode: "",
     customerNotes: "",
   });
+
+  const [selectedAddressId, setSelectedAddressId] = useState<string>("NEW");
+  const [saveAddressToBook, setSaveAddressToBook] = useState(false);
+  const [newAddressTitle, setNewAddressTitle] = useState("Ev");
+
+  // Giriş yapmış müşteri verilerini ve varsayılan adresini otomatik doldur
+  useEffect(() => {
+    if (customer) {
+      const defaultAddr =
+        customer.addresses?.find((a) => a.isDefaultDelivery) ||
+        customer.addresses?.[0];
+
+      if (defaultAddr) {
+        setSelectedAddressId(defaultAddr.id);
+        setFormData((prev) => ({
+          ...prev,
+          fullName: defaultAddr.recipient || customer.fullName || prev.fullName,
+          email: customer.email || prev.email,
+          phone: defaultAddr.phone || customer.phone || prev.phone,
+          city: defaultAddr.city,
+          district: defaultAddr.district,
+          fullAddress: defaultAddr.fullAddress,
+          postalCode: defaultAddr.postalCode || "",
+        }));
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          fullName: customer.fullName || prev.fullName,
+          email: customer.email || prev.email,
+          phone: customer.phone || prev.phone,
+        }));
+      }
+    }
+  }, [customer]);
+
+  const handleSelectSavedAddress = (addrId: string) => {
+    setSelectedAddressId(addrId);
+    if (addrId === "NEW") {
+      setFormData((prev) => ({
+        ...prev,
+        city: "İstanbul",
+        district: "",
+        fullAddress: "",
+        postalCode: "",
+      }));
+    } else {
+      const addr = customer?.addresses?.find((a) => a.id === addrId);
+      if (addr) {
+        setFormData((prev) => ({
+          ...prev,
+          fullName: addr.recipient || prev.fullName,
+          phone: addr.phone || prev.phone,
+          city: addr.city,
+          district: addr.district,
+          fullAddress: addr.fullAddress,
+          postalCode: addr.postalCode || "",
+        }));
+      }
+    }
+  };
 
   const [campaignCode, setCampaignCode] = useState("");
   const [appliedCampaign, setAppliedCampaign] = useState<{
@@ -148,12 +211,14 @@ export default function CheckoutPage() {
           updatedAt: Date.now(),
           products: cartProductsMetadata,
         },
-        customer: formData,
+        customer: {
+          ...formData,
+          userId: customer?.id || undefined,
+        },
         items: items.map((it) => {
-          const variant =
-            it.product.variants.find(
-              (v) => v.colorId === it.color.id && v.sizeId === it.size.id
-            ) || it.product.variants[0];
+          const variant = it.product.variants.find(
+            (v) => v.colorId === it.color.id && v.sizeId === it.size.id && v.isActive
+          );
 
           return {
             productId: it.product.id,
@@ -166,6 +231,23 @@ export default function CheckoutPage() {
         }),
         campaignCode: appliedCampaign?.code,
       };
+
+      // Eğer kullanıcı yeni bir adres girdiyse ve "adres defterime kaydet" seçiliyse
+      if (customer && saveAddressToBook && selectedAddressId === "NEW") {
+        fetch("/api/customer/addresses", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: newAddressTitle.trim() || "Teslimat Adresi",
+            recipient: formData.fullName,
+            phone: formData.phone,
+            city: formData.city,
+            district: formData.district,
+            fullAddress: formData.fullAddress,
+            postalCode: formData.postalCode,
+          }),
+        }).catch(() => {});
+      }
 
       if (paymentMethod === "CASH_ON_DELIVERY") {
         const res = await fetch("/api/payments/cash-on-delivery/create", {
@@ -181,7 +263,7 @@ export default function CheckoutPage() {
         }
 
         clearCart();
-        router.push(`/odeme/basarili?orderNumber=${encodeURIComponent(data.orderNumber)}`);
+        router.push(`/odeme/basarili?orderNumber=${encodeURIComponent(data.orderNumber)}&accessToken=${encodeURIComponent(data.accessToken)}`);
         return;
       }
 
@@ -409,7 +491,7 @@ export default function CheckoutPage() {
                   fontSize: "1.125rem",
                   fontWeight: 600,
                   color: "#1A202C",
-                  marginBottom: "1.5rem",
+                  marginBottom: "1.25rem",
                   display: "flex",
                   alignItems: "center",
                   gap: "0.5rem",
@@ -417,6 +499,99 @@ export default function CheckoutPage() {
               >
                 <span>1.</span> Teslimat ve İletişim Bilgileri
               </h2>
+
+              {/* Üyelik Durumu Bilgilendirme ve Adres Seçici */}
+              {customer ? (
+                <div
+                  style={{
+                    backgroundColor: "rgba(139, 38, 53, 0.04)",
+                    border: "1px solid rgba(139, 38, 53, 0.15)",
+                    padding: "0.75rem 1rem",
+                    borderRadius: "6px",
+                    marginBottom: "1.25rem",
+                    fontSize: "0.8125rem",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: "0.5rem",
+                  }}
+                >
+                  <span style={{ color: "#2D3748" }}>
+                    👤 <strong>{customer.fullName}</strong> ({customer.email}) hesabıyla sipariş veriyorsunuz.
+                  </span>
+                  <Link
+                    href="/hesabim"
+                    style={{
+                      color: "var(--hm-color-accent-merat)",
+                      textDecoration: "underline",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Hesabım →
+                  </Link>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    backgroundColor: "#F7FAFC",
+                    border: "1px dashed #CBD5E0",
+                    padding: "0.75rem 1rem",
+                    borderRadius: "6px",
+                    marginBottom: "1.25rem",
+                    fontSize: "0.8125rem",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: "0.5rem",
+                  }}
+                >
+                  <span style={{ color: "#4A5568" }}>
+                    Zaten üye misiniz? Kayıtlı adreslerinizle daha hızlı sipariş verin.
+                  </span>
+                  <Link
+                    href="/giris?redirect=/odeme"
+                    style={{
+                      color: "var(--hm-color-accent-merat)",
+                      textDecoration: "underline",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Giriş Yapın →
+                  </Link>
+                </div>
+              )}
+
+              {/* Giriş Yapmış Kullanıcı İçin Kayıtlı Adres Seçimi */}
+              {customer && customer.addresses && customer.addresses.length > 0 && (
+                <div style={{ marginBottom: "1.25rem" }}>
+                  <label
+                    style={{
+                      display: "block",
+                      fontSize: "0.8125rem",
+                      fontWeight: 600,
+                      color: "#4A5568",
+                      marginBottom: "0.375rem",
+                    }}
+                  >
+                    Kayıtlı Adreslerinizden Seçin
+                  </label>
+                  <select
+                    value={selectedAddressId}
+                    onChange={(e) => handleSelectSavedAddress(e.target.value)}
+                    className="hm-checkout-input"
+                    style={{ fontWeight: 500, backgroundColor: "#FFF" }}
+                  >
+                    {customer.addresses.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.title} — {a.recipient} ({a.district}/{a.city}) {a.isDefaultDelivery ? "★ Varsayılan" : ""}
+                      </option>
+                    ))}
+                    <option value="NEW">+ Yeni / Farklı Bir Adres Gir</option>
+                  </select>
+                </div>
+              )}
 
               <form onSubmit={handleSubmitOrder}>
                 <div style={{ display: "grid", gap: "1rem" }}>
@@ -513,6 +688,34 @@ export default function CheckoutPage() {
                       className="hm-checkout-input"
                     />
                   </div>
+
+                  {customer && selectedAddressId === "NEW" && (
+                    <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "0.75rem", padding: "0.5rem 0" }}>
+                      <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8125rem", color: "#4A5568", cursor: "pointer" }}>
+                        <input
+                          type="checkbox"
+                          checked={saveAddressToBook}
+                          onChange={(e) => setSaveAddressToBook(e.target.checked)}
+                        />
+                        <span>Bu adresi adres defterime kaydet</span>
+                      </label>
+                      {saveAddressToBook && (
+                        <input
+                          type="text"
+                          placeholder="Adres Başlığı (örn: Yazlık)"
+                          value={newAddressTitle}
+                          onChange={(e) => setNewAddressTitle(e.target.value)}
+                          style={{
+                            padding: "0.3rem 0.6rem",
+                            fontSize: "0.75rem",
+                            border: "1px solid #CBD5E0",
+                            borderRadius: "4px",
+                            width: "180px",
+                          }}
+                        />
+                      )}
+                    </div>
+                  )}
 
                   <div>
                     <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "#4A5568", marginBottom: "0.25rem" }}>

@@ -20,6 +20,7 @@ import {
 } from "./store";
 import { logAdminAudit } from "./logger";
 import { notifyCustomer } from "./notifications";
+import { createOrderTrackingToken } from "./shipping";
 
 export interface PayTRConfig {
   merchantId: string;
@@ -174,6 +175,7 @@ export interface PayTRTokenResult {
   iframeUrl?: string;
   error?: string;
   isSimulation?: boolean;
+  accessToken?: string;
 }
 
 /**
@@ -186,6 +188,7 @@ export async function requestPayTRIFrameToken(
   userIp: string
 ): Promise<PayTRTokenResult> {
   const config = getPayTRConfig();
+  const accessToken = createOrderTrackingToken(order);
 
   // Test / Geliştirme Simülasyonu (Yalnızca izole simülasyon izni açıkken)
   if (!config.isConfigured) {
@@ -194,8 +197,9 @@ export async function requestPayTRIFrameToken(
       return {
         success: true,
         token: simToken,
-        iframeUrl: `/odeme/simulasyon?token=${simToken}&orderNumber=${order.orderNumber}&amount=${order.totalKurus}`,
+        iframeUrl: `/odeme/simulasyon?token=${simToken}&orderNumber=${encodeURIComponent(order.orderNumber)}&amount=${order.totalKurus}&accessToken=${encodeURIComponent(accessToken)}`,
         isSimulation: true,
+        accessToken,
       };
     }
 
@@ -242,7 +246,7 @@ export async function requestPayTRIFrameToken(
       user_name: order.customerFullName,
       user_address: `${order.shippingAddress.fullAddress} ${order.shippingAddress.district}/${order.shippingAddress.city}`,
       user_phone: order.customerPhone,
-      merchant_ok_url: `${baseUrl}/odeme/basarili?orderNumber=${encodeURIComponent(order.orderNumber)}`,
+      merchant_ok_url: `${baseUrl}/odeme/basarili?orderNumber=${encodeURIComponent(order.orderNumber)}&accessToken=${encodeURIComponent(accessToken)}`,
       merchant_fail_url: `${baseUrl}/odeme/basarisiz?orderNumber=${encodeURIComponent(order.orderNumber)}`,
       timeout_limit: "30",
       currency: "TL",
@@ -261,40 +265,14 @@ export async function requestPayTRIFrameToken(
       signal: AbortSignal.timeout(15000),
     });
 
-    let data = await response.json();
-
-    // Eğer domain uyuşmazlığı veya test/canlı mod geçişi nedeniyle hata dönerse yedek kombinasyonlarla tekrar dene
-    if (data.status !== "success") {
-      const altMode = config.testMode === "1" ? "0" : "1";
-      const fallbacks: Array<[string, string]> = [
-        ["https://humramoda.vercel.app", config.testMode],
-        [config.appBaseUrl, altMode],
-        ["https://humramoda.vercel.app", altMode],
-      ];
-
-      for (const [fbUrl, fbMode] of fallbacks) {
-        if (fbUrl === config.appBaseUrl && fbMode === config.testMode) continue;
-        const retryRes = await fetch("https://www.paytr.com/odeme/api/get-token", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body: buildPostParams(fbUrl, fbMode).toString(),
-          signal: AbortSignal.timeout(15000),
-        });
-        const retryData = await retryRes.json();
-        if (retryData.status === "success" && retryData.token) {
-          data = retryData;
-          break;
-        }
-      }
-    }
+    const data = await response.json();
 
     if (data.status === "success" && data.token) {
       return {
         success: true,
         token: data.token,
         iframeUrl: `https://www.paytr.com/odeme/guvenli/${data.token}`,
+        accessToken,
         isSimulation: false,
       };
     }

@@ -1,0 +1,39 @@
+{
+  "generatedAt": "2026-11-01T20:54:48.126Z",
+  "source": "data/store.json",
+  "totalProductsScanned": 13,
+  "totalMediaReferences": 24,
+  "localUploadReferences": 0,
+  "accessibleFilesCount": 0,
+  "missingFilesCount": 0,
+  "corruptedFilesCount": 0,
+  "mimeMismatchCount": 0,
+  "duplicateFilesCount": 0,
+  "missingColorGalleriesCount": 3,
+  "sharedFilesAcrossProductsCount": 0,
+  "missingFiles": [],
+  "corruptedFiles": [],
+  "mimeMismatches": [],
+  "duplicateFiles": [],
+  "missingColorGalleries": [
+    {
+      "productId": "prod-1793197224147",
+      "productTitle": "Şalvar Pantolon",
+      "colorId": "col-1793197224147-1",
+      "colorName": "Lacivert"
+    },
+    {
+      "productId": "prod-1793197224147",
+      "productTitle": "Şalvar Pantolon",
+      "colorId": "col-1793197224147-2",
+      "colorName": "Acı kahve"
+    },
+    {
+      "productId": "prod-1793187886341",
+      "productTitle": "Qapitone Garnili",
+      "colorId": "col-1793187886340-1",
+      "colorName": "HAKİ"
+    }
+  ],
+  "sharedFilesAcrossProducts": []
+}

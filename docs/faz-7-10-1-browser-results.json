@@ -1,0 +1,717 @@
+{
+  "timestamp": "2026-11-03T03:57:38.507Z",
+  "totalTestedPages": 33,
+  "passedPages": 33,
+  "failedPages": 0,
+  "browser": "msedge",
+  "initialStoreSha256": "2875173586111553955594984012CBD0AD2BFB366CBD87D1FB85BD2C71753E5A",
+  "finalStoreSha256": "2875173586111553955594984012CBD0AD2BFB366CBD87D1FB85BD2C71753E5A",
+  "storeIntact": true,
+  "pages": [
+    {
+      "url": "/",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1688,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 34,
+      "brokenImages": [],
+      "placeholderCount": 12,
+      "customChecks": {},
+      "passed": true
+    },
+    {
+      "url": "/kategori/elbise",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1636,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 0,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {},
+      "passed": true
+    },
+    {
+      "url": "/kategori/takim",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1126,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 0,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {},
+      "passed": true
+    },
+    {
+      "url": "/koleksiyon/cok-satanlar",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 2048,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 13,
+      "brokenImages": [],
+      "placeholderCount": 6,
+      "customChecks": {},
+      "passed": true
+    },
+    {
+      "url": "/urun/moda-humra-ici-peluslu-termal-kilotlu-corap",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1941,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 5,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {
+        "titleMatches": true,
+        "mediaCount": 2,
+        "hasMedia": true,
+        "thumbnailButtonsFound": 0
+      },
+      "passed": true
+    },
+    {
+      "url": "/urun/buglem-etek",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1439,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 5,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {
+        "titleMatches": true,
+        "mediaCount": 2,
+        "hasMedia": true,
+        "thumbnailButtonsFound": 0
+      },
+      "passed": true
+    },
+    {
+      "url": "/urun/gomlek",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1395,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 7,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {
+        "titleMatches": true,
+        "mediaCount": 12,
+        "hasMedia": true,
+        "thumbnailButtonsFound": 2
+      },
+      "passed": true
+    },
+    {
+      "url": "/urun/tasli-mont",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1432,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 9,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {
+        "titleMatches": true,
+        "mediaCount": 4,
+        "hasMedia": true,
+        "thumbnailButtonsFound": 4
+      },
+      "passed": true
+    },
+    {
+      "url": "/urun/cizgi-etek",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1379,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 5,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {
+        "titleMatches": true,
+        "mediaCount": 2,
+        "hasMedia": true,
+        "thumbnailButtonsFound": 0
+      },
+      "passed": true
+    },
+    {
+      "url": "/urun/salvar-pantolon",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1376,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 5,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {
+        "titleMatches": true,
+        "mediaCount": 1,
+        "hasMedia": true,
+        "thumbnailButtonsFound": 0
+      },
+      "passed": true
+    },
+    {
+      "url": "/urun/qapitone-garnili",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1386,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 5,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {
+        "titleMatches": true,
+        "mediaCount": 1,
+        "hasMedia": true,
+        "thumbnailButtonsFound": 0
+      },
+      "passed": true
+    },
+    {
+      "url": "/urun/betul-trenckot",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1368,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 5,
+      "brokenImages": [],
+      "placeholderCount": 1,
+      "customChecks": {
+        "titleMatches": true,
+        "mediaCount": 0,
+        "hasMedia": false,
+        "placeholderRendered": true
+      },
+      "passed": true
+    },
+    {
+      "url": "/urun/buklet-ceket",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1398,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 5,
+      "brokenImages": [],
+      "placeholderCount": 1,
+      "customChecks": {
+        "titleMatches": true,
+        "mediaCount": 0,
+        "hasMedia": false,
+        "placeholderRendered": true
+      },
+      "passed": true
+    },
+    {
+      "url": "/urun/ekose-desenli-kusakli-ceket-sik-ve-modern-tasarim-",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1371,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 5,
+      "brokenImages": [],
+      "placeholderCount": 1,
+      "customChecks": {
+        "titleMatches": true,
+        "mediaCount": 0,
+        "hasMedia": false,
+        "placeholderRendered": true
+      },
+      "passed": true
+    },
+    {
+      "url": "/urun/unisex-scuba-kumas-ici-peluslu-pantolon",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1384,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 5,
+      "brokenImages": [],
+      "placeholderCount": 1,
+      "customChecks": {
+        "titleMatches": true,
+        "mediaCount": 0,
+        "hasMedia": false,
+        "placeholderRendered": true
+      },
+      "passed": true
+    },
+    {
+      "url": "/urun/kot-ceket",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1343,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 5,
+      "brokenImages": [],
+      "placeholderCount": 1,
+      "customChecks": {
+        "titleMatches": true,
+        "mediaCount": 0,
+        "hasMedia": false,
+        "placeholderRendered": true
+      },
+      "passed": true
+    },
+    {
+      "url": "/urun/pantolon",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1422,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 5,
+      "brokenImages": [],
+      "placeholderCount": 1,
+      "customChecks": {
+        "titleMatches": true,
+        "mediaCount": 0,
+        "hasMedia": false,
+        "placeholderRendered": true
+      },
+      "passed": true
+    },
+    {
+      "url": "/urun/moda-humra-ici-peluslu-termal-kilotlu-corap",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1377,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 5,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {
+        "addedToCart": true
+      },
+      "passed": true
+    },
+    {
+      "url": "/odeme",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1122,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 0,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {},
+      "passed": true
+    },
+    {
+      "url": "/siparis-takip",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1400,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 0,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {},
+      "passed": true
+    },
+    {
+      "url": "/kayit",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1263,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 0,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {
+        "registerFormVisible": true
+      },
+      "passed": true
+    },
+    {
+      "url": "/giris",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1225,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 0,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {
+        "loginFormVisible": true
+      },
+      "passed": true
+    },
+    {
+      "url": "/hesabim",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1247,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 0,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {},
+      "passed": true
+    },
+    {
+      "url": "/iade-degisim",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1271,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 0,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {},
+      "passed": true
+    },
+    {
+      "url": "/admin/login",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1358,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 0,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {
+        "adminLoginFormVisible": true
+      },
+      "passed": true
+    },
+    {
+      "url": "/admin/siparisler",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1182,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 0,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {},
+      "passed": true
+    },
+    {
+      "url": "/admin/finans/mutabakat",
+      "viewport": "desktop",
+      "httpStatus": 200,
+      "loadTimeMs": 1089,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 0,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {
+        "reconcileTitleVisible": false
+      },
+      "passed": true
+    },
+    {
+      "url": "/",
+      "viewport": "mobile",
+      "httpStatus": 200,
+      "loadTimeMs": 1483,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 34,
+      "brokenImages": [],
+      "placeholderCount": 12,
+      "customChecks": {
+        "mobileNavVisible": false
+      },
+      "passed": true
+    },
+    {
+      "url": "/kategori/elbise",
+      "viewport": "mobile",
+      "httpStatus": 200,
+      "loadTimeMs": 1129,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 0,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {},
+      "passed": true
+    },
+    {
+      "url": "/urun/moda-humra-ici-peluslu-termal-kilotlu-corap",
+      "viewport": "mobile",
+      "httpStatus": 200,
+      "loadTimeMs": 1417,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 5,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {},
+      "passed": true
+    },
+    {
+      "url": "/odeme",
+      "viewport": "mobile",
+      "httpStatus": 200,
+      "loadTimeMs": 1095,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 0,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {},
+      "passed": true
+    },
+    {
+      "url": "/siparis-takip",
+      "viewport": "mobile",
+      "httpStatus": 200,
+      "loadTimeMs": 1152,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 0,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {},
+      "passed": true
+    },
+    {
+      "url": "/admin/finans/mutabakat",
+      "viewport": "mobile",
+      "httpStatus": 200,
+      "loadTimeMs": 1097,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "failedRequests": [
+        "GET http://localhost:3005/api/auth/me -> HTTP 401",
+        "GET http://localhost:3005/api/auth/me -> HTTP 401"
+      ],
+      "totalImages": 0,
+      "brokenImages": [],
+      "placeholderCount": 0,
+      "customChecks": {},
+      "passed": true
+    }
+  ]
+}

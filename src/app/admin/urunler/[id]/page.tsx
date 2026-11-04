@@ -11,12 +11,12 @@ export const revalidate = 0;
 interface EditProductPageProps {
   params: Promise<{
     id: string;
-  }> | { id: string };
+  }>;
 }
 
 export default async function EditProductPage({ params }: EditProductPageProps) {
   await getPersistentStoreData().catch(() => {});
-  const resolvedParams = await Promise.resolve(params);
+  const resolvedParams = await params;
   const rawId = resolvedParams?.id || "";
   const id = typeof rawId === "string" ? rawId.trim() : String(rawId || "").trim();
   const decoded = decodeURIComponent(id || "").trim();

@@ -126,13 +126,14 @@ function LoginForm() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+        <form onSubmit={handleSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
           <div>
             <label className="hm-admin-label" htmlFor="admin-email">
               E-Posta Adresi
             </label>
             <input
               id="admin-email"
+              name="email"
               type="email"
               required
               value={email}
@@ -150,6 +151,7 @@ function LoginForm() {
             </label>
             <input
               id="admin-password"
+              name="password"
               type="password"
               required
               value={password}

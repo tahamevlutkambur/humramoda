@@ -1,0 +1,17 @@
+{
+  "generatedAt": "2026-11-01T20:51:00.890Z",
+  "source": "data/store.json (runtime app store); Prisma tables are not currently used as catalog source",
+  "totalReferences": 37,
+  "localUploadReferences": 10,
+  "accessibleLocalFiles": 10,
+  "missingPhysicalFiles": 0,
+  "invalidUrlCount": 0,
+  "referencedWebpAvifCount": 7,
+  "missingWebpAvifCount": 0,
+  "sharedAcrossProductsCount": 0,
+  "missingFiles": [],
+  "invalidUrls": [],
+  "missingConversions": [],
+  "sharedAcrossProducts": [],
+  "remoteUrls": 0
+}

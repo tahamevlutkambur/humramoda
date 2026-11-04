@@ -455,7 +455,11 @@ describe("Faz 5: PayTR Ödeme Entegrasyonu ve Güvenlik Denetimleri", () => {
           district: "Nilüfer",
           fullAddress: "Ataevler Mah. No: 12",
         },
-        items: [{ productId: prod.id, quantity: 1 }],
+        items: [{
+          productId: prod.id,
+          variantId: prod.variants.find((variant) => variant.isActive && variant.stockQuantity > 0)?.id,
+          quantity: 1,
+        }],
       });
 
       const order = res.order!;
@@ -490,7 +494,11 @@ describe("Faz 5: PayTR Ödeme Entegrasyonu ve Güvenlik Denetimleri", () => {
           district: "Muratpaşa",
           fullAddress: "Lara Cad. No: 4",
         },
-        items: [{ productId: prod.id, quantity: 1 }],
+        items: [{
+          productId: prod.id,
+          variantId: prod.variants.find((variant) => variant.isActive && variant.stockQuantity > 0)?.id,
+          quantity: 1,
+        }],
       });
 
       const publicInfo = getOrderPublicStatus(res.order!.orderNumber);

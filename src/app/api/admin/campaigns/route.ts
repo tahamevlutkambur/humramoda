@@ -3,7 +3,7 @@ import { requireAdminRole, verifySameOrigin } from "@/lib/server/session-guard";
 import { getAllStoreCampaigns, createStoreCampaign, getStoreData } from "@/lib/server/store";
 import { getPersistentStoreData, savePersistentStoreData } from "@/lib/server/persistent-store";
 
-export async function GET(req?: Request) {
+export async function GET(req: Request) {
   const auth = await requireAdminRole(req, ["ADMIN", "STAFF"]);
   if (auth.errorResponse) {
     return auth.errorResponse;

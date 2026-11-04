@@ -5,7 +5,7 @@ import {
   computePayTRCallbackHash,
   isPayTRSimulationAllowed,
 } from "@/lib/server/paytr";
-import { getOrderById } from "@/lib/server/store";
+import { getOrderById, executeWithOrderLock } from "@/lib/server/store";
 
 /**
  * PayTR Test ve Simülasyon Webhook Tetikleyicisi
@@ -49,20 +49,22 @@ export async function POST(req: Request) {
       merchantKey: config.merchantKey,
     });
 
-    const callbackResult = processPayTRCallback(
-      {
-        merchantOid: order.orderNumber,
-        status,
-        totalAmount,
-        hash: validHash,
-        failedReasonCode: status === "failed" ? "TEST_ERR_01" : undefined,
-        failedReasonMsg:
-          status === "failed"
-            ? failedReasonMsg || "Test simülasyonu: Yetersiz bakiye veya kullanıcı iptali."
-            : undefined,
-      },
-      "127.0.0.1"
-    );
+    const callbackResult = await executeWithOrderLock(async () => {
+      return processPayTRCallback(
+        {
+          merchantOid: order.orderNumber,
+          status,
+          totalAmount,
+          hash: validHash,
+          failedReasonCode: status === "failed" ? "TEST_ERR_01" : undefined,
+          failedReasonMsg:
+            status === "failed"
+              ? failedReasonMsg || "Test simülasyonu: Yetersiz bakiye veya kullanıcı iptali."
+              : undefined,
+        },
+        "127.0.0.1"
+      );
+    });
 
     return NextResponse.json({
       success: callbackResult.ok,

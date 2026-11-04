@@ -13,12 +13,12 @@ describe("PostgreSQL Migration & Backup Safety Engine", () => {
     const initialContent = fs.readFileSync(storePath, "utf-8");
     const initialData = getStoreData();
 
-    // Veritabanı kapalı durumdayken migrasyon çalıştır
+    // Mevcut JSON'da yinelenen varyant kombinasyonları var. Aktarım ön
+    // doğrulaması bu tutarsızlıkta veritabanına hiç yazmamalı.
     const result = await runMigration();
 
-    // Veritabanı kapalı olduğu için başarısız olmalı ve kaynak veriyi bozmamalı
     expect(result.success).toBe(false);
-    expect(result.message).toContain("bağlantısı");
+    expect(result.message).toContain("tutarsızlık");
 
     // Kaynak dosya içeriğinin harfiyen korunduğunu doğrula
     const afterContent = fs.readFileSync(storePath, "utf-8");

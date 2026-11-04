@@ -224,10 +224,16 @@ function writeSnapshotToLocalStorageSafe(snapshot: ClientStoreSnapshot): void {
     const fittedProducts: ProductItem[] = [];
 
     for (const prod of snapshot.products || []) {
+      // Lightweight URLs (/uploads/... or remote) are preserved 100% without truncation
+      const hasLargeBase64 = prod.media?.some((m) => (m.url && m.url.startsWith("data:") && m.url.length > 5000));
       const fullStr = JSON.stringify(prod);
-      if (usedChars + fullStr.length <= MAX_LS_CHARS) {
+
+      if (!hasLargeBase64 && (usedChars + fullStr.length <= MAX_LS_CHARS)) {
         fittedProducts.push(prod);
         usedChars += fullStr.length;
+      } else if (!hasLargeBase64) {
+        // Preserves all /uploads/ references without wiping
+        fittedProducts.push(prod);
       } else {
         const coverOnly = prod.media?.[0] ? [prod.media[0]] : [];
         const singleProd = {
@@ -237,17 +243,7 @@ function writeSnapshotToLocalStorageSafe(snapshot: ClientStoreSnapshot): void {
             ? { _mediaTruncated: true }
             : {}),
         } as ProductItem;
-        const singleStr = JSON.stringify(singleProd);
-        if (usedChars + singleStr.length <= MAX_LS_CHARS) {
-          fittedProducts.push(singleProd);
-          usedChars += singleStr.length;
-        } else {
-          fittedProducts.push({
-            ...prod,
-            media: [],
-            ...(prod.media && prod.media.length > 0 ? { _mediaTruncated: true } : {}),
-          } as ProductItem);
-        }
+        fittedProducts.push(singleProd);
       }
     }
 
